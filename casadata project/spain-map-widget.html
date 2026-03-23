@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карта Испании</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,sans-serif;background:#0e0f11;color:#f0ede8;padding:20px;}
+.mode-btn{padding:6px 16px;border-radius:20px;border:1px solid #2a2d35;background:transparent;color:#8a8f9e;font-size:13px;cursor:pointer;transition:all 0.18s;}
+.mode-btn.active{background:#f0ede8;color:#0e0f11;border-color:#f0ede8;}
+.mode-btn:hover:not(.active){background:#1e2026;}
+.reg-row{display:grid;grid-template-columns:1fr 80px 80px 70px 70px 80px;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #1e2026;cursor:pointer;border-radius:6px;font-size:13px;}
+.reg-row:hover{background:#16181c;}
+.reg-row.selected{background:#16181c;outline:1.5px solid #c9a84c;}
+.reg-row-hdr{color:#555;font-size:11px;letter-spacing:0.04em;padding:6px 12px;display:grid;grid-template-columns:1fr 80px 80px 70px 70px 80px;gap:4px;}
+.tooltip-box{position:absolute;background:#16181c;border:1px solid #2a2d35;border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:10;min-width:170px;}
+</style>
+</head>
+<body>
+
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+  <button class="mode-btn active" onclick="setMode('price',this)">Цена €/м²</button>
+  <button class="mode-btn" onclick="setMode('rent',this)">Аренда €/м²</button>
+  <button class="mode-btn" onclick="setMode('pr',this)">P/R коэффициент</button>
+  <button class="mode-btn" onclick="setMode('growth',this)">Рост за год %</button>
+</div>
+
+<div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:20px;align-items:start;">
+
+<div style="position:relative;">
+  <svg id="spain-svg" viewBox="0 0 500 420" style="width:100%;display:block;"></svg>
+  <div id="tooltip" class="tooltip-box" style="display:none;"></div>
+</div>
+
+<div>
+  <div id="info-panel" style="background:#16181c;border-radius:10px;padding:14px 16px;margin-bottom:14px;min-height:100px;">
+    <p style="font-size:13px;color:#8a8f9e;margin:0;">Нажмите на регион на карте или в таблице</p>
+  </div>
+  <div id="legend-box" style="border-radius:8px;overflow:hidden;border:1px solid #2a2d35;"></div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;">
+  <div class="reg-row-hdr">
+    <span>Регион</span><span style="text-align:right;">€/м²</span><span style="text-align:right;">Аренда</span><span style="text-align:right;">P/R</span><span style="text-align:right;">Рост</span><span style="text-align:right;">Доходность</span>
+  </div>
+  <div id="table-body"></div>
+</div>
+
+<script>
+const REGIONS = [
+  {id:'baleares',      name:'Baleares',         price:4905,rent:18.7,pr:24.5,growth:10.0,yield_:4.6},
+  {id:'madrid',        name:'Madrid',            price:4234,rent:20.3,pr:18.4,growth:11.6,yield_:5.8},
+  {id:'pais_vasco',    name:'País Vasco',        price:3035,rent:14.9,pr:18.8,growth:12.4,yield_:5.9},
+  {id:'canarias',      name:'Canarias',          price:2789,rent:12.9,pr:19.8,growth:12.4,yield_:5.6},
+  {id:'cataluna',      name:'Cataluña',          price:2560,rent:20.0,pr:12.8,growth:11.7,yield_:9.4},
+  {id:'andalucia',     name:'Andalucía',         price:2468,rent:12.6,pr:18.1,growth:14.0,yield_:6.1},
+  {id:'valencia',      name:'Valencia',          price:2207,rent:14.9,pr:14.4,growth:9.9, yield_:8.1},
+  {id:'cantabria',     name:'Cantabria',         price:1750,rent:9.5, pr:17.0,growth:9.3, yield_:6.5},
+  {id:'navarra',       name:'Navarra',           price:1800,rent:9.8, pr:16.4,growth:11.4,yield_:6.5},
+  {id:'galicia',       name:'Galicia',           price:1650,rent:8.2, pr:18.5,growth:11.2,yield_:6.0},
+  {id:'aragon',        name:'Aragón',            price:1600,rent:8.0, pr:18.4,growth:13.2,yield_:6.0},
+  {id:'asturias',      name:'Asturias',          price:1480,rent:7.8, pr:17.5,growth:13.1,yield_:6.3},
+  {id:'murcia',        name:'Murcia',            price:1250,rent:7.5, pr:15.4,growth:13.3,yield_:7.2},
+  {id:'la_rioja',      name:'La Rioja',          price:1400,rent:7.2, pr:18.0,growth:13.2,yield_:6.2},
+  {id:'castilla_leon', name:'Castilla y León',   price:1300,rent:6.8, pr:17.7,growth:12.4,yield_:6.3},
+  {id:'extremadura',   name:'Extremadura',       price:900, rent:6.0, pr:14.0,growth:10.9,yield_:8.0},
+  {id:'clm',           name:'C.-La Mancha',      price:850, rent:5.8, pr:13.6,growth:10.4,yield_:8.2},
+];
+
+const PALETTES = {
+  price:  {fn:r=>r.price,  fmt:v=>'€'+Math.round(v).toLocaleString('ru'), title:'Цена €/м²',
+    stops:[{v:900,c:'#E6F1FB'},{v:1700,c:'#85B7EB'},{v:2500,c:'#378ADD'},{v:3500,c:'#185FA5'},{v:9999,c:'#042C53'}]},
+  rent:   {fn:r=>r.rent,   fmt:v=>'€'+v.toFixed(1), title:'Аренда €/м²/мес',
+    stops:[{v:7,c:'#E1F5EE'},{v:10,c:'#5DCAA5'},{v:14,c:'#1D9E75'},{v:18,c:'#0F6E56'},{v:99,c:'#04342C'}]},
+  pr:     {fn:r=>r.pr,     fmt:v=>v.toFixed(1)+' лет', title:'P/R (меньше = выгоднее купить)',
+    stops:[{v:14,c:'#EAF3DE'},{v:16,c:'#97C459'},{v:18,c:'#639922'},{v:20,c:'#3B6D11'},{v:99,c:'#173404'}]},
+  growth: {fn:r=>r.growth, fmt:v=>'+'+v.toFixed(1)+'%', title:'Рост цен за год',
+    stops:[{v:10,c:'#FAEEDA'},{v:11,c:'#EF9F27'},{v:12,c:'#BA7517'},{v:13,c:'#854F0B'},{v:99,c:'#412402'}]},
+};
+
+const SHAPES = {
+  galicia:      'M55,55 L110,50 L125,75 L115,105 L80,115 L58,95 Z',
+  asturias:     'M110,50 L178,46 L188,70 L165,85 L125,75 Z',
+  cantabria:    'M178,46 L220,44 L226,68 L188,70 Z',
+  pais_vasco:   'M220,44 L268,38 L274,66 L240,70 L226,68 Z',
+  navarra:      'M268,38 L308,42 L306,82 L274,84 L274,66 Z',
+  la_rioja:     'M226,68 L274,66 L274,84 L255,90 L232,84 Z',
+  aragon:       'M274,84 L306,82 L328,88 L334,170 L280,175 L270,145 L274,118 Z',
+  cataluna:     'M306,82 L388,65 L398,96 L380,140 L334,170 L328,88 Z',
+  castilla_leon:'M58,95 L80,115 L118,134 L165,150 L212,155 L258,150 L270,145 L232,84 L226,68 L188,70 L165,85 L115,105 Z',
+  madrid:       'M212,155 L258,150 L264,180 L242,195 L212,190 Z',
+  clm:          'M118,134 L165,150 L212,155 L212,190 L242,195 L264,180 L280,205 L336,170 L304,215 L284,264 L242,274 L185,260 L136,230 L116,196 Z',
+  extremadura:  'M62,156 L118,134 L116,196 L136,230 L118,264 L78,270 L54,236 L58,192 Z',
+  valencia:     'M334,170 L380,140 L405,166 L412,225 L388,274 L354,290 L334,260 L304,215 Z',
+  murcia:       'M354,290 L388,274 L412,248 L398,330 L365,336 L340,310 Z',
+  andalucia:    'M78,270 L118,264 L136,230 L185,260 L242,274 L284,264 L340,260 L340,310 L365,336 L344,364 L296,390 L225,400 L152,386 L94,352 L68,307 Z',
+  baleares:     'M390,152 L428,148 L436,162 L422,172 L396,170 Z',
+  canarias:     'M48,344 L178,344 L178,395 L48,395 Z',
+};
+
+const LABELS = {
+  galicia:'88,86',asturias:'150,68',cantabria:'202,59',pais_vasco:'248,56',
+  navarra:'290,65',la_rioja:'252,80',aragon:'305,130',cataluna:'360,114',
+  castilla_leon:'170,128',madrid:'238,176',clm:'215,222',extremadura:'92,212',
+  valencia:'368,222',murcia:'378,310',andalucia:'212,338',
+  baleares:'413,162',canarias:'113,368',
+};
+
+let mode='price', sel=null;
+
+function isLight(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return (r*299+g*587+b*114)/1000>140;
+}
+function getColor(r){
+  const v=PALETTES[mode].fn(r);
+  for(const s of PALETTES[mode].stops) if(v<=s.v) return s.c;
+  return PALETTES[mode].stops.at(-1).c;
+}
+
+function buildMap(){
+  const svg=document.getElementById('spain-svg');
+  svg.innerHTML='';
+  REGIONS.forEach(r=>{
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',SHAPES[r.id]||'');
+    p.setAttribute('stroke','#0e0f11');
+    p.setAttribute('stroke-width','1.5');
+    p.setAttribute('stroke-linejoin','round');
+    p.style.cursor='pointer';
+    p.style.transition='opacity 0.15s';
+    p.dataset.id=r.id;
+    p.addEventListener('mouseenter',e=>{if(r.id!==sel)p.setAttribute('stroke-width','2.5');showTip(e,r);});
+    p.addEventListener('mousemove',e=>moveTip(e));
+    p.addEventListener('mouseleave',()=>{if(r.id!==sel)p.setAttribute('stroke-width','1.5');hideTip();});
+    p.addEventListener('click',()=>selectR(r.id));
+    svg.appendChild(p);
+    const pos=LABELS[r.id].split(',');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',pos[0]);t.setAttribute('y',pos[1]);
+    t.setAttribute('text-anchor','middle');t.setAttribute('font-size','8.5');
+    t.setAttribute('font-weight','500');t.setAttribute('pointer-events','none');
+    t.textContent=r.name.split(' ')[0];
+    svg.appendChild(t);
+  });
+  paint();
+}
+
+function paint(){
+  const svg=document.getElementById('spain-svg');
+  REGIONS.forEach(r=>{
+    const p=svg.querySelector(`path[data-id="${r.id}"]`);
+    if(!p)return;
+    const c=getColor(r);
+    p.setAttribute('fill',c);
+    const pos=LABELS[r.id].split(',');
+    const txts=[...svg.querySelectorAll('text')];
+    const t=txts.find(tx=>tx.getAttribute('x')===pos[0]&&tx.getAttribute('y')===pos[1]);
+    if(t)t.setAttribute('fill',isLight(c)?'#111':'#fff');
+  });
+  buildLegend();
+  buildTable();
+}
+
+function buildLegend(){
+  const stops=PALETTES[mode].stops;
+  const fmt=PALETTES[mode].fmt;
+  const prev=[0,...stops.map(s=>s.v)];
+  document.getElementById('legend-box').innerHTML=stops.map((s,i)=>{
+    const lbl=i===0?'< '+fmt(s.v):fmt(prev[i])+'–'+fmt(s.v);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:${s.c};"><span style="font-size:12px;color:${isLight(s.c)?'#1a1a1a':'#eee'};">${lbl}</span></div>`;
+  }).join('');
+}
+
+function selectR(id){
+  const prevSel=sel;
+  sel=id===sel?null:id;
+  const svg=document.getElementById('spain-svg');
+  if(prevSel){const p=svg.querySelector(`path[data-id="${prevSel}"]`);if(p){p.setAttribute('stroke-width','1.5');p.setAttribute('stroke','#0e0f11');}}
+  if(sel){const p=svg.querySelector(`path[data-id="${sel}"]`);if(p){p.setAttribute('stroke-width','3');p.setAttribute('stroke','#c9a84c');}}
+  document.querySelectorAll('.reg-row').forEach(el=>el.classList.toggle('selected',el.dataset.id===sel));
+  if(sel){
+    const r=REGIONS.find(x=>x.id===sel);
+    showPanel(r);
+    const el=document.querySelector(`.reg-row[data-id="${sel}"]`);
+    if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  } else {
+    document.getElementById('info-panel').innerHTML='<p style="font-size:13px;color:#8a8f9e;margin:0;">Нажмите на регион на карте или в таблице</p>';
+  }
+}
+
+function showPanel(r){
+  const pc=r.pr<16?'#5cb88a':r.pr<20?'#c9a84c':'#e05c5c';
+  const pv=r.pr<16?'выгодно':r.pr<20?'норма':'дорого';
+  document.getElementById('info-panel').innerHTML=`
+    <div style="font-size:15px;font-weight:500;margin-bottom:10px;">${r.name}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><div style="font-size:11px;color:#888;">Цена</div><div style="font-size:16px;font-weight:500;">€${r.price.toLocaleString('ru')}/м²</div></div>
+      <div><div style="font-size:11px;color:#888;">Аренда</div><div style="font-size:16px;font-weight:500;">€${r.rent}/м²/мес</div></div>
+      <div><div style="font-size:11px;color:#888;">P/R</div><div style="font-size:16px;font-weight:500;color:${pc};">${r.pr.toFixed(1)} лет · ${pv}</div></div>
+      <div><div style="font-size:11px;color:#888;">Доходность</div><div style="font-size:16px;font-weight:500;">${r.yield_.toFixed(1)}%</div></div>
+      <div><div style="font-size:11px;color:#888;">Рост за год</div><div style="font-size:16px;font-weight:500;color:#c9a84c;">+${r.growth}%</div></div>
+    </div>`;
+}
+
+function showTip(e,r){
+  const t=document.getElementById('tooltip');
+  const val=PALETTES[mode].fmt(PALETTES[mode].fn(r));
+  t.innerHTML=`<div style="font-weight:500;margin-bottom:4px;">${r.name}</div><div style="color:#aaa;">${PALETTES[mode].title}: <strong style="color:#f0ede8;">${val}</strong></div><div style="color:#666;font-size:11px;margin-top:3px;">Нажмите для деталей</div>`;
+  t.style.display='block';moveTip(e);
+}
+function moveTip(e){
+  const wrap=e.currentTarget.closest('div');
+  const rect=wrap.getBoundingClientRect();
+  const t=document.getElementById('tooltip');
+  t.style.left=(e.clientX-rect.left+12)+'px';
+  t.style.top=(e.clientY-rect.top-10)+'px';
+}
+function hideTip(){document.getElementById('tooltip').style.display='none';}
+
+function buildTable(){
+  const sorted=[...REGIONS].sort((a,b)=>PALETTES[mode].fn(b)-PALETTES[mode].fn(a));
+  document.getElementById('table-body').innerHTML=sorted.map(r=>{
+    const c=getColor(r);
+    const pc=r.pr<16?'color:#5cb88a':r.pr<20?'color:#c9a84c':'color:#e05c5c';
+    return `<div class="reg-row${r.id===sel?' selected':''}" data-id="${r.id}" onclick="selectR('${r.id}')">
+      <span style="display:flex;align-items:center;gap:7px;">
+        <span style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0;"></span>
+        <span>${r.name}</span>
+      </span>
+      <span style="text-align:right;">€${r.price.toLocaleString('ru')}</span>
+      <span style="text-align:right;">€${r.rent}</span>
+      <span style="text-align:right;${pc}">${r.pr.toFixed(1)}</span>
+      <span style="text-align:right;color:#c9a84c;">+${r.growth}%</span>
+      <span style="text-align:right;">${r.yield_.toFixed(1)}%</span>
+    </div>`;
+  }).join('');
+}
+
+function setMode(m,btn){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  paint();
+  if(sel)showPanel(REGIONS.find(r=>r.id===sel));
+}
+
+buildMap();
+</script>
+</body>
+</html>
