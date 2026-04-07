@@ -37,8 +37,8 @@
     <button class="nav-btn active"  onclick="showPage('market',  this)" data-i18n="nav_market">Рынок</button>
     <button class="nav-btn"         onclick="showPage('heatmap', this)" data-i18n="nav_heatmap">Динамика цен</button>
     <button class="nav-btn"         onclick="showPage('pr',      this)" data-i18n="nav_pr">P/R Карта</button>
-    <button class="nav-btn"         onclick="showPage('calc',    this)" data-i18n="nav_calc">Купить vs Снять <span class="nav-tag">★</span></button>
-    <button class="nav-btn"         onclick="showPage('rental',  this)" data-i18n="nav_rental">Калькулятор аренды <span class="nav-tag">NEW</span></button>
+    <button class="nav-btn nav-calc-btn" onclick="showPage('calc',    this)"><span data-i18n="nav_calc">Купить или снять?</span><span class="nav-calc-sub" data-i18n="nav_calc_sub">калькулятор 1</span></button>
+    <button class="nav-btn nav-calc-btn" onclick="showPage('rental',  this)"><span data-i18n="nav_rental">Доход от недвижимости</span><span class="nav-calc-sub" data-i18n="nav_rental_sub">калькулятор 2</span></button>
     <button class="nav-btn"         onclick="showPage('compare', this)" data-i18n="nav_compare">Сравнить всё <span class="nav-tag">NEW</span></button>
     <button class="nav-btn"         onclick="showPage('flip',    this)" data-i18n="nav_flip">Флиппинг <span class="nav-tag">NEW</span></button>
     <button class="nav-btn"         onclick="showPage('guide',   this)" data-i18n="nav_guide">Гид покупателя</button>
@@ -292,6 +292,7 @@
   <div class="calc-chart-wrap">
     <canvas id="calcChart"></canvas>
   </div>
+  <p class="chart-subtitle" id="c1-chart-sub" data-i18n="c1_chart_sub">График стартует с суммы вашего первоначального взноса. Тот кто снимает квартиру вкладывает эту же сумму в индексный фонд с первого дня.</p>
 
   <!-- Main sliders -->
   <div class="calc-sliders">

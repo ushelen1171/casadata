@@ -1214,6 +1214,8 @@ function calc1Update() {
     if (y < horizon) {
       for (let m = 0; m < 12; m++) {
         const mo = y * 12 + m;
+        // Property appreciates monthly
+        propVal *= (1 + appr / 12);
         // Mortgage
         let payment = 0;
         if (mo < nPay && loanBal > 0) {
@@ -1222,7 +1224,7 @@ function calc1Update() {
           loanBal = Math.max(0, loanBal - principal);
           payment = monthlyMortgage;
         }
-        // Maintenance monthly (% of property value)
+        // Maintenance monthly (% of current property value)
         const maintMonthly = propVal * maint / 12;
         const buyerTotal   = payment + maintMonthly;
 
@@ -1231,9 +1233,8 @@ function calc1Update() {
         const diff = buyerTotal - rent;
         portfolio += Math.max(0, diff); // renter invests saved difference
         totalMortgagePaid += payment;
+        rent *= (1 + rentGrowth / 12);
       }
-      propVal *= (1 + appr);
-      rent    *= (1 + rentGrowth);
     }
   }
 
@@ -1242,11 +1243,10 @@ function calc1Update() {
   const diff      = buyFinal - rentFinal;
   const winner    = diff >= 0 ? 'buy' : 'rent';
 
-  // Parity year
+  // Parity year — first year buying overtakes renting (renter starts higher, so we look for buy crossing above)
   let parityYear = null;
   for (let y = 1; y <= horizon; y++) {
-    if (winner === 'buy' && buyData[y] >= rentData[y]) { parityYear = y; break; }
-    if (winner === 'rent' && rentData[y] >= buyData[y]) { parityYear = y; break; }
+    if (buyData[y] >= rentData[y]) { parityYear = y; break; }
   }
 
   // ROI on down payment (annualised)
@@ -1326,7 +1326,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
               borderColor: 'rgba(201,168,76,0.6)',
               borderWidth: 1.5,
               borderDash: [4,4],
-              label: { display: true, content: t('c1_crossover')||'Паритет', color: '#c9a84c', font: { size: 11 } }
+              label: { display: true, content: (t('c1_year')||'Год') + ' ' + crossoverIdx + ': ' + (t('c1_buy_wins_label')||'купить выгоднее, чем снимать'), color: '#c9a84c', font: { size: 11 }, position: 'start' }
             }
           }
         } : {}
