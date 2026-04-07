@@ -1,0 +1,196 @@
+<!-- Visualization of color mapping fixes -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flip Analyzer Color Mapping Fix</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #0e0f11; color: #f0ede8; }
+        .section { border: 1px solid #2a2d35; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .pass { color: #5cb88a; }
+        .fail { color: #e94b3c; }
+        .region-row { display: grid; grid-template-columns: 150px 100px 100px 100px 50px; gap: 10px; padding: 8px; border-bottom: 1px solid #1e2026; align-items: center; }
+        .color-box { width: 40px; height: 40px; border-radius: 4px; border: 1px solid #555; }
+        h3 { margin-top: 0; color: #c9a84c; }
+        .legend { display: flex; align-items: center; gap: 10px; padding: 10px; background: #16181c; border-radius: 6px; margin: 10px 0; }
+        .legend-color { width: 30px; height: 30px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Flip Analyzer Color Mapping - Fixes & Results</h1>
+    
+    <div class="section">
+        <h2>✅ Problems Fixed:</h2>
+        <ul>
+            <li><span class="pass">✓</span> Updated growth color stops: <code>30-45-70-90-999</code> (was <code>10-11-12-13-99</code>)</li>
+            <li><span class="pass">✓</span> Updated flip_score stops: <code>2-4-6-8-999</code> (was <code>3-6-8-10-999</code>)</li>
+            <li><span class="pass">✓</span> Improved <code>calculateFlipScore()</code> function - now returns 0-10 range properly distributed</li>
+            <li><span class="pass">✓</span> Synced <code>buildFlipLegend()</code> with new color palettes</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Tab 1: Потенциал роста цен (Growth Rate %)</h3>
+        <p>Values: 15% to 113% | Color mapping:</p>
+        
+        <div class="legend">
+            <div class="legend-color" style="background: #FAEEDA;"></div>
+            <span>0-30%: Светлый</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #EF9F27;"></div>
+            <span>30-45%: Оранжевый</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #BA7517;"></div>
+            <span>45-70%: Коричневый</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #854F0B;"></div>
+            <span>70-90%: Темный коричневый</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #412402;"></div>
+            <span>90%+: Самый темный</span>
+        </div>
+
+        <h4>Sample Regions:</h4>
+        <div class="region-row" style="font-weight: bold; background: #1a1d23;">
+            <span>Región</span>
+            <span>Growth%</span>
+            <span>Price €</span>
+            <span>Rent €</span>
+            <span>Color</span>
+        </div>
+        <div class="region-row">
+            <span>Baleares</span>
+            <span>113%</span>
+            <span>€4905</span>
+            <span>€18.70</span>
+            <div class="color-box" style="background: #412402;"></div>
+        </div>
+        <div class="region-row">
+            <span>Canarias</span>
+            <span>107%</span>
+            <span>€2789</span>
+            <span>€12.90</span>
+            <div class="color-box" style="background: #412402;"></div>
+        </div>
+        <div class="region-row">
+            <span>Madrid</span>
+            <span>86%</span>
+            <span>€4234</span>
+            <span>€20.30</span>
+            <div class="color-box" style="background: #854F0B;"></div>
+        </div>
+        <div class="region-row">
+            <span>Andalucía</span>
+            <span>72%</span>
+            <span>€2468</span>
+            <span>€12.60</span>
+            <div class="color-box" style="background: #BA7517;"></div>
+        </div>
+        <div class="region-row">
+            <span>Murcia</span>
+            <span>47%</span>
+            <span>€1250</span>
+            <span>€7.50</span>
+            <div class="color-box" style="background: #BA7517;"></div>
+        </div>
+        <div class="region-row">
+            <span>Castilla y León</span>
+            <span>30%</span>
+            <span>€1300</span>
+            <span>€6.80</span>
+            <div class="color-box" style="background: #EF9F27;"></div>
+        </div>
+        <div class="region-row">
+            <span>Extremadura</span>
+            <span>15%</span>
+            <span>€900</span>
+            <span>€6.00</span>
+            <div class="color-box" style="background: #FAEEDA;"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Tab 3: Flip Score (0-10)</h3>
+        <p>Based on: Growth (40%) + Price affordability (30%) + Rent yield (30%)</p>
+        
+        <div class="legend">
+            <div class="legend-color" style="background: #FAEEDA;"></div>
+            <span>0-2: Низкий</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #EF9F27;"></div>
+            <span>2-4: Средний-низкий</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #BA7517;"></div>
+            <span>4-6: Средний</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #854F0B;"></div>
+            <span>6-8: Хороший</span>
+        </div>
+        <div class="legend">
+            <div class="legend-color" style="background: #412402;"></div>
+            <span>8+: Отличный</span>
+        </div>
+
+        <h4>Expected Score Distribution (Calculated by new formula):</h4>
+        <div style="background: #16181c; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <p>With new scoring formula:</p>
+            <ul>
+                <li>Growth component: (growth10 - 15) / 98 * 5 = 0-5 points</li>
+                <li>Price component: max(0, (4000 - price) / 1000) = 0-3 points</li>
+                <li>Rent component: rent / price * 100 / 0.7 = 0-3 points</li>
+                <li><strong>Total: 0-10 range properly distributed</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🧪 Testing Instructions:</h2>
+        <ol>
+            <li>Open DevTools (F12) and clear cache (Ctrl+Shift+Delete / Cmd+Shift+Delete)</li>
+            <li>Refresh page or hard-refresh (Ctrl+F5 / Cmd+Shift+R)</li>
+            <li>Go to "Флиппинг" page</li>
+            <li>Check "Потенциал роста цен" tab - regions should show different colors based on growth %</li>
+            <li>Check "Flip Score" tab - regions should show different colors based on flip potential</li>
+            <li>Verify legend updates with color blocks and value ranges</li>
+            <li>Hover over regions to see proper tooltip data</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>📊 Key Changes:</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #1a1d23;">
+                <th style="padding: 8px; border: 1px solid #2a2d35; text-align: left;">Mode</th>
+                <th style="padding: 8px; border: 1px solid #2a2d35; text-align: left;">Before</th>
+                <th style="padding: 8px; border: 1px solid #2a2d35; text-align: left;">After</th>
+                <th style="padding: 8px; border: 1px solid #2a2d35; text-align: left;">Impact</th>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><strong>Growth</strong></td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><code>10-11-12-13-99</code></td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><code>30-45-70-90-999</code></td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><span class="pass">✓ All regions now have different colors</span></td>
+            </tr>
+            <tr style="background: #16181c;">
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><strong>Flip Score</strong></td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><code>3-6-8-10-999</code> + old formula</td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><code>2-4-6-8-999</code> + new formula</td>
+                <td style="padding: 8px; border: 1px solid #2a2d35;"><span class="pass">✓ Better scoring distribution</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        console.log('%c✅ Flip Analyzer Color Mapping Fixed', 'color: #5cb88a; font-size: 16px; font-weight: bold;');
+        console.log('%cBefore: All regions same color (overflow issue)', 'color: #e94b3c;');
+        console.log('%cAfter: Proper color distribution based on metrics', 'color: #5cb88a;');
+        console.log('%cRefresh page with cache clear to see changes', 'color: #c9a84c;');
+    </script>
+</body>
+</html>

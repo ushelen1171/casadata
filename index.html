@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CasaData — Аналитика недвижимости Испании</title>
+<meta name="description" content="Калькулятор купить vs снять, P/R карта, тепловая карта цен и гид покупателя по всем регионам Испании">
+<meta property="og:title" content="CasaData — купить или снять в Испании?">
+<meta property="og:description" content="Калькулятор с учётом ITP по регионам, ипотеки и инвестиционной альтернативы">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=7">
+<style>
+  /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
+  .card, .card-sm, .result-card, .flip-card, .section-card {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: var(--bg) !important;
+  }
+  #flip-info-panel {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAVIGATION ========== -->
+<nav>
+  <div class="nav-logo">Casa<span>Data</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active"  onclick="showPage('market',  this)" data-i18n="nav_market">Рынок</button>
+    <button class="nav-btn"         onclick="showPage('heatmap', this)" data-i18n="nav_heatmap">Динамика цен</button>
+    <button class="nav-btn"         onclick="showPage('pr',      this)" data-i18n="nav_pr">P/R Карта</button>
+    <button class="nav-btn"         onclick="showPage('calc',    this)" data-i18n="nav_calc">Купить vs Снять <span class="nav-tag">★</span></button>
+    <button class="nav-btn"         onclick="showPage('rental',  this)" data-i18n="nav_rental">Калькулятор аренды <span class="nav-tag">NEW</span></button>
+    <button class="nav-btn"         onclick="showPage('compare', this)" data-i18n="nav_compare">Сравнить всё <span class="nav-tag">NEW</span></button>
+    <button class="nav-btn"         onclick="showPage('flip',    this)" data-i18n="nav_flip">Флиппинг <span class="nav-tag">NEW</span></button>
+    <button class="nav-btn"         onclick="showPage('guide',   this)" data-i18n="nav_guide">Гид покупателя</button>
+  </div>
+  <!-- Переключатель языков -->
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('ru'); this.closest('.lang-switcher').querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active')">RU</button>
+    <button class="lang-btn"        onclick="setLang('en'); this.closest('.lang-switcher').querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active')">EN</button>
+    <button class="lang-btn"        onclick="setLang('es'); this.closest('.lang-switcher').querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active')">ES</button>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<div class="hero" id="hero-block">
+  <div class="hero-eyebrow" data-i18n="hero_eyebrow">Аналитика рынка недвижимости</div>
+  <h1 class="hero-title" data-i18n="hero_title1">Испания: купить<br>или <em data-i18n="hero_title2">снимать</em>?</h1>
+  <p class="hero-sub" data-i18n="hero_sub">Единственный инструмент с реальными расчётами по всем регионам — с учётом ITP, ипотеки и альтернативных инвестиций.</p>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-val">17</div><div class="hstat-label" data-i18n="hero_stat1_lbl">регионов Испании</div></div>
+    <div class="hstat"><div class="hstat-val">+12.2%</div><div class="hstat-label" data-i18n="hero_stat2_lbl">рост цен в 2025</div></div>
+    <div class="hstat"><div class="hstat-val">4 686 €</div><div class="hstat-label" data-i18n="hero_stat3_lbl">макс. цена/м² (Балеары)</div></div>
+    <div class="hstat"><div class="hstat-val">850 €</div><div class="hstat-label" data-i18n="hero_stat4_lbl">мин. цена/м² (Каст.-Ла М.)</div></div>
+  </div>
+</div>
+
+<!-- ========== PAGE: MARKET ========== -->
+<div class="page active" id="page-market">
+  <div class="section-head">
+    <h2 data-i18n="market_title">Где купить в Испании: цены, рост, доходность</h2>
+    <p data-i18n="market_sub">Данные: INE, Idealista, Colegio de Registradores — Q4 2025</p>
+  </div>
+  <div class="grid-4" style="margin-bottom:24px;">
+    <div class="card-sm"><div class="metric-label" data-i18n="median_country">Медиана по стране</div><div class="metric-val gold">2 438 €/м²</div></div>
+    <div class="card-sm"><div class="metric-label" data-i18n="yoy_growth">Рост год к году</div><div class="metric-val green">+12.2%</div></div>
+    <div class="card-sm"><div class="metric-label" data-i18n="growth_leader">Лидер роста</div><div class="metric-val" style="font-size:16px;">Андалусия +14%</div></div>
+    <div class="card-sm"><div class="metric-label" data-i18n="most_expensive">Самый дорогой</div><div class="metric-val" style="font-size:16px;">Балеары 4 686 €</div></div>
+  </div>
+
+  <!-- Interactive Map -->
+  <div style="margin-bottom: 24px;">
+    <div class="map-mode-btns">
+      <button class="map-mode-btn active" onclick="setMapMode('price',this)">Цена €/м²</button>
+      <button class="map-mode-btn" onclick="setMapMode('rent',this)">Аренда €/м²/мес</button>
+      <button class="map-mode-btn" onclick="setMapMode('pr',this)">Доходность %</button>
+      <button class="map-mode-btn" onclick="setMapMode('growth',this)">Рост за год %</button>
+    </div>
+    <div class="map-container">
+      <div class="map-svg-wrap">
+        <svg id="map-svg" class="map-svg" viewBox="0 0 500 420"></svg>
+        <div id="map-tooltip" class="map-tooltip"></div>
+      </div>
+      <div>
+        <div id="map-info-panel" class="map-info-panel">
+          <div id="map-legend-title" style="font-size:12px;color:var(--muted);margin:0;">Цена €/м²</div>
+          <div id="map-info-formula" style="display:none;font-size:12px;color:#c8e6c9;line-height:1.6;margin-top:6px;">
+            (Аренда /мес × 12) / Цена × 100%<br>
+            <span style="color:#aaa;">= 1 / P·R × 100%</span>
+          </div>
+        </div>
+        <div id="map-legend-box" class="map-legend-box"></div>
+        <div id="map-info-benchmarks" style="display:none;font-size:12px;color:var(--muted);line-height:1.8;padding:8px 0 0;">
+          <div style="color:#f0c040;margin-bottom:3px;">📊 Ориентиры для сравнения</div>
+          <div>
+            <span style="color:#f97;">▸ &lt;3.5%</span> — низкая, ниже гособлигаций Испании (~3.5 %)<br>
+            <span style="color:#f0c040;">▸ 3.5–5.0%</span> — умеренная: может быть интересна при хорошем потенциале роста цены и низких расходах<br>
+            <span style="color:#8de;">▸ 5.0–6.5%</span> — высокая: объект уже конкурентен как арендная инвестиция<br>
+            <span style="color:#7edb7e;">▸ &gt;6.5%</span> — повышенная (выше среднего по рынку): требует проверки, не заложены ли повышенные риски, расходы или слабая ликвидность
+          </div>
+          <div id="map-yield-footnote" style="color:#555;margin-top:8px;line-height:1.6;">
+            * Брутто-доходность от аренды, до налогов и расходов<br>
+            Облигации: гособлигации Испании ~ 3.5% в год.<br>
+            Индексы акций: IBEX 35 (Испания) ~ 8–9% в год; S&amp;P 500 (США) ~10% в год, волатильны.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Рекламный баннер -->
+  <div class="banner-slot" style="height:90px;display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--muted);">
+    [Рекламное место — партнёрский блок 728×90px]
+  </div>
+
+  <!-- Легенда цветов под заголовком таблицы -->
+  <div class="tbl-header-row">
+    <div class="tbl-legend">
+      <span class="tbl-legend-label" data-i18n="tbl_legend_label">Цвет строки — Цена €/м²:</span>
+      <span class="tbl-legend-item" data-i18n="tbl_legend_cheap">🟢 Низкая (&lt; 1 500)</span>
+      <span class="tbl-legend-item" data-i18n="tbl_legend_mid">⚪ Средняя (1 500–2 500)</span>
+      <span class="tbl-legend-item" data-i18n="tbl_legend_exp">🔴 Высокая (&gt; 2 500)</span>
+    </div>
+  </div>
+
+  <div class="tbl-scroll-wrap">
+    <table class="data-table" id="market-table">
+      <thead>
+        <tr>
+          <th rowspan="2" class="col-sticky col-sortable" data-col="name" data-i18n="col_region">Регион <span class="sort-arrow">↕</span></th>
+          <th rowspan="2" class="col-sortable" data-col="price" data-i18n="col_price">Цена €/м² <span class="sort-arrow">↕</span></th>
+          <th rowspan="2" class="col-sortable" data-col="rent" data-i18n="col_rent">Аренда €/м²/мес <span class="sort-arrow">↕</span></th>
+          <th rowspan="2" class="col-sortable" data-col="itp" data-i18n="col_itp">ITP <span class="sort-arrow">↕</span></th>
+          <th rowspan="2" class="col-sortable col-active" data-col="yield" data-i18n="col_yield_gross">Доходность&nbsp;%* <span class="sort-arrow">↓</span></th>
+          <th colspan="2" class="col-payback-header" data-i18n="col_payback_title">Окупаемость (лет)</th>
+          <th rowspan="2" class="col-sortable" data-col="growth1" data-i18n="col_growth_1y">Рост цен за год&nbsp;% <span class="sort-arrow">↕</span></th>
+          <th rowspan="2" class="col-sortable" data-col="cagr10" data-i18n="col_growth_10y_avg">Ср. рост цен<br>(10 лет)&nbsp;% <span class="sort-arrow">↕</span></th>
+        </tr>
+        <tr>
+          <th class="col-sortable col-sub" data-col="pr" data-i18n="col_payback_excl">без ITP <span class="sort-arrow">↕</span></th>
+          <th class="col-sortable col-sub" data-col="prAdj" data-i18n="col_payback_incl">с ITP† <span class="sort-arrow">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="market-tbody"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.8;">
+    <div data-i18n="tbl_note_yield">* Брутто-доходность — до вычета налогов и расходов на содержание жилья</div>
+    <div data-i18n="tbl_note_itp">† ITP — Impuesto sobre Transmisiones Patrimoniales: налог на передачу права собственности при покупке вторичного жилья (6–10% в зависимости от региона)</div>
+  </div>
+</div>
+
+<!-- ========== PAGE: HEATMAP ========== -->
+<div class="page" id="page-heatmap">
+  <div class="section-head">
+    <h2 data-i18n="hm_title">Скорость роста цен 2016–2025</h2>
+    <p data-i18n="hm_sub">Годовое изменение цен, %. Источник: INE IPV</p>
+  </div>
+  
+  <!-- BLOCK 2.1: Growth bar chart -->
+  <div style="margin-bottom: 32px;">
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Рост цен за последний год по регионам</div>
+    <div class="chart-wrap" style="height: auto; min-height: 400px;"><canvas id="growthBarChart"></canvas></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('hm','growth',this)" data-i18n="tab_growth">Рост цен %</button>
+    <button class="tab"        onclick="switchTab('hm','abs',this)"    data-i18n="tab_abs">Абсолютные цены €/м²</button>
+  </div>
+  <div class="tab-content active" id="hm-growth">
+    <div class="legend" style="margin-bottom:12px;">
+      <div class="legend-item"><div class="legend-dot" style="background:#e05c5c;"></div>< 0%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2a4a6b;"></div>0–3%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2d6a9f;"></div>3–6%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3a8fd4;"></div>6–9%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5ab0f0;"></div>9–12%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c9a84c;"></div>> 12%</div>
+    </div>
+    <div class="heatmap-wrap" id="hm-growth-content"></div>
+  </div>
+  <div class="tab-content" id="hm-abs">
+    <div class="heatmap-wrap" id="hm-abs-content"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-head"><h2 data-i18n="region_trend">Динамика конкретного региона</h2></div>
+  <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;flex-wrap:wrap;">
+    <select id="trend-select" onchange="renderTrendChart()"></select>
+    <button class="nav-btn" style="border:1px solid var(--border);" onclick="addTrendLine()" data-i18n="add_region">+ Добавить регион</button>
+    <button class="nav-btn" style="border:1px solid var(--border);" onclick="clearTrendLines()" data-i18n="reset">Сбросить</button>
+  </div>
+  <div class="legend" id="trend-legend"></div>
+  <div class="chart-wrap" style="height:280px;"><canvas id="trendChart"></canvas></div>
+</div>
+
+<!-- ========== PAGE: P/R ========== -->
+<div class="page" id="page-pr">
+  <div class="section-head">
+    <h2 data-i18n="pr_title">P/R<sub>adj</sub> — окупаемость покупки</h2>
+    <p data-i18n="pr_sub">Сколько лет аренды нужно чтобы окупить покупку с учётом ITP и нотариуса. Норма — 15–20 лет.</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px;">
+    <div class="card-sm"><div class="metric-label" data-i18n="pr_best">Лучший P/R<sub>adj</sub></div><div class="metric-val green" id="pr-best-val">—</div><div style="font-size:12px;color:var(--muted);" id="pr-best-name">—</div></div>
+    <div class="card-sm"><div class="metric-label" data-i18n="pr_worst">Худший P/R<sub>adj</sub></div><div class="metric-val red" id="pr-worst-val">—</div><div style="font-size:12px;color:var(--muted);" id="pr-worst-name">—</div></div>
+    <div class="card-sm"><div class="metric-label" data-i18n="pr_median">Медиана Испании</div><div class="metric-val gold" id="pr-median">—</div><div style="font-size:12px;color:var(--muted);" data-i18n="pr_years">лет окупаемости</div></div>
+  </div>
+  <div class="card" style="padding:16px 20px;margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px;padding:0 4px;">
+      <span data-i18n="col_region">Регион</span>
+      <span>ITP · P/R базовый · P/R<sub>adj</sub> · Доходность</span>
+    </div>
+    <div id="pr-ranking"></div>
+  </div>
+  <div class="section-head"><h2 data-i18n="pr_detail">Детали региона</h2></div>
+  <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;">
+    <select id="pr-detail-select" onchange="renderPRDetail()" style="min-width:180px;"></select>
+  </div>
+  <div id="pr-detail-content"></div>
+</div>
+
+<!-- ========== PAGE: BUY VS RENT CALC ========== -->
+<div class="page" id="page-calc">
+  <div class="section-head">
+    <h2 data-i18n="c1_title">Купить или снять?</h2>
+    <p data-i18n="c1_sub">Сравните покупку в ипотеку с арендой + инвестициями по данным реального рынка Испании</p>
+  </div>
+
+  <!-- Top bar: region + property type -->
+  <div class="calc-top-bar">
+    <select id="c1-region" onchange="onCalc1RegionChange()" style="min-width:180px;">
+      <option value="" data-i18n="c1_region_placeholder">Выбрать регион...</option>
+    </select>
+    <div class="calc-btn-group" id="c1-proptype-btns">
+      <button class="calc-btn active" onclick="setPropertyType1('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
+      <button class="calc-btn"        onclick="setPropertyType1('new',this)"       data-i18n="c1_new">Новостройка</button>
+    </div>
+    <button class="calc-btn" onclick="resetCalc1ToRegion()" data-i18n="c1_reset">↺ Сброс</button>
+  </div>
+
+  <!-- Presets -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;">
+    <span style="font-size:12px;color:var(--muted);align-self:center;" data-i18n="c1_preset_label">Сценарий:</span>
+    <div class="calc-btn-group" id="c1-preset-btns">
+      <button class="calc-btn active" onclick="applyCalc1Preset('mortgage',this)" data-i18n="c1_preset_mortgage">С ипотекой</button>
+      <button class="calc-btn"        onclick="applyCalc1Preset('cash',this)"     data-i18n="c1_preset_cash">За наличные</button>
+      <button class="calc-btn"        onclick="applyCalc1Preset('noninv',this)"   data-i18n="c1_preset_noninv">Снимаю, не инвестирую</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="calc-summary-cards">
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c1_card_winner">Победитель</div>
+      <div class="calc-card-value" id="c1-winner">—</div>
+      <div class="calc-card-sub"   id="c1-winner-sub">—</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c1_card_parity">Паритет</div>
+      <div class="calc-card-value" id="c1-parity">—</div>
+      <div class="calc-card-sub"   id="c1-parity-sub" data-i18n="c1_card_parity_sub">Лет до точки равенства</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c1_card_roi">ROI на взнос</div>
+      <div class="calc-card-value" id="c1-roi">—</div>
+      <div class="calc-card-sub"   id="c1-roi-sub" data-i18n="c1_card_roi_sub">Годовая доходность на вложенный взнос</div>
+    </div>
+  </div>
+
+  <!-- Chart controls -->
+  <div class="calc-chart-controls">
+    <div class="calc-btn-group" id="c1-mode-btns">
+      <button class="calc-btn active" onclick="setPriceMode1('nominal',this)" data-i18n="c1_nominal">Номинал</button>
+      <button class="calc-btn"        onclick="setPriceMode1('real',this)"    data-i18n="c1_real">Реальные цены</button>
+    </div>
+    <div class="calc-btn-group" id="c1-horizon-btns">
+      <button class="calc-btn"        onclick="setHorizon1(5,this)"  data-i18n="c1_y5">5 лет</button>
+      <button class="calc-btn"        onclick="setHorizon1(10,this)" data-i18n="c1_y10">10 лет</button>
+      <button class="calc-btn active" onclick="setHorizon1(20,this)" data-i18n="c1_y20">20 лет</button>
+      <button class="calc-btn"        onclick="setHorizon1(30,this)" data-i18n="c1_y30">30 лет</button>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="calc-chart-wrap">
+    <canvas id="calcChart"></canvas>
+  </div>
+
+  <!-- Main sliders -->
+  <div class="calc-sliders">
+    <!-- Price -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
+        <span class="slider-value" id="c1v-price">300 000 €</span>
+      </div>
+      <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
+    </div>
+    <!-- Down payment -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
+        <span class="slider-value" id="c1v-down">20%</span>
+      </div>
+      <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-down-amt">= 58 800 €</div>
+    </div>
+    <!-- Mortgage rate -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
+        <span class="slider-value" id="c1v-rate">3.2%</span>
+      </div>
+      <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-rate-pmt">≈ 1 050 €/мес</div>
+    </div>
+    <!-- Rent -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rent">Аренда / мес</span>
+        <span class="slider-value" id="c1v-rent">1 309 €</span>
+      </div>
+      <input type="range" id="c1-rent" min="200" max="6000" step="50" value="1309" oninput="calc1Update()">
+    </div>
+    <!-- Investment return -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
+        <span class="slider-value" id="c1v-inv">7.0%</span>
+      </div>
+      <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
+      <div class="slider-sub" data-i18n="c1_inv_hint">💡 MSCI World ETF ~7% историч.</div>
+    </div>
+    <!-- Empty cell to balance grid -->
+    <div></div>
+  </div>
+
+  <!-- Advanced (collapsible) -->
+  <div class="calc-advanced-toggle" onclick="toggleCalcSection('c1-adv','c1-adv-arrow')">
+    <span class="calc-advanced-arrow" id="c1-adv-arrow">▼</span>
+    <span data-i18n="c1_advanced">Расширенные настройки</span>
+  </div>
+  <div class="calc-advanced-content" id="c1-adv">
+    <!-- Mortgage term -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
+        <span class="slider-value" id="c1v-term">25 лет</span>
+      </div>
+      <input type="range" id="c1-term" min="5" max="30" step="1" value="25" oninput="calc1Update()">
+    </div>
+    <!-- Tax -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_tax">Налог при покупке (ITP / IVA+AJD)</span>
+        <span class="slider-value" id="c1v-tax">7.5%</span>
+      </div>
+      <input type="range" id="c1-tax" min="1" max="15" step="0.5" value="7.5" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-tax-amt">= 22 050 €</div>
+    </div>
+    <!-- Appreciation -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_appr">Рост цены недвижимости / год</span>
+        <span class="slider-value" id="c1v-appr">3.0%</span>
+      </div>
+      <input type="range" id="c1-appr" min="-2" max="10" step="0.5" value="3" oninput="calc1Update()">
+    </div>
+    <!-- Rent growth -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rentg">Рост аренды / год</span>
+        <span class="slider-value" id="c1v-rentg">3.0%</span>
+      </div>
+      <input type="range" id="c1-rentg" min="0" max="8" step="0.5" value="3" oninput="calc1Update()">
+    </div>
+    <!-- Maintenance -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_maint">Содержание + IBI / год</span>
+        <span class="slider-value" id="c1v-maint">1.2%</span>
+      </div>
+      <input type="range" id="c1-maint" min="0.3" max="3" step="0.1" value="1.2" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-maint-amt">= 3 528 €/год</div>
+    </div>
+    <!-- Inflation -->
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_inflation">Инфляция / год</span>
+        <span class="slider-value" id="c1v-inflation">2.5%</span>
+      </div>
+      <input type="range" id="c1-inflation" min="0" max="8" step="0.5" value="2.5" oninput="calc1Update()">
+    </div>
+  </div>
+
+  <!-- Stress test -->
+  <div style="padding:10px 0 6px;font-size:12px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</div>
+  <div class="calc-stress-row" id="c1-stress-btns">
+    <button class="calc-btn"        onclick="setStressTest1('opt',this)"  data-i18n="c1_opt">Оптимистичный</button>
+    <button class="calc-btn active" onclick="setStressTest1('base',this)" data-i18n="c1_base">Базовый ★</button>
+    <button class="calc-btn"        onclick="setStressTest1('pess',this)" data-i18n="c1_pess">Пессимистичный</button>
+  </div>
+
+  <!-- Auto-summary -->
+  <div class="calc-summary-text" id="c1-summary-text">—</div>
+
+  <!-- Share -->
+  <div class="calc-share-row">
+    <button class="btn-share" onclick="shareCalc1()" id="c1-share-btn">
+      <span>🔗</span><span data-i18n="c1_share">Поделиться</span>
+    </button>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="calc-disclaimer" data-i18n="c1_disclaimer">
+    Расчёт носит информационный характер. Реальные расходы зависят от банка, региона и конкретного объекта. Не является финансовой консультацией.
+  </div>
+</div>
+
+<!-- ========== PAGE: RENTAL RETURNS CALCULATOR ========== -->
+<div class="page" id="page-rental">
+  <div class="section-head">
+    <h2 data-i18n="c2_title">Доход от недвижимости</h2>
+    <p data-i18n="c2_sub">4 стратегии на одном графике: живу сам, сдаю, Airbnb и индексный фонд</p>
+  </div>
+
+  <!-- Top bar: region + property type -->
+  <div class="calc-top-bar">
+    <select id="c2-region" onchange="onCalc2RegionChange()" style="min-width:180px;">
+      <option value="" data-i18n="c1_region_placeholder">Выбрать регион...</option>
+    </select>
+    <div class="calc-btn-group" id="c2-proptype-btns">
+      <button class="calc-btn active" onclick="setPropertyType2('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
+      <button class="calc-btn"        onclick="setPropertyType2('new',this)"       data-i18n="c1_new">Новостройка</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="calc-summary-cards" style="grid-template-columns:repeat(4,1fr);">
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c2_card_best">Лучшая стратегия</div>
+      <div class="calc-card-value" id="c2-best">—</div>
+      <div class="calc-card-sub"   id="c2-best-sub">—</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c2_card_cashflow">Cashflow / мес</div>
+      <div class="calc-card-value" id="c2-cashflow">—</div>
+      <div class="calc-card-sub"   id="c2-cashflow-sub" data-i18n="c2_card_cashflow_sub">Средний по аренде (год 1)</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c2_card_beats">Обгоняет индекс</div>
+      <div class="calc-card-value" id="c2-beats">—</div>
+      <div class="calc-card-sub"   id="c2-beats-sub" data-i18n="c2_card_beats_sub">Лет до победы над ETF</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c2_card_roi">ROI / год</div>
+      <div class="calc-card-value" id="c2-roi">—</div>
+      <div class="calc-card-sub"   id="c2-roi-sub" data-i18n="c2_card_roi_sub">Лучшая стратегия, 20 лет</div>
+    </div>
+  </div>
+
+  <!-- Chart controls -->
+  <div class="calc-chart-controls">
+    <div class="calc-btn-group" id="c2-horizon-btns">
+      <button class="calc-btn"        onclick="setHorizon2(5,this)"  data-i18n="c1_y5">5 лет</button>
+      <button class="calc-btn"        onclick="setHorizon2(10,this)" data-i18n="c1_y10">10 лет</button>
+      <button class="calc-btn active" onclick="setHorizon2(20,this)" data-i18n="c1_y20">20 лет</button>
+      <button class="calc-btn"        onclick="setHorizon2(30,this)" data-i18n="c1_y30">30 лет</button>
+    </div>
+    <!-- legend chips -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto;">
+      <span style="font-size:12px;color:#4a90d9;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_live">Живу сам</span>
+      <span style="font-size:12px;color:#c9a84c;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_rent">Сдаю</span>
+      <span style="font-size:12px;color:#e8955a;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_airbnb">Airbnb</span>
+      <span style="font-size:12px;color:#5cb88a;">- -</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_index">Индекс</span>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="calc-chart-wrap" style="height:320px;">
+    <canvas id="rc-cf-chart"></canvas>
+  </div>
+
+  <!-- Main sliders -->
+  <div class="calc-sliders">
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
+        <span class="slider-value" id="c2v-price">300 000 €</span>
+      </div>
+      <input type="range" id="c2-price" min="50000" max="1500000" step="5000" value="294000" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
+        <span class="slider-value" id="c2v-down">20%</span>
+      </div>
+      <input type="range" id="c2-down" min="0" max="100" step="1" value="20" oninput="calcRental()">
+      <div class="slider-sub" id="c2v-down-amt">= 58 800 €</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
+        <span class="slider-value" id="c2v-rate">3.2%</span>
+      </div>
+      <input type="range" id="c2-rate" min="0" max="10" step="0.1" value="3.2" oninput="calcRental()">
+      <div class="slider-sub" id="c2v-rate-pmt">≈ 1 050 €/мес</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_long_rent">Аренда / мес (долгосрочная)</span>
+        <span class="slider-value" id="c2v-long-rent">1 309 €</span>
+      </div>
+      <input type="range" id="c2-long-rent" min="200" max="6000" step="50" value="1309" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_night_rate">Цена ночи (Airbnb)</span>
+        <span class="slider-value" id="c2v-night">90 €</span>
+      </div>
+      <input type="range" id="c2-night" min="20" max="500" step="5" value="90" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_occupancy">Заполняемость Airbnb</span>
+        <span class="slider-value" id="c2v-occ">65%</span>
+      </div>
+      <input type="range" id="c2-occ" min="20" max="95" step="1" value="65" oninput="calcRental()">
+    </div>
+  </div>
+
+  <!-- Advanced (collapsible) -->
+  <div class="calc-advanced-toggle" onclick="toggleCalcSection('c2-adv','c2-adv-arrow')">
+    <span class="calc-advanced-arrow" id="c2-adv-arrow">▼</span>
+    <span data-i18n="c1_advanced">Расширенные настройки</span>
+  </div>
+  <div class="calc-advanced-content" id="c2-adv">
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
+        <span class="slider-value" id="c2v-term">25 лет</span>
+      </div>
+      <input type="range" id="c2-term" min="5" max="30" step="1" value="25" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_tax">Налог при покупке (%)</span>
+        <span class="slider-value" id="c2v-tax">7.5%</span>
+      </div>
+      <input type="range" id="c2-tax" min="1" max="15" step="0.5" value="7.5" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="lbl_vacancy">Простой (vacancy)</span>
+        <span class="slider-value" id="c2v-vacancy">5%</span>
+      </div>
+      <input type="range" id="c2-vacancy" min="0" max="30" step="1" value="5" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="lbl_mgmt">Управляющая компания</span>
+        <span class="slider-value" id="c2v-mgmt">10%</span>
+      </div>
+      <input type="range" id="c2-mgmt" min="0" max="25" step="1" value="10" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_platform">Платформа + уборка (Airbnb)</span>
+        <span class="slider-value" id="c2v-platform">20%</span>
+      </div>
+      <input type="range" id="c2-platform" min="10" max="40" step="1" value="20" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_maint">Содержание + IBI / год</span>
+        <span class="slider-value" id="c2v-maint">1.2%</span>
+      </div>
+      <input type="range" id="c2-maint" min="0.3" max="3" step="0.1" value="1.2" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_appr">Рост цены / год</span>
+        <span class="slider-value" id="c2v-appr">3%</span>
+      </div>
+      <input type="range" id="c2-appr" min="-2" max="10" step="0.5" value="3" oninput="calcRental()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rentg">Рост аренды / год</span>
+        <span class="slider-value" id="c2v-rentg">3%</span>
+      </div>
+      <input type="range" id="c2-rentg" min="0" max="8" step="0.5" value="3" oninput="calcRental()">
+    </div>
+    <div class="slider-row" style="grid-column:1/-1;">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="lbl_tax_res">Налоговый статус</span>
+        <span class="slider-value" id="c2v-tax-status"></span>
+      </div>
+      <select id="c2-tax-status" onchange="calcRental()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+        <option value="resident" data-i18n="tax_resident">Резидент Испании (19%)</option>
+        <option value="eu" selected data-i18n="tax_eu">Резидент ЕС (19%)</option>
+        <option value="noneu" data-i18n="tax_noneu">Нерезидент (24%)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Comparison table -->
+  <div style="margin:24px 0 8px;font-size:13px;color:var(--muted);font-weight:500;" data-i18n="c2_table_title">Сравнение стратегий (чистый капитал, €)</div>
+  <div style="overflow-x:auto;">
+    <table class="comparison-table" id="c2-compare-table">
+      <thead>
+        <tr>
+          <th data-i18n="c2_tbl_strategy">Стратегия</th>
+          <th data-i18n="c2_tbl_y5">Год 5</th>
+          <th data-i18n="c2_tbl_y10">Год 10</th>
+          <th data-i18n="c2_tbl_y20">Год 20</th>
+          <th data-i18n="c2_tbl_roi">ROI/год</th>
+        </tr>
+      </thead>
+      <tbody id="c2-table-body">
+        <tr><td colspan="5" style="color:var(--muted);text-align:center;">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Auto-summary -->
+  <div class="calc-summary-text" id="c2-summary-text">—</div>
+
+  <!-- Disclaimer -->
+  <div class="calc-disclaimer" data-i18n="c2_disclaimer">
+    ⚠ Краткосрочная аренда требует туристической лицензии. В ряде городов (Барселона, Мадрид) новые лицензии фактически не выдаются. Налоговые расчёты носят ориентировочный характер. Не является финансовой консультацией.
+  </div>
+</div>
+
+<!-- ========== PAGE: COMPARE ALL ========== -->
+<div class="page" id="page-compare">
+  <div class="section-head">
+    <h2 data-i18n="compare_title">Сравнить все стратегии</h2>
+    <p data-i18n="compare_sub">Визуализация 5 инвестиционных стратегий за 20 лет</p>
+    <p style="font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5;">
+      Данные: средние цены и аренда по регионам Испании (Q4 2025). Квартира 70 м². Рост недвижимости 3%/год, инвестиций 7%/год. Все стратегии с "покупкой" подразумевают покупку жилья в ипотеку на одинаковых условиях (20/80, 25 лет, 3.2%). Разница только в том, как используется доход от недвижимости!
+    </p>
+  </div>
+
+  <!-- Region selector -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <label style="font-size: 13px; color: var(--muted);">Регион:</label>
+      <select id="cmp-region-select" onchange="renderComparison()" style="min-width: 180px;">
+        <option value="">Выберите регион...</option>
+      </select>
+      <label style="font-size: 13px; color: var(--muted);">Горизонт:</label>
+      <select id="cmp-horizon" onchange="renderComparison()" style="width: 100px;">
+        <option value="20" selected>20 лет</option>
+        <option value="15">15 лет</option>
+        <option value="10">10 лет</option>
+      </select>
+    </div>
+  </div>
+
+
+  <!-- Comparison table -->
+  <div class="card" style="margin-bottom: 24px; padding: 0; overflow-x: auto;">
+    <table class="data-table" style="font-size: 13px;">
+      <thead>
+        <tr>
+          <th style="text-align: left;">Сценарий</th>
+          <th>Год 5</th>
+          <th>Год 10</th>
+          <th>Год 15</th>
+          <th>Год 20</th>
+          <th style="font-weight: bold;">Итого</th>
+        </tr>
+      </thead>
+      <tbody id="cmp-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Chart -->
+  <div class="section-head"><h2 style="margin-bottom: 12px;">График накопления капитала</h2></div>
+  <div class="chart-wrap" style="height: 360px; margin-bottom: 32px;">
+    <canvas id="cmpChart"></canvas>
+  </div>
+
+  <!-- Summary metrics -->
+  <div class="grid-2" style="gap: 16px;">
+    <div class="card">
+      <div style="font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">Выводы</div>
+      <div id="cmp-insights" style="font-size: 13px; line-height: 1.8; color: var(--text);"></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">Справка по активам</div>
+      <div id="cmp-assets-ref" style="font-size: 12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE: FLIP ANALYZER ========== -->
+<div class="page" id="page-flip">
+  <div class="section-head">
+    <h2 data-i18n="flip_title">Флиппинг</h2>
+    <p data-i18n="flip_sub">Калькулятор сделок Fix & Flip с картой регионов</p>
+  </div>
+
+  <!-- БЛОК 1: ВВЕДЕНИЕ -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleCollapsible(this)">
+        <h3 style="margin:0;font-size:16px;" data-i18n="flip_intro_title">Что такое флиппинг?</h3>
+        <span class="collapsible-arrow">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <p style="margin:8px 0 16px 0;font-size:14px;line-height:1.6;" data-i18n="flip_intro_text">
+          Флиппинг = купить дёшево → отремонтировать → продать дороже. Цикл обычно 6–12 месяцев.
+        </p>
+        <p style="margin:8px 0 16px 0;font-size:14px;line-height:1.6;" data-i18n="flip_equation">
+          <strong>Главное уравнение:</strong><br>
+          Прибыль = Цена продажи − Цена покупки − Ремонт − Налоги − Расходы на сделки
+        </p>
+        <p style="margin:8px 0 16px 0;font-size:14px;line-height:1.6;" data-i18n="flip_rule70">
+          <strong>Правило 70% (стандарт в США, работает в Испании):</strong><br>
+          Не плати за объект больше чем: Макс. цена = Цена продажи × 0.70 − Стоимость ремонта
+        </p>
+        
+        <table class="comparison-table" style="margin-top:20px;width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#1a1d23;">
+              <th style="padding:12px;text-align:left;" data-i18n="flip_table_strategy">Стратегия</th>
+              <th style="padding:12px;text-align:center;" data-i18n="flip_table_horizon">Горизонт</th>
+              <th style="padding:12px;text-align:center;" data-i18n="flip_table_income">Доход</th>
+              <th style="padding:12px;text-align:center;" data-i18n="flip_table_risk">Риск</th>
+              <th style="padding:12px;text-align:center;" data-i18n="flip_table_participation">Участие</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:12px;font-weight:500;" data-i18n="flip_strategy_flip">Флиппинг</td>
+              <td style="padding:12px;text-align:center;" data-i18n="flip_horizon_flip">6–12 мес</td>
+              <td style="padding:12px;text-align:center;" data-i18n="flip_income_flip">Разовый</td>
+              <td style="padding:12px;text-align:center;color:#e94b3c;" data-i18n="flip_risk_flip">Высокий</td>
+              <td style="padding:12px;text-align:center;color:#e94b3c;" data-i18n="flip_participation_flip">Активное</td>
+            </tr>
+            <tr style="background:#16181c;">
+              <td style="padding:12px;font-weight:500;" data-i18n="flip_strategy_hold">Buy & Hold</td>
+              <td style="padding:12px;text-align:center;" data-i18n="flip_horizon_hold">10–20 лет</td>
+              <td style="padding:12px;text-align:center;" data-i18n="flip_income_hold">Постоянный</td>
+              <td style="padding:12px;text-align:center;color:#5cb88a;" data-i18n="flip_risk_hold">Средний</td>
+              <td style="padding:12px;text-align:center;color:#5cb88a;" data-i18n="flip_participation_hold">Пассивное</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- БЛОК 2: КАРТА РЕГИОНОВ -->
+  <div class="section-head"><h2 style="margin-bottom:12px;" data-i18n="flip_map_title">Карта регионов</h2></div>
+  <div class="card" style="margin-bottom: 24px;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="mode-btn active" onclick="setFlipMode('growth',this)" data-i18n="flip_mode_growth">Потенциал роста цен</button>
+      <button class="mode-btn" onclick="setFlipMode('secondary_vs_new',this)" data-i18n="flip_mode_secondary">Разница вторичка vs новостройка</button>
+      <button class="mode-btn" onclick="setFlipMode('flip_score',this)" data-i18n="flip_mode_score">Flip Score</button>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:20px;align-items:start;">
+      <div style="position:relative;">
+        <svg id="flip-spain-svg" viewBox="0 0 500 420" style="width:100%;display:block;"></svg>
+        <div id="flip-tooltip" class="tooltip-box" style="display:none;"></div>
+      </div>
+      
+      <div>
+        <div id="flip-info-panel" style="background:#16181c;border-radius:10px;padding:14px 16px;margin-bottom:14px;min-height:120px;">
+          <p style="font-size:13px;color:#8a8f9e;margin:0;" data-i18n="flip_map_click">Нажмите на регион на карте</p>
+        </div>
+        <div id="flip-legend-box" style="border-radius:8px;overflow:hidden;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- БЛОК 3: КАЛЬКУЛЯТОР СДЕЛКИ -->
+  <div class="section-head"><h2 style="margin-bottom:12px;" data-i18n="flip_calc_title">Калькулятор сделки</h2></div>
+  
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="tab-buttons" style="margin-bottom:20px;">
+      <button class="tab-btn active" onclick="switchFlipTab('calc',this)" data-i18n="flip_tab_calc">Считаю сделку</button>
+      <button class="tab-btn" onclick="switchFlipTab('find_price',this)" data-i18n="flip_tab_find">Найду цену покупки</button>
+    </div>
+    
+    <div id="flip-calc-content">
+      <!-- Содержимое вкладок будет добавлено JavaScript -->
+    </div>
+  </div>
+
+  <!-- БЛОК 4: СРАВНЕНИЕ СТРАТЕГИЙ -->
+  <div class="section-head"><h2 style="margin-bottom:12px;" data-i18n="flip_compare_title">А стоит ли вообще флиппить?</h2></div>
+  <div class="card">
+    <p style="margin:0 0 20px 0;font-size:14px;color:#8a8f9e;" data-i18n="flip_compare_sub">Сравниваем три пути для одного и того же капитала за 12 месяцев</p>
+    
+    <div id="flip-comparison-table">
+      <!-- Таблица сравнения будет добавлена JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE: GUIDE ========== -->
+<div class="page" id="page-guide">
+  <div class="section-head">
+    <h2 data-i18n="guide_title">Гид покупателя</h2>
+    <p data-i18n="guide_sub">Пошаговый чеклист покупки недвижимости в Испании</p>
+  </div>
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <div style="font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;" data-i18n="costs_secondary">Расходы при покупке вторички</div>
+      <div id="costs-table"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;" data-i18n="costs_new">Расходы при покупке новостройки</div>
+      <div id="costs-table-new"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:24px;">
+    <div style="font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;" data-i18n="process_title">Пошаговый процесс покупки</div>
+    <ul class="checklist" id="checklist"></ul>
+  </div>
+
+  <!-- Рекламный баннер -->
+  <div class="banner-slot" style="height:90px;display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--muted);">
+    [Рекламное место — партнёрский блок 728×90px]
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-head">
+    <h2 data-i18n="itp_by_region">ITP по регионам</h2>
+    <p data-i18n="itp_by_region_sub">Ставки налога на передачу права собственности (вторичный рынок)</p>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="data-table">
+      <thead><tr>
+        <th data-i18n="col_region">Регион</th>
+        <th data-i18n="col_itp">ITP</th>
+        <th data-i18n="col_note">Примечание</th>
+      </tr></thead>
+      <tbody id="itp-table"></tbody>
+    </table>
+  </div>
+
+  <!-- BLOCK 7: Renovation reference -->
+  <div class="divider"></div>
+  <div class="section-head">
+    <h2 data-i18n="reno_costs_ref">Сметы ремонта</h2>
+    <p data-i18n="reno_costs_sub">Ориентировочная стоимость ремонта в €/м² и общая смета для квартиры 70м²</p>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="data-table" style="font-size: 13px;">
+      <thead><tr>
+        <th data-i18n="reno_type">Тип</th>
+        <th data-i18n="col_description">Описание</th>
+        <th style="text-align: right;">€/м²</th>
+        <th style="text-align: right;">70м² смета</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:500;color:var(--accent);">💡 Лёгкий</td>
+          <td style="color:var(--muted);font-size:12px;">Косметика: краска, полы, сан техника</td>
+          <td style="text-align: right;">€400–600</td>
+          <td style="text-align: right; font-weight: 500;">€28–42k</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;color:var(--accent);">🔧 Стандарт</td>
+          <td style="color:var(--muted);font-size:12px;">Кухня + ванная. Замена инженерных сетей</td>
+          <td style="text-align: right;">€800–1200</td>
+          <td style="text-align: right; font-weight: 500;">€56–84k</td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;color:var(--accent);">✨ Премиум</td>
+          <td style="color:var(--muted);font-size:12px;">Все помещения. Отделка, климат, умный дом</td>
+          <td style="text-align: right;">€1500–2000</td>
+          <td style="text-align: right; font-weight: 500;">€105–140k</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Email subscription section -->
+<div style="background: var(--bg2); padding: 24px; margin-top: 40px; text-align: center; border-top: 1px solid var(--border);">
+  <div style="max-width: 400px; margin: 0 auto;">
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;" data-i18n="subscribe_title">Подписаться на обновления</div>
+    <div style="font-size: 12px; color: var(--muted); margin-bottom: 16px;" data-i18n="subscribe_sub">Уведомления о новых расчётах и анализах по Испании</div>
+    <div style="display: flex; gap: 8px;">
+      <input type="email" id="email-subscribe" placeholder="email@example.com" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 13px;">
+      <button onclick="subscribeEmail()" style="padding: 8px 16px; background: var(--accent); color: #000; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;" data-i18n="subscribe_btn">Подписаться</button>
+    </div>
+    <div id="email-message" style="font-size: 11px; color: var(--muted); margin-top: 8px;"><!-- поле для ответа --></div>
+  </div>
+</div>
+
+<footer id="footer">
+  CasaData · Данные: <span id="data-sources">INE, Idealista, Colegio de Registradores</span> · <span id="data-updated">Q4 2025</span><br>
+  <span style="font-size:11px;" data-i18n="footer_note">Информация носит аналитический характер и не является финансовой консультацией</span>
+</footer>
+
+<!-- ========== SCRIPTS (порядок важен!) ========== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="js/data.js?v=2"></script>
+<script src="js/i18n.js?v=9"></script>
+<script src="js/rental-calc.js?v=4"></script>
+<script src="js/compare-all.js?v=2"></script>
+<script src="js/flip-analyzer.js?v=5"></script>
+<script src="js/app.js?v=11"></script>
+
+</body>
+</html>

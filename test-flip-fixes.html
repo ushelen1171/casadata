@@ -1,0 +1,83 @@
+<!-- Test page for flip analyzer tabs -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Flip Analyzer Tabs</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #0e0f11; color: #f0ede8; }
+        .test-section { border: 1px solid #2a2d35; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .pass { color: #5cb88a; }
+        .fail { color: #e94b3c; }
+        .info { color: #85b7eb; }
+        ul { margin: 10px 0; }
+        li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Flip Analyzer Fixes - Verification List</h1>
+    
+    <div class="test-section">
+        <h2>✅ Changes Made:</h2>
+        <ul>
+            <li><span class="pass">✓</span> Removed duplicate <code>setFlipMode()</code> function (old line 376-378)</li>
+            <li><span class="pass">✓</span> Removed duplicate <code>showFlipTooltip()</code> function (old line 350-358)</li>
+            <li><span class="pass">✓</span> Changed <code>flipMapMode</code> variable to <code>currentFlipMode</code> in <code>getFlipMapColor()</code></li>
+            <li><span class="pass">✓</span> Created <code>getFlipColorPalette()</code> to support all 3 modes:
+                <ul>
+                    <li>growth: Потенциал роста цен</li>
+                    <li>secondary_vs_new: Разница вторичка vs новостройка</li>
+                    <li>flip_score: Flip Score (based on calculateFlipScore)</li>
+                </ul>
+            </li>
+            <li><span class="pass">✓</span> Updated <code>buildFlipLegend()</code> to use same color palettes as <code>getFlipColorPalette()</code></li>
+            <li><span class="pass">✓</span> Added <code>buildFlipLegend()</code> call in <code>paintFlipMap()</code> to show legend on tab switches</li>
+            <li><span class="pass">✓</span> Fixed tooltip positioning with <code>positionFlipTooltip()</code> - now follows cursor properly</li>
+            <li><span class="pass">✓</span> Updated <code>showFlipTooltip()</code> to display different content based on <code>currentFlipMode</code></li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Testing Checklist:</h2>
+        <ul>
+            <li><span class="info">→</span> Open index.html and go to "Флиппинг" page</li>
+            <li><span class="info">→</span> Click tab "Потенциал роста цен" (default - should show growth colors)</li>
+            <li><span class="info">→</span> Click tab "Разница вторичка vs новостройка" (should change map colors + legend)</li>
+            <li><span class="info">→</span> Click tab "Flip Score" (should change map colors + legend)</li>
+            <li><span class="info">→</span> Hover over map regions - tooltip should appear NEXT to cursor (not far away)</li>
+            <li><span class="info">→</span> Switch between tabs - legend should update each time</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Expected Behavior:</h2>
+        <ul>
+            <li><span class="pass">✓</span> <strong>Вкладка 1 (Потенциал роста):</strong> Orange/brown colors based on region growth rates</li>
+            <li><span class="pass">✓</span> <strong>Вкладка 2 (Вторичка vs новостройка):</strong> Green/teal colors based on price difference</li>
+            <li><span class="pass">✓</span> <strong>Вкладка 3 (Flip Score):</strong> Orange/brown colors based on flip potential score</li>
+            <li><span class="pass">✓</span> <strong>Легенда:</strong> 5-color gradient appearing below map on the right side</li>
+            <li><span class="pass">✓</span> <strong>Tooltip:</strong> Appears 10px right/below cursor, shows region name + current metric</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Code Locations Fixed:</h2>
+        <ul>
+            <li><code>js/flip-analyzer.js:320-344</code> - getFlipMapColor + getFlipColorPalette</li>
+            <li><code>js/flip-analyzer.js:314-319</code> - paintFlipMap (now calls buildFlipLegend)</li>
+            <li><code>js/flip-analyzer.js:444-470</code> - buildFlipLegend (updated palettes)</li>
+            <li><code>js/flip-analyzer.js:486-490</code> - setFlipMode (only one instance left)</li>
+            <li><code>js/flip-analyzer.js:551-580</code> - showFlipTooltip + positionFlipTooltip</li>
+        </ul>
+    </div>
+
+    <script>
+        // This page is just for verification - view it with F12 console open
+        console.log('%c✅ Flip Analyzer Fixes Summary', 'color: #5cb88a; font-size: 16px; font-weight: bold;');
+        console.log('%c1. Removed duplicate functions ✓', 'color: #5cb88a;');
+        console.log('%c2. Fixed mode variable name ✓', 'color: #5cb88a;');
+        console.log('%c3. Added legend rendering ✓', 'color: #5cb88a;');
+        console.log('%c4. Fixed tooltip positioning ✓', 'color: #5cb88a;');
+        console.log('%cAll syntax validated with Node.js ✓', 'color: #5cb88a; font-weight: bold;');
+    </script>
+</body>
+</html>

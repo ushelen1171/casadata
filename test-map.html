@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Map Rendering</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        #test-output { border: 1px solid #ccc; padding: 10px; height: 400px; overflow: auto; background: #f5f5f5; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .info { color: blue; }
+        svg { border: 1px solid #999; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test Map Label Rendering</h1>
+    
+    <div id="test-output"></div>
+    
+    <h2>Main Market Map</h2>
+    <svg id="map-svg" width="700" height="550" style="border: 2px solid blue;"></svg>
+    
+    <h2>Flip Analyzer Map</h2>
+    <svg id="flip-spain-svg" width="700" height="550" style="border: 2px solid red;"></svg>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        const output = document.getElementById('test-output');
+        let testsPassed = 0, testsFailed = 0;
+        
+        function log(msg, type = 'info') {
+            console.log(msg);
+            const el = document.createElement('div');
+            el.textContent = msg;
+            el.className = type;
+            output.appendChild(el);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function test(name, condition) {
+            if (condition) {
+                log(`✓ ${name}`, 'pass');
+                testsPassed++;
+            } else {
+                log(`✗ ${name}`, 'fail');
+                testsFailed++;
+            }
+        }
+        
+        // Функции из app.js для тестирования
+        const REGION_LABELS = {
+          'galicia': 'Galicia', 'asturias': 'Asturias', 'cantabria': 'Cantabria', 'pais_vasco': 'País Vasco',
+          'navarra': 'Navarra', 'la_rioja': 'La Rioja', 'aragon': 'Aragón', 'cataluna': 'Cataluña',
+          'madrid': 'Madrid', 'castilla_leon': 'Castilla y León', 'clm': 'Castilla-La Mancha',
+          'extremadura': 'Extremadura', 'valencia': 'Valencia', 'murcia': 'Murcia', 'andalucia': 'Andalucía',
+          'baleares': 'Islas Baleares', 'canarias': 'Canarias'
+        };
+        
+        const PROVINCE_TO_REGION = {
+          'Álava': 'pais_vasco', 'Gipuzkoa': 'pais_vasco', 'Bizkaia': 'pais_vasco',
+          'Barcelona': 'cataluna', 'Gerona': 'cataluna', 'Lérida': 'cataluna', 'Tarragona': 'cataluna',
+          'Almería': 'andalucia', 'Cádiz': 'andalucia', 'Córdoba': 'andalucia', 'Granada': 'andalucia',
+          'Huelva': 'andalucia', 'Jaén': 'andalucia', 'Málaga': 'andalucia', 'Sevilla': 'andalucia',
+          'Alicante': 'valencia', 'Castellón': 'valencia', 'Valencia': 'valencia',
+          'Albacete': 'clm', 'Ciudad Real': 'clm', 'Cuenca': 'clm', 'Guadalajara': 'clm', 'Toledo': 'clm',
+          'Ávila': 'castilla_leon', 'Burgos': 'castilla_leon', 'León': 'castilla_leon', 'Palencia': 'castilla_leon',
+          'Salamanca': 'castilla_leon', 'Segovia': 'castilla_leon', 'Soria': 'castilla_leon',
+          'Valladolid': 'castilla_leon', 'Zamora': 'castilla_leon',
+          'Badajoz': 'extremadura', 'Cáceres': 'extremadura',
+          'La Coruña': 'galicia', 'Lugo': 'galicia', 'Orense': 'galicia', 'Pontevedra': 'galicia',
+          'Zaragoza': 'aragon', 'Huesca': 'aragon', 'Teruel': 'aragon',
+          'Ceuta': null, 'Melilla': null,
+          'Asturias': 'asturias', 'Baleares': 'baleares', 'Cantabria': 'cantabria',
+          'La Rioja': 'la_rioja', 'Las Palmas': 'canarias', 'Madrid': 'madrid',
+          'Murcia': 'murcia', 'Navarra': 'navarra', 'Santa Cruz de Tenerife': 'canarias',
+        };
+        
+        log('=== STARTING MAP TESTS ===');
+        test('REGION_LABELS has 17 regions', Object.keys(REGION_LABELS).length === 17);
+        
+        // Проверить что все регионы имеют провинции
+        const regionFeatures = {};
+        Object.entries(PROVINCE_TO_REGION).forEach(([province, regionId]) => {
+          if (regionId === null) return;
+          if (!regionFeatures[regionId]) regionFeatures[regionId] = [];
+          regionFeatures[regionId].push(province);
+        });
+        
+        let allRegionsHaveProvinces = true;
+        Object.keys(REGION_LABELS).forEach(regionId => {
+          if (!regionFeatures[regionId] || regionFeatures[regionId].length === 0) {
+            allRegionsHaveProvinces = false;
+            log(`  Missing provinces for: ${REGION_LABELS[regionId]} (${regionId})`, 'fail');
+          }
+        });
+        test('All 17 regions have provinces', allRegionsHaveProvinces);
+        
+        // Загрузить карту и проверить
+        log('Loading TopoJSON...');
+        fetch('https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/esp.topo.json')
+          .then(r => r.json())
+          .then(topoData => {
+            log('TopoJSON loaded successfully', 'pass');
+            
+            const features = topojson.feature(topoData, topoData.objects.esp).features;
+            test('TopoJSON has 52+ features', features.length >= 52);
+            
+            // Проверить что все провинции из TopoJSON маппированы
+            const topoProvinces = features.map(f => f.properties?.name).filter(Boolean);
+            let unmappedCount = 0;
+            topoProvinces.forEach(prov => {
+              if (!PROVINCE_TO_REGION.hasOwnProperty(prov)) {
+                console.warn(`Unmapped province: ${prov}`);
+                unmappedCount++;
+              }
+            });
+            test(`All TopoJSON provinces are mapped (${unmappedCount} unmapped)`, unmappedCount === 0);
+            
+            // Проверить viewBox
+            const mapSvg = document.getElementById('map-svg');
+            const vb = mapSvg.getAttribute('viewBox');
+            log(`Market SVG viewBox: ${vb}`, 'info');
+            test('Market SVG viewBox is 700x550', vb === '0 0 700 550');
+            
+            const flipSvg = document.getElementById('flip-spain-svg');
+            const flipVb = flipSvg.getAttribute('viewBox');
+            log(`Flip SVG viewBox: ${flipVb}`, 'info');
+            test('Flip SVG viewBox is 700x550', flipVb === '0 0 700 550');
+            
+            log('');
+            log(`=== SUMMARY ===`);
+            log(`Passed: ${testsPassed}`, 'pass');
+            log(`Failed: ${testsFailed}`, testsFailed > 0 ? 'fail' : 'pass');
+          })
+          .catch(e => log(`Error loading TopoJSON: ${e}`, 'fail'));
+    </script>
+</body>
+</html>

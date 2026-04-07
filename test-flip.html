@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip Analyzer Test</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+button { margin: 5px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Flip Analyzer Test</h1>
+<button onclick="testInit()">Test initFlipAnalyzer()</button>
+<button onclick="testCalc()">Test calcFlipDeal()</button>
+<div id="test-output"></div>
+
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/flip-analyzer.js"></script>
+
+<script>
+function testInit() {
+  document.getElementById('test-output').innerHTML = 'Testing initFlipAnalyzer...<br>';
+  try {
+    initFlipAnalyzer();
+    document.getElementById('test-output').innerHTML += '✓ initFlipAnalyzer() completed<br>';
+  } catch (e) {
+    document.getElementById('test-output').innerHTML += '✗ Error: ' + e.message + '<br>';
+  }
+}
+
+function testCalc() {
+  document.getElementById('test-output').innerHTML = 'Testing calcFlipDeal...<br>';
+  try {
+    // Create mock elements
+    const mockElements = [
+      'flip-buy-price', 'flip-sell-price', 'flip-renovation', 'flip-itp-pct',
+      'flip-notary-buy', 'flip-agent-buy', 'flip-other-costs'
+    ];
+
+    mockElements.forEach(id => {
+      const el = document.createElement('input');
+      el.id = id;
+      el.value = '10000';
+      document.body.appendChild(el);
+    });
+
+    // Add display elements
+    const displayElements = [
+      'flip-profit-display', 'flip-roi-display', 'flip-payback-display', 'flip-max-buy-display'
+    ];
+
+    displayElements.forEach(id => {
+      const el = document.createElement('div');
+      el.id = id;
+      document.body.appendChild(el);
+    });
+
+    calcFlipDeal();
+    document.getElementById('test-output').innerHTML += '✓ calcFlipDeal() completed<br>';
+    document.getElementById('test-output').innerHTML += 'Profit: ' + document.getElementById('flip-profit-display').textContent + '<br>';
+  } catch (e) {
+    document.getElementById('test-output').innerHTML += '✗ Error: ' + e.message + '<br>';
+  }
+}
+</script>
+</body>
+</html>
