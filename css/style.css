@@ -554,24 +554,18 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 
 /* ---- NAV CALC TABS ---- */
 .nav-calc-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 4px 13px;
-  line-height: 1.2;
-  border: 1px solid rgba(201,168,76,0.3);
-  background: rgba(201,168,76,0.04);
+  border: 1px solid rgba(201,168,76,0.5) !important;
+  border-radius: 6px;
+  color: var(--accent) !important;
+  padding: 6px 13px;
+  font-weight: 500;
 }
-.nav-calc-btn:hover { background: rgba(201,168,76,0.10) !important; }
-.nav-calc-btn.active { background: rgba(201,168,76,0.16) !important; border-color: var(--accent); }
-.nav-calc-sub {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 400;
-  letter-spacing: 0.02em;
+.nav-calc-btn:hover { background: rgba(201,168,76,0.08) !important; }
+.nav-calc-btn.active {
+  background: rgba(201,168,76,0.12) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent2) !important;
 }
-.nav-calc-btn.active .nav-calc-sub { color: rgba(201,168,76,0.7); }
 
 /* ---- CHART SUBTITLE ---- */
 .chart-subtitle {
