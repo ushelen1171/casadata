@@ -215,7 +215,7 @@ const TRANSLATIONS = {
     c2_tbl_y5:         'Год 5',
     c2_tbl_y10:        'Год 10',
     c2_tbl_y20:        'Год 20',
-    c2_tbl_roi:        'ROI/год',
+    c2_tbl_roi:        'Доходность/год',
     c2_sum_best:       'Лучшая стратегия за',
     c2_sum_rent_cf:    'Денежный поток от долгосрочной аренды (год 1):',
     c2_sum_airbnb_cf:  'Денежный поток Airbnb (год 1):',
@@ -225,6 +225,25 @@ const TRANSLATIONS = {
     c2_months_of:      'мес. из',
     c2_tax_zero_note:  'налог IRPF в эти месяцы = 0 €. Вычеты (амортизация строит. части 1.5% + проценты по ипотеке + IBI + содержание) перекрывают доход.',
     c2_disclaimer:     '⚠ Краткосрочная аренда требует туристической лицензии. В ряде городов (Барселона, Мадрид) новые лицензии фактически не выдаются. Не является финансовой консультацией.',
+    c2_chart1_sub:     'График: чистый капитал по стратегиям, начиная с первоначального взноса + налог при покупке',
+    c2_chart2_sub:     'Помесячный денежный поток (зелёный = плюс, красный = минус) и накопленный CF (жёлтая линия)',
+    c2_tab_live:       'Живу сам',
+    c2_tab_rent:       'Покупаю и сдаю',
+    c2_tab_airbnb:     'Посуточно',
+    c2_ann_cf_covers:  'аренда покрывает ипотеку',
+    c2_ann_recouped:   'отбили все вложения',
+    c2_monthly_cf_label: 'Денежный поток / мес',
+    c2_cum_cf_label:   'Накопленный CF',
+    c2_mini_paid_label:      'Доплачено всего',
+    c2_mini_breakeven_label: 'CF выходит в плюс',
+    c2_mini_total_label:     'Итого CF за период',
+    c2_no_breakeven:   'CF не выходит в плюс за указанный период',
+    c2_rc_cf_label:    'Денежный поток / мес',
+    c2_rc_yield_label: 'Чистая доходность',
+    c2_rc_coc_label:   'Доходность на вложенные',
+    c2_rc_cf_tip:      'Средний чистый CF в год 1: аренда − ипотека − расходы',
+    c2_rc_yield_tip:   'Чистый годовой доход от аренды / цена квартиры × 100%',
+    c2_rc_coc_tip:     'CF/мес × 12 / (взнос + налог при покупке) × 100%',
 
     // RENTAL CALCULATOR
     rental_title:  'Калькулятор аренды',
@@ -507,6 +526,25 @@ const TRANSLATIONS = {
     c2_months_of:'months out of',
     c2_tax_zero_note:'IRPF tax = 0 € in those months. Deductions (construction depreciation 1.5% + mortgage interest + IBI + maintenance) exceed income.',
     c2_disclaimer:'⚠ Short-term rental requires a tourist licence. New licences are effectively unavailable in Barcelona and Madrid. Not financial advice.',
+    c2_chart1_sub:     'Chart: net wealth by strategy, starting from down payment + purchase tax',
+    c2_chart2_sub:     'Monthly cashflow (green = positive, red = negative) and cumulative CF (yellow line)',
+    c2_tab_live:       'Live there',
+    c2_tab_rent:       'Buy & rent out',
+    c2_tab_airbnb:     'Short-term rental',
+    c2_ann_cf_covers:  'rent covers mortgage',
+    c2_ann_recouped:   'all costs recouped',
+    c2_monthly_cf_label: 'Cashflow / month',
+    c2_cum_cf_label:   'Cumulative CF',
+    c2_mini_paid_label:      'Total paid in',
+    c2_mini_breakeven_label: 'CF turns positive',
+    c2_mini_total_label:     'Total CF over period',
+    c2_no_breakeven:   'CF does not turn positive within the selected period',
+    c2_rc_cf_label:    'Cashflow / month',
+    c2_rc_yield_label: 'Net yield',
+    c2_rc_coc_label:   'Cash-on-cash return',
+    c2_rc_cf_tip:      'Average net CF in year 1: rent − mortgage − expenses',
+    c2_rc_yield_tip:   'Annual net rental income / property price × 100%',
+    c2_rc_coc_tip:     'CF/mo × 12 / (down payment + purchase tax) × 100%',
 
     rental_title:'Rental Calculator',
     rental_sub:'Three strategies: live yourself, buy and rent out, or short-term rental (Airbnb)',
@@ -762,6 +800,25 @@ const TRANSLATIONS = {
     c2_months_of:'meses de',
     c2_tax_zero_note:'IRPF = 0 € esos meses. Las deducciones (amortización 1,5% + intereses hipotecarios + IBI + mantenimiento) superan los ingresos.',
     c2_disclaimer:'⚠ El alquiler turístico requiere licencia. En Barcelona y Madrid es prácticamente imposible obtenerla. No es asesoramiento financiero.',
+    c2_chart1_sub:     'Gráfico: patrimonio neto por estrategia, desde la entrada + impuesto de compra',
+    c2_chart2_sub:     'Flujo de caja mensual (verde = positivo, rojo = negativo) y CF acumulado (línea amarilla)',
+    c2_tab_live:       'Vivo allí',
+    c2_tab_rent:       'Compro y alquilo',
+    c2_tab_airbnb:     'Alquiler vacacional',
+    c2_ann_cf_covers:  'el alquiler cubre la hipoteca',
+    c2_ann_recouped:   'inversión recuperada',
+    c2_monthly_cf_label: 'Flujo de caja / mes',
+    c2_cum_cf_label:   'CF acumulado',
+    c2_mini_paid_label:      'Total aportado',
+    c2_mini_breakeven_label: 'CF se vuelve positivo',
+    c2_mini_total_label:     'CF total del período',
+    c2_no_breakeven:   'El CF no se vuelve positivo en el período seleccionado',
+    c2_rc_cf_label:    'Flujo de caja / mes',
+    c2_rc_yield_label: 'Rentabilidad neta',
+    c2_rc_coc_label:   'Rentabilidad sobre lo invertido',
+    c2_rc_cf_tip:      'CF neto medio en año 1: alquiler − hipoteca − gastos',
+    c2_rc_yield_tip:   'Ingresos netos anuales de alquiler / precio del inmueble × 100%',
+    c2_rc_coc_tip:     'CF/mes × 12 / (entrada + impuesto de compra) × 100%',
 
     rental_title:'Calculadora de Alquiler',
     rental_sub:'Tres estrategias: vivir allí, comprar y alquilar, o alquiler vacacional (Airbnb)',
@@ -924,6 +981,10 @@ function setLang(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     el.innerHTML = t(key);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    el.title = t(key);
   });
   document.documentElement.lang = lang;
   // re-render dynamic content

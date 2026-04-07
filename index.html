@@ -488,6 +488,62 @@
   <div class="calc-chart-wrap" style="height:320px;">
     <canvas id="rc-cf-chart"></canvas>
   </div>
+  <p class="chart-subtitle" data-i18n="c2_chart1_sub">График: чистый капитал по стратегиям, начиная с первоначального взноса + налог</p>
+
+  <!-- Strategy tabs for cashflow chart -->
+  <div class="calc-chart-controls" style="margin-top:8px;">
+    <div class="calc-btn-group" id="c2-strategy-btns">
+      <button class="calc-btn" onclick="setStrategy2('live',this)" data-i18n="c2_tab_live">Живу сам</button>
+      <button class="calc-btn active" onclick="setStrategy2('rent',this)" data-i18n="c2_tab_rent">Покупаю и сдаю</button>
+      <button class="calc-btn" onclick="setStrategy2('airbnb',this)" data-i18n="c2_tab_airbnb">Посуточно</button>
+    </div>
+  </div>
+
+  <!-- CF section: visible for rent/airbnb strategies -->
+  <div id="c2-cf-section" style="display:none;">
+    <div class="calc-summary-cards" style="grid-template-columns:repeat(3,1fr);margin-top:16px;margin-bottom:8px;">
+      <div class="calc-card">
+        <div class="calc-card-label" data-i18n="c2_mini_paid_label">Доплачено всего</div>
+        <div class="calc-card-value" id="c2-mini-paid">—</div>
+      </div>
+      <div class="calc-card">
+        <div class="calc-card-label" data-i18n="c2_mini_breakeven_label">CF выходит в плюс</div>
+        <div class="calc-card-value" id="c2-mini-breakeven">—</div>
+      </div>
+      <div class="calc-card">
+        <div class="calc-card-label" data-i18n="c2_mini_total_label">Итого CF за период</div>
+        <div class="calc-card-value" id="c2-mini-total">—</div>
+      </div>
+    </div>
+    <p class="chart-subtitle" style="margin-top:4px;" data-i18n="c2_chart2_sub">Помесячный денежный поток и накопленный CF</p>
+    <div class="calc-chart-wrap" style="height:280px;margin-top:4px;">
+      <canvas id="rc-cashflow-chart"></canvas>
+    </div>
+    <p id="c2-no-breakeven" style="display:none;font-size:12px;color:var(--muted);text-align:center;margin-top:6px;" data-i18n="c2_no_breakeven">CF не выходит в плюс за указанный период</p>
+    <div class="calc-summary-cards" style="grid-template-columns:repeat(3,1fr);margin-top:12px;margin-bottom:0;">
+      <div class="calc-card">
+        <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
+          <span data-i18n="c2_rc_cf_label">Денежный поток / мес</span>
+          <span class="info-icon" data-i18n-title="c2_rc_cf_tip" title="Средний чистый CF в год 1: аренда − ипотека − расходы">ⓘ</span>
+        </div>
+        <div class="calc-card-value" id="c2-rc-cf">—</div>
+      </div>
+      <div class="calc-card">
+        <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
+          <span data-i18n="c2_rc_yield_label">Чистая доходность</span>
+          <span class="info-icon" data-i18n-title="c2_rc_yield_tip" title="Чистый годовой доход от аренды / цена × 100%">ⓘ</span>
+        </div>
+        <div class="calc-card-value" id="c2-rc-yield">—</div>
+      </div>
+      <div class="calc-card">
+        <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
+          <span data-i18n="c2_rc_coc_label">Доходность на вложенные</span>
+          <span class="info-icon" data-i18n-title="c2_rc_coc_tip" title="CF/мес × 12 / (взнос + налог при покупке) × 100%">ⓘ</span>
+        </div>
+        <div class="calc-card-value" id="c2-rc-coc">—</div>
+      </div>
+    </div>
+  </div>
 
   <!-- Main sliders -->
   <div class="calc-sliders">

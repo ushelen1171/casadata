@@ -613,6 +613,14 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   color: var(--accent);
   font-family: var(--font-display);
 }
+.info-icon {
+  font-size: 11px;
+  color: var(--muted);
+  cursor: help;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.info-icon:hover { opacity: 1; }
 .calc-card-sub {
   font-size: 12px;
   color: var(--muted);
