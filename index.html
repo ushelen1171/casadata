@@ -255,22 +255,72 @@
     </div>
   </div>
 
-  <!-- Summary cards -->
-  <div class="calc-summary-cards">
-    <div class="calc-card">
-      <div class="calc-card-label" data-i18n="c1_card_winner">Победитель</div>
-      <div class="calc-card-value" id="c1-winner">—</div>
-      <div class="calc-card-sub"   id="c1-winner-sub">—</div>
+  <!-- Two-column layout: sliders left (40%) + result cards right (60%) -->
+  <div class="calc-two-col">
+    <!-- Left: main parameter sliders -->
+    <div class="calc-sliders" style="grid-template-columns:1fr;margin-bottom:0;">
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
+          <span class="slider-value" id="c1v-price">300 000 €</span>
+        </div>
+        <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
+          <span class="slider-value" id="c1v-down">20%</span>
+        </div>
+        <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
+        <div class="slider-sub" id="c1v-down-amt">= 58 800 €</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
+          <span class="slider-value" id="c1v-rate">3.2%</span>
+        </div>
+        <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
+        <div class="slider-sub" id="c1v-rate-pmt">≈ 1 050 €/мес</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-label" data-i18n="c1_rent">Аренда / мес</span>
+          <span class="slider-value" id="c1v-rent">1 309 €</span>
+        </div>
+        <input type="range" id="c1-rent" min="200" max="6000" step="50" value="1309" oninput="calc1Update()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
+          <span class="slider-value" id="c1v-inv">7.0%</span>
+        </div>
+        <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
+        <div class="slider-sub" data-i18n="c1_inv_hint">💡 MSCI World ETF ~7% историч.</div>
+      </div>
     </div>
-    <div class="calc-card">
-      <div class="calc-card-label" data-i18n="c1_card_parity">Паритет</div>
-      <div class="calc-card-value" id="c1-parity">—</div>
-      <div class="calc-card-sub"   id="c1-parity-sub" data-i18n="c1_card_parity_sub">Лет до точки равенства</div>
-    </div>
-    <div class="calc-card">
-      <div class="calc-card-label" data-i18n="c1_card_roi">ROI на взнос</div>
-      <div class="calc-card-value" id="c1-roi">—</div>
-      <div class="calc-card-sub"   id="c1-roi-sub" data-i18n="c1_card_roi_sub">Годовая доходность на вложенный взнос</div>
+
+    <!-- Right: result cards stacked vertically -->
+    <div>
+      <div class="calc-summary-cards" style="grid-template-columns:1fr;gap:10px;margin-bottom:0;">
+        <div class="calc-card">
+          <div class="calc-card-label" data-i18n="c1_card_winner">Победитель</div>
+          <div class="calc-card-value" id="c1-winner">—</div>
+          <div class="calc-card-sub"   id="c1-winner-sub">—</div>
+        </div>
+        <div class="calc-card">
+          <div class="calc-card-label" data-i18n="c1_card_parity">Паритет</div>
+          <div class="calc-card-value" id="c1-parity">—</div>
+          <div class="calc-card-sub"   id="c1-parity-sub" data-i18n="c1_card_parity_sub">Лет до точки равенства</div>
+        </div>
+        <div class="calc-card">
+          <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
+            <span data-i18n="c1_card_roi">Доходность на вложенные</span>
+            <span class="info-icon" id="c1-roi-tip-icon" title="">ⓘ</span>
+          </div>
+          <div class="calc-card-value" id="c1-roi">—</div>
+          <div class="calc-card-sub"   id="c1-roi-sub" data-i18n="c1_card_roi_sub">Годовая доходность на вложенный взнос</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -288,60 +338,12 @@
     </div>
   </div>
 
-  <!-- Chart -->
+  <!-- Chart title + chart -->
+  <div class="calc-chart-title" id="c1-chart-title">—</div>
   <div class="calc-chart-wrap">
     <canvas id="calcChart"></canvas>
   </div>
   <p class="chart-subtitle" id="c1-chart-sub" data-i18n="c1_chart_sub">График стартует с суммы вашего первоначального взноса. Тот кто снимает квартиру вкладывает эту же сумму в индексный фонд с первого дня.</p>
-
-  <!-- Main sliders -->
-  <div class="calc-sliders">
-    <!-- Price -->
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
-        <span class="slider-value" id="c1v-price">300 000 €</span>
-      </div>
-      <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
-    </div>
-    <!-- Down payment -->
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
-        <span class="slider-value" id="c1v-down">20%</span>
-      </div>
-      <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
-      <div class="slider-sub" id="c1v-down-amt">= 58 800 €</div>
-    </div>
-    <!-- Mortgage rate -->
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
-        <span class="slider-value" id="c1v-rate">3.2%</span>
-      </div>
-      <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
-      <div class="slider-sub" id="c1v-rate-pmt">≈ 1 050 €/мес</div>
-    </div>
-    <!-- Rent -->
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_rent">Аренда / мес</span>
-        <span class="slider-value" id="c1v-rent">1 309 €</span>
-      </div>
-      <input type="range" id="c1-rent" min="200" max="6000" step="50" value="1309" oninput="calc1Update()">
-    </div>
-    <!-- Investment return -->
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
-        <span class="slider-value" id="c1v-inv">7.0%</span>
-      </div>
-      <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
-      <div class="slider-sub" data-i18n="c1_inv_hint">💡 MSCI World ETF ~7% историч.</div>
-    </div>
-    <!-- Empty cell to balance grid -->
-    <div></div>
-  </div>
 
   <!-- Advanced (collapsible) -->
   <div class="calc-advanced-toggle" onclick="toggleCalcSection('c1-adv','c1-adv-arrow')">

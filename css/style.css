@@ -578,6 +578,20 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 }
 
 /* ---- CALC LAYOUT ---- */
+.calc-two-col {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+.calc-chart-title {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
 .calc-top-bar {
   display: flex; align-items: center; gap: 12px;
   flex-wrap: wrap; margin-bottom: 16px;
@@ -730,6 +744,7 @@ input[type=range] {
   .calc-advanced-content.open { grid-template-columns: 1fr; }
   .calc-chart-wrap { height: 240px; }
   .comparison-table { display: block; overflow-x: auto; }
+  .calc-two-col { grid-template-columns: 1fr; }
 }
 
 .tooltip-trigger:hover { color: #c9a84c; }

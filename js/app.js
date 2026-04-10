@@ -1049,6 +1049,21 @@ function initCalc1() {
       sel.appendChild(opt);
     });
   }
+  // Default to Madrid
+  if (!sel.value) {
+    sel.value = 'madrid';
+    onCalc1RegionChange();
+  }
+}
+
+function updateC1ChartTitle() {
+  const el = document.getElementById('c1-chart-title');
+  if (!el) return;
+  const regionId = document.getElementById('c1-region').value;
+  const region = REGIONS.find(r => r.id === regionId);
+  const regionName = region ? region.name : '—';
+  el.textContent = (t('c1_chart_title_prefix') || 'Накопление капитала') +
+    ' · ' + regionName + ' · ' + c1Horizon + ' ' + (t('c1_years') || 'лет');
 }
 
 function onCalc1RegionChange() {
@@ -1118,6 +1133,7 @@ function setHorizon1(years, btn) {
   document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   calc1Update();
+  updateC1ChartTitle();
 }
 
 function setStressTest1(scenario, btn) {
@@ -1204,6 +1220,8 @@ function calc1Update() {
   let portfolio = initialCash; // renter invests this initial lump sum
   let rent      = rent0;
   let totalMortgagePaid = 0;
+  let totalInterestPaid = 0;
+  let totalMaintPaid    = 0;
 
   for (let y = 0; y <= horizon; y++) {
     const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, y) : 1;
@@ -1220,12 +1238,14 @@ function calc1Update() {
         let payment = 0;
         if (mo < nPay && loanBal > 0) {
           const interest  = loanBal * mRate;
+          totalInterestPaid += interest;
           const principal = Math.min(monthlyMortgage - interest, loanBal);
           loanBal = Math.max(0, loanBal - principal);
           payment = monthlyMortgage;
         }
         // Maintenance monthly (% of current property value)
         const maintMonthly = propVal * maint / 12;
+        totalMaintPaid += maintMonthly;
         const buyerTotal   = payment + maintMonthly;
 
         // Renter: compound invest, then add monthly diff if buyer costs > rent
@@ -1253,13 +1273,30 @@ function calc1Update() {
   const roiTotal = (buyFinal - initialCash) / initialCash;
   const roiAnn   = (Math.pow(1 + roiTotal, 1 / horizon) - 1) * 100;
 
+  // ---- Gross / Net ROI for tooltip ----
+  const finalPropVal = propVal;
+  const grossROI = downAmt > 0 ? ((finalPropVal - price) / downAmt * 100) : 0;
+  const netROI   = downAmt > 0 ? ((finalPropVal - price - totalInterestPaid - totalMaintPaid) / downAmt * 100) : 0;
+  const tipEl = document.getElementById('c1-roi-tip-icon');
+  if (tipEl) {
+    const p = t('c1_roi_tip_prefix') || 'Насколько выгодна покупка именно для ваших денег.';
+    const g = t('c1_roi_tip_gross')  || 'Gross ROI (до расходов)';
+    const n = t('c1_roi_tip_net')    || 'Net ROI (после расходов)';
+    const f = t('c1_roi_tip_formula')|| 'Формула: (рост цены − проценты − расходы) ÷ взнос × 100%';
+    const c = t('c1_roi_tip_compare')|| 'Для сравнения: индексный фонд 7%';
+    tipEl.title = `${p}\n${g}: ${grossROI.toFixed(1)}%\n${n}: ${netROI.toFixed(1)}%\n${f}\n${c}`;
+  }
+
   // ---- Summary cards ----
   const winLabel = winner === 'buy' ? (t('c1_buy')||'Покупка') : (t('c1_rent_word')||'Аренда');
   document.getElementById('c1-winner').textContent     = '🏆 ' + winLabel;
-  document.getElementById('c1-winner-sub').textContent = t('c1_diff_label')||'Разница: ' + fmt(Math.abs(diff)) + ' €';
+  document.getElementById('c1-winner-sub').textContent = (t('c1_diff_label')||'Разница: ') + fmt(Math.abs(diff)) + ' €';
   document.getElementById('c1-parity').textContent     = parityYear ? parityYear + ' ' + (t('c1_years')||'лет') : '>' + horizon;
   document.getElementById('c1-roi').textContent        = roiAnn.toFixed(1) + '%';
   document.getElementById('c1-roi-sub').textContent    = (t('c1_roi_per_year')||'годовых на взнос') + ' / ' + horizon + ' ' + (t('c1_years')||'лет');
+
+  // ---- Chart title ----
+  updateC1ChartTitle();
 
   // ---- Chart ----
   drawCalc1Chart(labels, buyData, rentData, parityYear);
@@ -1310,7 +1347,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#8a8f9e', boxWidth: 12, font: { size: 12 } }
+          labels: { color: '#8a8f9e', usePointStyle: true, pointStyle: 'line', pointStyleWidth: 22, font: { size: 12 } }
         },
         tooltip: {
           callbacks: {
@@ -1333,12 +1370,12 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       },
       scales: {
         x: {
-          ticks: { color: '#8a8f9e', font: { size: 11 }, maxTicksLimit: 8 },
+          ticks: { color: '#8a8f9e', font: { size: 12 }, maxTicksLimit: 8 },
           grid:  { color: 'rgba(255,255,255,0.04)' }
         },
         y: {
           ticks: {
-            color: '#8a8f9e', font: { size: 11 },
+            color: '#8a8f9e', font: { size: 12 },
             callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M €' : v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+'€'
           },
           grid: { color: 'rgba(255,255,255,0.04)' }
