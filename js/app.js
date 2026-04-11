@@ -1290,10 +1290,10 @@ function calc1Update() {
   // ---- Summary cards ----
   const winLabel = winner === 'buy' ? (t('c1_buy')||'Покупка') : (t('c1_rent_word')||'Аренда');
   document.getElementById('c1-winner').textContent     = '🏆 ' + winLabel;
-  document.getElementById('c1-winner-sub').textContent = (t('c1_diff_label')||'Разница: ') + fmt(Math.abs(diff)) + ' €';
+  document.getElementById('c1-winner-sub').textContent = (t('c1_winner_sub_pre')||'выгоднее · разница') + ' +' + fmt(Math.abs(diff)) + ' €';
   document.getElementById('c1-parity').textContent     = parityYear ? parityYear + ' ' + (t('c1_years')||'лет') : '>' + horizon;
-  document.getElementById('c1-roi').textContent        = roiAnn.toFixed(1) + '%';
-  document.getElementById('c1-roi-sub').textContent    = (t('c1_roi_per_year')||'годовых на взнос') + ' / ' + horizon + ' ' + (t('c1_years')||'лет');
+  document.getElementById('c1-roi').textContent     = roiAnn.toFixed(1) + '%';
+  document.getElementById('c1-roi-sub').textContent = 'среднегодовых · ' + horizon + ' ' + (t('c1_years')||'лет');
 
   // ---- Chart title ----
   updateC1ChartTitle();

@@ -228,12 +228,13 @@
 
 <!-- ========== PAGE: BUY VS RENT CALC ========== -->
 <div class="page" id="page-calc">
+  <!-- [1] Title + subtitle -->
   <div class="section-head">
     <h2 data-i18n="c1_title">Купить или снять?</h2>
-    <p data-i18n="c1_sub">Сравните покупку в ипотеку с арендой + инвестициями по данным реального рынка Испании</p>
+    <p data-i18n="c1_sub">Сравниваем два пути для одних и тех же денег: купить квартиру в ипотеку или снять и инвестировать разницу в индексный фонд.</p>
   </div>
 
-  <!-- Top bar: region + property type -->
+  <!-- [2] Region + property type + reset -->
   <div class="calc-top-bar">
     <select id="c1-region" onchange="onCalc1RegionChange()" style="min-width:180px;">
       <option value="" data-i18n="c1_region_placeholder">Выбрать регион...</option>
@@ -245,7 +246,7 @@
     <button class="calc-btn" onclick="resetCalc1ToRegion()" data-i18n="c1_reset">↺ Сброс</button>
   </div>
 
-  <!-- Presets -->
+  <!-- [3] Presets -->
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;">
     <span style="font-size:12px;color:var(--muted);align-self:center;" data-i18n="c1_preset_label">Сценарий:</span>
     <div class="calc-btn-group" id="c1-preset-btns">
@@ -255,76 +256,26 @@
     </div>
   </div>
 
-  <!-- Two-column layout: sliders left (40%) + result cards right (60%) -->
-  <div class="calc-two-col">
-    <!-- Left: main parameter sliders -->
-    <div class="calc-sliders" style="grid-template-columns:1fr;margin-bottom:0;">
-      <div class="slider-row">
-        <div class="slider-label-row">
-          <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
-          <span class="slider-value" id="c1v-price">300 000 €</span>
-        </div>
-        <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label-row">
-          <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
-          <span class="slider-value" id="c1v-down">20%</span>
-        </div>
-        <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
-        <div class="slider-sub" id="c1v-down-amt">= 58 800 €</div>
-      </div>
-      <div class="slider-row">
-        <div class="slider-label-row">
-          <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
-          <span class="slider-value" id="c1v-rate">3.2%</span>
-        </div>
-        <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
-        <div class="slider-sub" id="c1v-rate-pmt">≈ 1 050 €/мес</div>
-      </div>
-      <div class="slider-row">
-        <div class="slider-label-row">
-          <span class="slider-label" data-i18n="c1_rent">Аренда / мес</span>
-          <span class="slider-value" id="c1v-rent">1 309 €</span>
-        </div>
-        <input type="range" id="c1-rent" min="200" max="6000" step="50" value="1309" oninput="calc1Update()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label-row">
-          <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
-          <span class="slider-value" id="c1v-inv">7.0%</span>
-        </div>
-        <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
-        <div class="slider-sub" data-i18n="c1_inv_hint">💡 MSCI World ETF ~7% историч.</div>
-      </div>
+  <!-- [4] 3 cards horizontal full-width -->
+  <div class="calc-summary-cards" style="margin-bottom:20px;">
+    <div class="calc-card">
+      <div class="calc-card-value" id="c1-winner">—</div>
+      <div class="calc-card-sub" id="c1-winner-sub">—</div>
     </div>
-
-    <!-- Right: result cards stacked vertically -->
-    <div>
-      <div class="calc-summary-cards" style="grid-template-columns:1fr;gap:10px;margin-bottom:0;">
-        <div class="calc-card">
-          <div class="calc-card-label" data-i18n="c1_card_winner">Победитель</div>
-          <div class="calc-card-value" id="c1-winner">—</div>
-          <div class="calc-card-sub"   id="c1-winner-sub">—</div>
-        </div>
-        <div class="calc-card">
-          <div class="calc-card-label" data-i18n="c1_card_parity">Паритет</div>
-          <div class="calc-card-value" id="c1-parity">—</div>
-          <div class="calc-card-sub"   id="c1-parity-sub" data-i18n="c1_card_parity_sub">Лет до точки равенства</div>
-        </div>
-        <div class="calc-card">
-          <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
-            <span data-i18n="c1_card_roi">Доходность на вложенные</span>
-            <span class="info-icon" id="c1-roi-tip-icon" title="">ⓘ</span>
-          </div>
-          <div class="calc-card-value" id="c1-roi">—</div>
-          <div class="calc-card-sub"   id="c1-roi-sub" data-i18n="c1_card_roi_sub">Годовая доходность на вложенный взнос</div>
-        </div>
+    <div class="calc-card">
+      <div class="calc-card-value" id="c1-parity">—</div>
+      <div class="calc-card-sub" id="c1-parity-sub" data-i18n="c1_card_parity_sub">до точки равенства</div>
+    </div>
+    <div class="calc-card">
+      <div class="calc-card-value" id="c1-roi">—</div>
+      <div class="calc-card-sub" style="display:flex;align-items:center;gap:4px;">
+        <span id="c1-roi-sub">среднегодовых · 20 лет</span>
+        <span class="info-icon" id="c1-roi-tip-icon" title="">ⓘ</span>
       </div>
     </div>
   </div>
 
-  <!-- Chart controls -->
+  <!-- [5] Nominal/Real + horizon toggles -->
   <div class="calc-chart-controls">
     <div class="calc-btn-group" id="c1-mode-btns">
       <button class="calc-btn active" onclick="setPriceMode1('nominal',this)" data-i18n="c1_nominal">Номинал</button>
@@ -338,20 +289,76 @@
     </div>
   </div>
 
-  <!-- Chart title + chart -->
+  <!-- [6] Chart title + chart -->
   <div class="calc-chart-title" id="c1-chart-title">—</div>
   <div class="calc-chart-wrap">
     <canvas id="calcChart"></canvas>
   </div>
+
+  <!-- [7] Chart subtitle -->
   <p class="chart-subtitle" id="c1-chart-sub" data-i18n="c1_chart_sub">График стартует с суммы вашего первоначального взноса. Тот кто снимает квартиру вкладывает эту же сумму в индексный фонд с первого дня.</p>
 
-  <!-- Advanced (collapsible) -->
+  <!-- [8] Summary text standalone -->
+  <div class="calc-summary-text" id="c1-summary-text">—</div>
+
+  <!-- [9] Stress test — one line -->
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;border-top:1px solid var(--border);">
+    <span style="font-size:13px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</span>
+    <div class="calc-btn-group" id="c1-stress-btns">
+      <button class="calc-btn"        onclick="setStressTest1('opt',this)"  data-i18n="c1_opt">Оптимистичный</button>
+      <button class="calc-btn active" onclick="setStressTest1('base',this)" data-i18n="c1_base">Базовый ★</button>
+      <button class="calc-btn"        onclick="setStressTest1('pess',this)" data-i18n="c1_pess">Пессимистичный</button>
+    </div>
+  </div>
+
+  <!-- [10] Parameter sliders (2 columns) -->
+  <div class="calc-sliders" style="margin-bottom:20px;">
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
+        <span class="slider-value" id="c1v-price">300 000 €</span>
+      </div>
+      <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
+        <span class="slider-value" id="c1v-down">20%</span>
+      </div>
+      <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-down-amt">= 58 800 €</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
+        <span class="slider-value" id="c1v-rate">3.2%</span>
+      </div>
+      <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
+      <div class="slider-sub" id="c1v-rate-pmt">≈ 1 050 €/мес</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_rent">Аренда / мес</span>
+        <span class="slider-value" id="c1v-rent">1 309 €</span>
+      </div>
+      <input type="range" id="c1-rent" min="200" max="6000" step="50" value="1309" oninput="calc1Update()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
+        <span class="slider-value" id="c1v-inv">7.0%</span>
+      </div>
+      <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
+      <div class="slider-sub" data-i18n="c1_inv_hint">💡 MSCI World ETF ~7% историч.</div>
+    </div>
+  </div>
+
+  <!-- [11] Advanced settings (collapsed) -->
   <div class="calc-advanced-toggle" onclick="toggleCalcSection('c1-adv','c1-adv-arrow')">
     <span class="calc-advanced-arrow" id="c1-adv-arrow">▼</span>
     <span data-i18n="c1_advanced">Расширенные настройки</span>
   </div>
   <div class="calc-advanced-content" id="c1-adv">
-    <!-- Mortgage term -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
@@ -359,7 +366,6 @@
       </div>
       <input type="range" id="c1-term" min="5" max="30" step="1" value="25" oninput="calc1Update()">
     </div>
-    <!-- Tax -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_tax">Налог при покупке (ITP / IVA+AJD)</span>
@@ -368,7 +374,6 @@
       <input type="range" id="c1-tax" min="1" max="15" step="0.5" value="7.5" oninput="calc1Update()">
       <div class="slider-sub" id="c1v-tax-amt">= 22 050 €</div>
     </div>
-    <!-- Appreciation -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_appr">Рост цены недвижимости / год</span>
@@ -376,7 +381,6 @@
       </div>
       <input type="range" id="c1-appr" min="-2" max="10" step="0.5" value="3" oninput="calc1Update()">
     </div>
-    <!-- Rent growth -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_rentg">Рост аренды / год</span>
@@ -384,7 +388,6 @@
       </div>
       <input type="range" id="c1-rentg" min="0" max="8" step="0.5" value="3" oninput="calc1Update()">
     </div>
-    <!-- Maintenance -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_maint">Содержание + IBI / год</span>
@@ -393,7 +396,6 @@
       <input type="range" id="c1-maint" min="0.3" max="3" step="0.1" value="1.2" oninput="calc1Update()">
       <div class="slider-sub" id="c1v-maint-amt">= 3 528 €/год</div>
     </div>
-    <!-- Inflation -->
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_inflation">Инфляция / год</span>
@@ -402,17 +404,6 @@
       <input type="range" id="c1-inflation" min="0" max="8" step="0.5" value="2.5" oninput="calc1Update()">
     </div>
   </div>
-
-  <!-- Stress test -->
-  <div style="padding:10px 0 6px;font-size:12px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</div>
-  <div class="calc-stress-row" id="c1-stress-btns">
-    <button class="calc-btn"        onclick="setStressTest1('opt',this)"  data-i18n="c1_opt">Оптимистичный</button>
-    <button class="calc-btn active" onclick="setStressTest1('base',this)" data-i18n="c1_base">Базовый ★</button>
-    <button class="calc-btn"        onclick="setStressTest1('pess',this)" data-i18n="c1_pess">Пессимистичный</button>
-  </div>
-
-  <!-- Auto-summary -->
-  <div class="calc-summary-text" id="c1-summary-text">—</div>
 
   <!-- Share -->
   <div class="calc-share-row">
