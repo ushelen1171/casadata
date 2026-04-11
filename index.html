@@ -228,58 +228,72 @@
 
 <!-- ========== PAGE: BUY VS RENT CALC ========== -->
 <div class="page" id="page-calc">
+
   <!-- [1] Title + subtitle -->
   <div class="section-head">
     <h2 data-i18n="c1_title">Купить или снять?</h2>
-    <p data-i18n="c1_sub">Сравниваем два пути для одних и тех же денег: купить квартиру в ипотеку или снять и инвестировать разницу в индексный фонд.</p>
+    <p data-i18n="c1_sub">Что выгоднее в вашем регионе: купить квартиру или снять и <span class="c1-invest-highlight" title="Разница = ипотечный платёж минус аренда. Если ипотека 1 144 €/мес, аренда 1 400 €/мес — каждый месяц инвестируете 256 €. Плюс первоначальный взнос вложен с первого дня.">инвестировать разницу</span>?</p>
   </div>
 
-  <!-- [2] Region + property type + reset -->
-  <div class="calc-top-bar">
-    <select id="c1-region" onchange="onCalc1RegionChange()" style="min-width:180px;">
+  <!-- [2] Anchor button -->
+  <button class="calc-anchor-btn" data-i18n="c1_anchor_btn" onclick="document.getElementById('calc-params').scrollIntoView({behavior:'smooth'})">↓ Настроить параметры</button>
+
+  <!-- [3] Region select + hint -->
+  <div style="margin-bottom:16px;">
+    <select id="c1-region" onchange="onCalc1RegionChange()" style="min-width:180px;max-width:320px;width:100%;">
       <option value="" data-i18n="c1_region_placeholder">Выбрать регион...</option>
     </select>
-    <div class="calc-btn-group" id="c1-proptype-btns">
-      <button class="calc-btn active" onclick="setPropertyType1('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
-      <button class="calc-btn"        onclick="setPropertyType1('new',this)"       data-i18n="c1_new">Новостройка</button>
-    </div>
-    <button class="calc-btn" onclick="resetCalc1ToRegion()" data-i18n="c1_reset">↺ Сброс</button>
+    <p class="c1-region-hint" data-i18n="c1_region_hint">Средние цены по региону · Q4 2025 · отредактируйте под свой объект ↓</p>
   </div>
 
-  <!-- [3] Presets -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;">
-    <span style="font-size:12px;color:var(--muted);align-self:center;" data-i18n="c1_preset_label">Сценарий:</span>
-    <div class="calc-btn-group" id="c1-preset-btns">
-      <button class="calc-btn active" onclick="applyCalc1Preset('mortgage',this)" data-i18n="c1_preset_mortgage">С ипотекой</button>
-      <button class="calc-btn"        onclick="applyCalc1Preset('cash',this)"     data-i18n="c1_preset_cash">За наличные</button>
-      <button class="calc-btn"        onclick="applyCalc1Preset('noninv',this)"   data-i18n="c1_preset_noninv">Снимаю, не инвестирую</button>
+  <!-- [4] Unified row: presets left + proptype+reset right -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--muted);" data-i18n="c1_preset_label">Сценарий:</span>
+      <div class="calc-btn-group" id="c1-preset-btns">
+        <button class="calc-btn active" onclick="applyCalc1Preset('mortgage',this)" data-i18n="c1_preset_mortgage">С ипотекой</button>
+        <button class="calc-btn"        onclick="applyCalc1Preset('cash',this)"     data-i18n="c1_preset_cash">За наличные</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <div class="calc-btn-group" id="c1-proptype-btns">
+        <button class="calc-btn active" onclick="setPropertyType1('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
+        <button class="calc-btn"        onclick="setPropertyType1('new',this)"       data-i18n="c1_new">Новостройка</button>
+      </div>
+      <button class="calc-btn" onclick="resetCalc1ToRegion()" data-i18n="c1_reset">↺ Сброс</button>
     </div>
   </div>
 
-  <!-- [4] 3 cards horizontal full-width -->
+  <!-- [5] 3 cards horizontal full-width -->
   <div class="calc-summary-cards" style="margin-bottom:20px;">
     <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c1_card_winner_label">ПОБЕДИТЕЛЬ</div>
       <div class="calc-card-value" id="c1-winner">—</div>
       <div class="calc-card-sub" id="c1-winner-sub">—</div>
     </div>
     <div class="calc-card">
+      <div class="calc-card-label" data-i18n="c1_card_parity_label">ПАРИТЕТ</div>
       <div class="calc-card-value" id="c1-parity">—</div>
-      <div class="calc-card-sub" id="c1-parity-sub" data-i18n="c1_card_parity_sub">до точки равенства</div>
+      <div class="calc-card-sub" id="c1-parity-sub" data-i18n="c1_card_parity_sub">через столько лет покупка выгоднее</div>
     </div>
     <div class="calc-card">
-      <div class="calc-card-value" id="c1-roi">—</div>
-      <div class="calc-card-sub" style="display:flex;align-items:center;gap:4px;">
-        <span id="c1-roi-sub">среднегодовых · 20 лет</span>
+      <div class="calc-card-label">
+        <span data-i18n="c1_card_roi_label">ДОХОДНОСТЬ НА ВЛОЖЕННЫЕ</span>
         <span class="info-icon" id="c1-roi-tip-icon" title="">ⓘ</span>
       </div>
+      <div class="calc-card-value" id="c1-roi">—</div>
+      <div class="calc-card-sub" id="c1-roi-sub">среднегодовая за 20 лет</div>
     </div>
   </div>
 
-  <!-- [5] Nominal/Real + horizon toggles -->
+  <!-- [6] Nominal/Real + ⓘ + horizon toggles -->
   <div class="calc-chart-controls">
-    <div class="calc-btn-group" id="c1-mode-btns">
-      <button class="calc-btn active" onclick="setPriceMode1('nominal',this)" data-i18n="c1_nominal">Номинал</button>
-      <button class="calc-btn"        onclick="setPriceMode1('real',this)"    data-i18n="c1_real">Реальные цены</button>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="calc-btn-group" id="c1-mode-btns">
+        <button class="calc-btn active" onclick="setPriceMode1('nominal',this)" data-i18n="c1_nominal">Номинал</button>
+        <button class="calc-btn"        onclick="setPriceMode1('real',this)"    data-i18n="c1_real">Реальные цены</button>
+      </div>
+      <span class="info-icon" data-i18n-title="c1_nominal_tip" title="">ⓘ</span>
     </div>
     <div class="calc-btn-group" id="c1-horizon-btns">
       <button class="calc-btn"        onclick="setHorizon1(5,this)"  data-i18n="c1_y5">5 лет</button>
@@ -289,19 +303,20 @@
     </div>
   </div>
 
-  <!-- [6] Chart title + chart -->
+  <!-- [7] Chart title + chart -->
   <div class="calc-chart-title" id="c1-chart-title">—</div>
   <div class="calc-chart-wrap">
     <canvas id="calcChart"></canvas>
   </div>
 
-  <!-- [7] Chart subtitle -->
-  <p class="chart-subtitle" id="c1-chart-sub" data-i18n="c1_chart_sub">График стартует с суммы вашего первоначального взноса. Тот кто снимает квартиру вкладывает эту же сумму в индексный фонд с первого дня.</p>
+  <!-- [8] Chart subtitle (dynamic) -->
+  <p class="chart-subtitle" id="c1-chart-sub">—</p>
 
-  <!-- [8] Summary text standalone -->
+  <!-- [9] Summary label + text -->
+  <div class="calc-summary-label" data-i18n="c1_sum_label">ВЫВОД</div>
   <div class="calc-summary-text" id="c1-summary-text">—</div>
 
-  <!-- [9] Stress test — one line -->
+  <!-- [10] Stress test — one line -->
   <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;border-top:1px solid var(--border);">
     <span style="font-size:13px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</span>
     <div class="calc-btn-group" id="c1-stress-btns">
@@ -311,8 +326,59 @@
     </div>
   </div>
 
-  <!-- [10] Parameter sliders (2 columns) -->
-  <div class="calc-sliders" style="margin-bottom:20px;">
+  <!-- [11] Breakdown table -->
+  <div class="c1-breakdown">
+    <div class="c1-breakdown-title" data-i18n="c1_breakdown_title">Детальная разбивка</div>
+    <div class="c1-breakdown-cols">
+      <div class="c1-breakdown-col">
+        <div class="c1-breakdown-col-head" data-i18n="c1_breakdown_buy_col">ПОКУПКА — ИТОГОВЫЙ КАПИТАЛ</div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_prop_val">Стоимость квартиры</span>
+          <span id="c1b-prop-val" class="c1-bkd-positive">—</span>
+        </div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_debt">Остаток долга</span>
+          <span id="c1b-debt" class="c1-bkd-negative">—</span>
+        </div>
+        <div class="c1-breakdown-row c1-breakdown-highlight">
+          <span data-i18n="c1_bkd_equity">Чистый капитал</span>
+          <span id="c1b-equity">—</span>
+        </div>
+        <div class="c1-breakdown-divider"></div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_down_itp">Взнос + ITP</span>
+          <span id="c1b-down-itp" class="c1-bkd-negative">—</span>
+        </div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_interest">Выплачено процентов</span>
+          <span id="c1b-interest" class="c1-bkd-negative">—</span>
+        </div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_maint">Содержание + IBI</span>
+          <span id="c1b-maint" class="c1-bkd-negative">—</span>
+        </div>
+      </div>
+      <div class="c1-breakdown-col">
+        <div class="c1-breakdown-col-head" data-i18n="c1_breakdown_rent_col">АРЕНДА — ИТОГОВЫЙ ПОРТФЕЛЬ</div>
+        <div class="c1-breakdown-row c1-breakdown-highlight">
+          <span data-i18n="c1_bkd_portfolio">Итоговый портфель</span>
+          <span id="c1b-portfolio">—</span>
+        </div>
+        <div class="c1-breakdown-divider"></div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_invested">Вложено изначально</span>
+          <span id="c1b-invested" class="c1-bkd-positive">—</span>
+        </div>
+        <div class="c1-breakdown-row">
+          <span data-i18n="c1_bkd_rent_total">Всего уплачено аренды</span>
+          <span id="c1b-rent-total" class="c1-bkd-negative">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [12] Parameter sliders (2 columns) -->
+  <div class="calc-sliders" id="calc-params" style="margin-bottom:20px;padding-top:8px;border-top:1px solid var(--border);">
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
@@ -353,7 +419,7 @@
     </div>
   </div>
 
-  <!-- [11] Advanced settings (collapsed) -->
+  <!-- [13] Advanced settings (collapsed) -->
   <div class="calc-advanced-toggle" onclick="toggleCalcSection('c1-adv','c1-adv-arrow')">
     <span class="calc-advanced-arrow" id="c1-adv-arrow">▼</span>
     <span data-i18n="c1_advanced">Расширенные настройки</span>

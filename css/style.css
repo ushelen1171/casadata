@@ -101,7 +101,7 @@ nav {
 /* ---- SECTION HEADINGS ---- */
 .section-head { margin-bottom: 24px; }
 .section-head h2 { font-family: var(--font-display); font-size: 26px; font-weight: 600; margin-bottom: 4px; }
-.section-head p { color: var(--muted); font-size: 14px; }
+.section-head p { color: var(--muted); font-size: 17px; font-weight: 400; line-height: 1.5; }
 
 /* ---- CARDS ---- */
 .card    { background: var(--bg2); border-radius: 12px; padding: 20px 24px; border: none !important; box-shadow: none !important; }
@@ -144,7 +144,7 @@ nav {
   .hstat-label { font-size: 11px; }
   .page { padding: 16px 12px 40px; }
   .section-head h2 { font-size: 22px; }
-  .section-head p { font-size: 13px; }
+  .section-head p { font-size: 15px; }
   .card { padding: 14px 16px; }
   .card-sm { padding: 10px 12px; }
   .metric-label { font-size: 11px; }
@@ -616,11 +616,14 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   padding: 14px 16px;
 }
 .calc-card-label {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .calc-card-value {
   font-size: 22px;
@@ -705,8 +708,8 @@ input[type=range] {
   background: var(--bg2);
   border: none;
   border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
-  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
   font-size: 14px;
   line-height: 1.7;
   color: var(--muted);
@@ -728,6 +731,90 @@ input[type=range] {
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
+/* ---- CALC PAGE EXTRAS ---- */
+.c1-invest-highlight {
+  color: var(--accent);
+  font-weight: 500;
+  cursor: help;
+  border-bottom: 1px dotted var(--accent);
+}
+.calc-anchor-btn {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  margin-bottom: 20px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.calc-anchor-btn:hover { color: var(--accent); border-color: var(--accent); }
+.c1-region-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  opacity: 0.8;
+}
+.calc-summary-label {
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+/* ---- BREAKDOWN TABLE ---- */
+.c1-breakdown {
+  margin-bottom: 20px;
+  margin-top: 4px;
+}
+.c1-breakdown-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.c1-breakdown-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.c1-breakdown-col {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.c1-breakdown-col-head {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.c1-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  padding: 4px 0;
+  color: var(--muted);
+}
+.c1-breakdown-highlight {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+}
+.c1-breakdown-divider {
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+.c1-bkd-positive { color: var(--green); }
+.c1-bkd-negative { color: var(--red); }
+
 .calc-share-row {
   display: flex; justify-content: flex-end;
   margin-bottom: 10px;
@@ -752,6 +839,7 @@ input[type=range] {
   .calc-summary-cards { grid-template-columns: 1fr; }
   .calc-sliders { grid-template-columns: 1fr; }
   .calc-advanced-content.open { grid-template-columns: 1fr; }
+  .c1-breakdown-cols { grid-template-columns: 1fr; }
   .calc-chart-wrap { height: 240px; }
   .comparison-table { display: block; overflow-x: auto; }
   .calc-two-col { grid-template-columns: 1fr; }

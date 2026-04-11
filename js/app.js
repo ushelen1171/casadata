@@ -1293,7 +1293,9 @@ function calc1Update() {
   document.getElementById('c1-winner-sub').textContent = (t('c1_winner_sub_pre')||'выгоднее · разница') + ' +' + fmt(Math.abs(diff)) + ' €';
   document.getElementById('c1-parity').textContent     = parityYear ? parityYear + ' ' + (t('c1_years')||'лет') : '>' + horizon;
   document.getElementById('c1-roi').textContent     = roiAnn.toFixed(1) + '%';
-  document.getElementById('c1-roi-sub').textContent = 'среднегодовых · ' + horizon + ' ' + (t('c1_years')||'лет');
+  document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + horizon + ' ' + (t('c1_years')||'лет');
+  updateC1ChartSub();
+  fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // ---- Chart title ----
   updateC1ChartTitle();
@@ -1319,20 +1321,20 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       labels,
       datasets: [
         {
-          label: t('c1_buy') || 'Покупка',
+          label: t('c1_buyer') || 'Капитал покупателя',
           data: buyData,
           borderColor: '#4a90d9',
-          backgroundColor: 'rgba(74,144,217,0.10)',
+          backgroundColor: 'transparent',
           fill: false,
           tension: 0.35,
           pointRadius: 2,
           borderWidth: 2.5,
         },
         {
-          label: t('c1_rent_word') || 'Аренда',
+          label: t('c1_renter') || 'Портфель арендатора',
           data: rentData,
           borderColor: '#5cb88a',
-          backgroundColor: 'rgba(92,184,138,0.10)',
+          backgroundColor: 'transparent',
           fill: false,
           tension: 0.35,
           pointRadius: 2,
@@ -1383,6 +1385,41 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       }
     }
   });
+}
+
+function updateC1ChartSub() {
+  const el = document.getElementById('c1-chart-sub');
+  if (!el) return;
+  const appr = parseFloat(document.getElementById('c1-appr')?.value || 3).toFixed(1);
+  const rate = parseFloat(document.getElementById('c1-rate')?.value || 3.2).toFixed(1);
+  const inv  = parseFloat(document.getElementById('c1-inv')?.value || 7).toFixed(1);
+  const tpl = t('c1_chart_sub_tpl') || 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}% · доходность инвестиций {inv}%';
+  el.textContent = tpl.replace('{appr}', appr).replace('{rate}', rate).replace('{inv}', inv);
+}
+
+function fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
+  const fmt = v => Math.round(v).toLocaleString('ru');
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  const equity = finalPropVal - loanBal;
+  const initialCash = downAmt + taxAmt;
+
+  // Total rent paid (geometric series, monthly compounding)
+  const rg12 = rentGrowth / 12;
+  const months = horizon * 12;
+  const totalRentPaid = rg12 < 0.00001
+    ? rent0 * months
+    : rent0 * (Math.pow(1 + rg12, months) - 1) / rg12;
+
+  set('c1b-prop-val',   '+' + fmt(finalPropVal) + ' €');
+  set('c1b-debt',       loanBal > 1 ? '−' + fmt(loanBal) + ' €' : '0 €');
+  set('c1b-equity',     fmt(equity) + ' €');
+  set('c1b-down-itp',   '−' + fmt(initialCash) + ' €');
+  set('c1b-interest',   '−' + fmt(totalInterestPaid) + ' €');
+  set('c1b-maint',      '−' + fmt(totalMaintPaid) + ' €');
+  set('c1b-portfolio',  fmt(portfolio) + ' €');
+  set('c1b-invested',   '+' + fmt(initialCash) + ' €');
+  set('c1b-rent-total', '−' + fmt(totalRentPaid) + ' €');
 }
 
 function buildCalc1Summary(winner, buyFinal, rentFinal, parityYear, roiAnn, horizon, downAmt, taxAmt, mortgagePmt, rent0) {
