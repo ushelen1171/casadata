@@ -54,6 +54,7 @@ function switchTab(group, id, btn) {
 let c1Chart = null;
 let c1Horizon = 20;
 let c1PriceMode = 'nominal';
+let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
 
 // ---- MARKET TABLE ----
@@ -1037,6 +1038,15 @@ function toggleCalcSection(contentId, arrowId) {
   if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
+function openC1Popup() {
+  document.getElementById('c1-popup-overlay')?.classList.add('visible');
+  document.getElementById('c1-popup')?.classList.add('visible');
+}
+function closeC1Popup() {
+  document.getElementById('c1-popup-overlay')?.classList.remove('visible');
+  document.getElementById('c1-popup')?.classList.remove('visible');
+}
+
 function initCalc1() {
   const sel = document.getElementById('c1-region');
   if (!sel) return;
@@ -1057,13 +1067,12 @@ function initCalc1() {
 }
 
 function updateC1ChartTitle() {
-  const el = document.getElementById('c1-chart-title');
-  if (!el) return;
-  const regionId = document.getElementById('c1-region').value;
+  const regionId = document.getElementById('c1-region')?.value;
   const region = REGIONS.find(r => r.id === regionId);
   const regionName = region ? region.name : '—';
-  el.textContent = (t('c1_chart_title_prefix') || 'Накопление капитала') +
+  c1ChartTitleText = (t('c1_chart_title_prefix') || 'Накопление капитала') +
     ' · ' + regionName + ' · ' + c1Horizon + ' ' + (t('c1_years') || 'лет');
+  if (c1Chart) c1Chart.update('none');
 }
 
 function onCalc1RegionChange() {
@@ -1312,8 +1321,22 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
   if (!canvas) return;
   if (c1Chart) { c1Chart.destroy(); c1Chart = null; }
 
-  // Crossover annotation plugin (manual)
   const crossoverIdx = parityYear !== null ? parityYear : null;
+
+  // Inline title plugin — draws c1ChartTitleText on canvas
+  const c1TitlePlugin = {
+    id: 'c1Title',
+    afterDraw(chart) {
+      if (!c1ChartTitleText) return;
+      const { ctx, chartArea } = chart;
+      ctx.save();
+      ctx.font = '13px DM Sans, sans-serif';
+      ctx.fillStyle = '#8a8f9e';
+      ctx.textAlign = 'left';
+      ctx.fillText(c1ChartTitleText, chartArea.left + 8, chartArea.top + 18);
+      ctx.restore();
+    }
+  };
 
   c1Chart = new Chart(canvas, {
     type: 'line',
@@ -1325,6 +1348,8 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
           data: buyData,
           borderColor: '#4a90d9',
           backgroundColor: 'transparent',
+          pointBackgroundColor: '#4a90d9',
+          pointBorderColor: '#4a90d9',
           fill: false,
           tension: 0.35,
           pointRadius: 2,
@@ -1335,6 +1360,8 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
           data: rentData,
           borderColor: '#5cb88a',
           backgroundColor: 'transparent',
+          pointBackgroundColor: '#5cb88a',
+          pointBorderColor: '#5cb88a',
           fill: false,
           tension: 0.35,
           pointRadius: 2,
@@ -1345,15 +1372,30 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { top: 28 } },
+      interaction: { mode: 'index', intersect: true },
       plugins: {
-        legend: {
-          display: true,
-          labels: { color: '#8a8f9e', usePointStyle: true, pointStyle: 'line', pointStyleWidth: 22, font: { size: 12 } }
-        },
+        legend: { display: false },
         tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ru')} €`
+          enabled: false,
+          external: function(context) {
+            const tooltipEl = document.getElementById('c1-tooltip');
+            if (!tooltipEl) return;
+            const { tooltip } = context;
+            if (tooltip.opacity === 0 || !tooltip.dataPoints?.length) {
+              tooltipEl.style.display = 'none';
+              return;
+            }
+            let html = '';
+            if (tooltip.title?.length) {
+              html += `<div class="c1-tt-title">${tooltip.title[0]}</div>`;
+            }
+            tooltip.dataPoints.forEach((dp, i) => {
+              const color = tooltip.labelColors[i]?.backgroundColor || '#8a8f9e';
+              html += `<div class="c1-tt-row"><span class="c1-tt-dot" style="background:${color}"></span><span>${dp.dataset.label}: ${Math.round(dp.raw).toLocaleString('ru')} €</span></div>`;
+            });
+            tooltipEl.innerHTML = html;
+            tooltipEl.style.display = 'block';
           }
         },
         annotation: crossoverIdx ? {
@@ -1372,19 +1414,53 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       },
       scales: {
         x: {
-          ticks: { color: '#8a8f9e', font: { size: 12 }, maxTicksLimit: 8 },
+          ticks: { color: '#8a8f9e', font: { size: 13 }, maxTicksLimit: 8 },
           grid:  { color: 'rgba(255,255,255,0.04)' }
         },
         y: {
           ticks: {
-            color: '#8a8f9e', font: { size: 12 },
+            color: '#8a8f9e', font: { size: 13 },
             callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M €' : v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+'€'
           },
           grid: { color: 'rgba(255,255,255,0.04)' }
         }
       }
-    }
+    },
+    plugins: [c1TitlePlugin]
   });
+
+  // Tooltip position follows mouse — attach once per canvas element
+  if (!canvas._c1Listeners) {
+    canvas._c1Listeners = true;
+    canvas.addEventListener('mousemove', e => {
+      const tooltipEl = document.getElementById('c1-tooltip');
+      if (!tooltipEl) return;
+      const rect = canvas.getBoundingClientRect();
+      tooltipEl.style.left = (e.clientX - rect.left + 16) + 'px';
+      tooltipEl.style.top  = (e.clientY - rect.top  - 80) + 'px';
+    });
+    canvas.addEventListener('mouseleave', () => {
+      const tooltipEl = document.getElementById('c1-tooltip');
+      if (tooltipEl) tooltipEl.style.display = 'none';
+    });
+  }
+
+  updateC1ChartLegend();
+}
+
+function updateC1ChartLegend() {
+  const el = document.getElementById('c1-chart-legend');
+  if (!el) return;
+  const datasets = [
+    { color: '#4a90d9', key: 'c1_buyer',  fallback: 'Капитал покупателя' },
+    { color: '#5cb88a', key: 'c1_renter', fallback: 'Портфель арендатора' },
+  ];
+  el.innerHTML = datasets.map(d =>
+    `<span class="c1-chart-legend-item">` +
+    `<span class="c1-chart-legend-line" style="background:${d.color};"></span>` +
+    `<span>${t(d.key) || d.fallback}</span>` +
+    `</span>`
+  ).join('');
 }
 
 function updateC1ChartSub() {

@@ -572,12 +572,44 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 
 /* ---- CHART SUBTITLE ---- */
 .chart-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   text-align: center;
   margin-top: -10px;
   margin-bottom: 14px;
   line-height: 1.5;
+}
+
+/* ---- CALC1 TOOLTIP ---- */
+.c1-tooltip {
+  position: absolute;
+  background: rgba(22,24,28,0.96);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 10;
+  min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.c1-tt-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.c1-tt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.c1-tt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* ---- CALC LAYOUT ---- */
@@ -589,11 +621,39 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   margin-bottom: 20px;
 }
 .calc-chart-title {
+  position: absolute;
+  top: 12px;
+  left: 16px;
   font-size: 13px;
   color: var(--muted);
   font-weight: 400;
-  margin-bottom: 8px;
   line-height: 1.4;
+  z-index: 2;
+  pointer-events: none;
+}
+.c1-chart-legend {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 2;
+  pointer-events: none;
+}
+.c1-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8a8f9e;
+}
+.c1-chart-legend-line {
+  display: inline-block;
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 .calc-top-bar {
   display: flex; align-items: center; gap: 12px;
@@ -743,17 +803,16 @@ input[type=range] {
 .calc-anchor-btn {
   display: inline-block;
   font-size: 13px;
-  color: var(--muted);
-  border: 1px solid var(--border);
+  color: var(--accent);
+  border: 1px solid var(--accent);
   border-radius: 6px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   background: transparent;
   cursor: pointer;
   font-family: var(--font-body);
-  margin-bottom: 20px;
-  transition: color 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
-.calc-anchor-btn:hover { color: var(--accent); border-color: var(--accent); }
+.calc-anchor-btn:hover { background: rgba(201,168,76,0.08); }
 .c1-region-hint {
   font-size: 12px;
   color: var(--muted);
@@ -848,3 +907,77 @@ input[type=range] {
 }
 
 .tooltip-trigger:hover { color: #c9a84c; }
+
+/* ---- CALC1 INFO BUTTON + POPUP ---- */
+.c1-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  background: transparent;
+  font-family: var(--font-body);
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s;
+}
+.c1-info-btn:hover {
+  background: rgba(201,168,76,0.12);
+}
+.c1-popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+}
+.c1-popup-overlay.visible { display: block; }
+.c1-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  max-width: 480px;
+  width: 90%;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.c1-popup.visible { display: block; }
+.c1-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 18px;
+  color: var(--muted);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  line-height: 1;
+  padding: 0;
+}
+.c1-popup-close:hover { color: var(--text); }
+.c1-popup-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.c1-popup-text {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  white-space: pre-line;
+  margin: 0;
+}

@@ -231,23 +231,32 @@
 
   <!-- [1] Title + subtitle -->
   <div class="section-head">
-    <h2 data-i18n="c1_title">Купить или снять?</h2>
-    <p data-i18n="c1_sub">Что выгоднее в вашем регионе: купить квартиру или снять и <span class="c1-invest-highlight" title="Разница = ипотечный платёж минус аренда. Если ипотека 1 144 €/мес, аренда 1 400 €/мес — каждый месяц инвестируете 256 €. Плюс первоначальный взнос вложен с первого дня.">инвестировать разницу</span>?</p>
+    <h2 data-i18n="c1_title">Купить или арендовать?</h2>
+    <p><span data-i18n="c1_sub">Узнайте, что выгоднее в вашем регионе</span><button class="c1-info-btn" onclick="openC1Popup()" aria-label="Как это работает?">?</button></p>
   </div>
 
-  <!-- [2] Anchor button -->
-  <button class="calc-anchor-btn" data-i18n="c1_anchor_btn" onclick="document.getElementById('calc-params').scrollIntoView({behavior:'smooth'})">↓ Настроить параметры</button>
+  <!-- Popup overlay -->
+  <div class="c1-popup-overlay" id="c1-popup-overlay" onclick="closeC1Popup()"></div>
+  <div class="c1-popup" id="c1-popup" onclick="event.stopPropagation()">
+    <button class="c1-popup-close" onclick="closeC1Popup()">×</button>
+    <div class="c1-popup-title" data-i18n="c1_popup_title">Как работает калькулятор</div>
+    <p class="c1-popup-text" data-i18n="c1_popup_text"></p>
+  </div>
 
-  <!-- [3] Region select + hint -->
-  <div style="margin-bottom:16px;">
-    <select id="c1-region" onchange="onCalc1RegionChange()" style="min-width:180px;max-width:320px;width:100%;">
+  <!-- [3] Region row: dropdown left + proptype right -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+    <select id="c1-region" onchange="onCalc1RegionChange()" style="flex:1;min-width:160px;">
       <option value="" data-i18n="c1_region_placeholder">Выбрать регион...</option>
     </select>
-    <p class="c1-region-hint" data-i18n="c1_region_hint">Средние цены по региону · Q4 2025 · отредактируйте под свой объект ↓</p>
+    <div class="calc-btn-group" id="c1-proptype-btns">
+      <button class="calc-btn active" onclick="setPropertyType1('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
+      <button class="calc-btn"        onclick="setPropertyType1('new',this)"       data-i18n="c1_new">Новостройка</button>
+    </div>
   </div>
+  <p class="c1-region-hint" data-i18n="c1_region_hint">Средние рыночные цены · Q4 2025</p>
 
-  <!-- [4] Unified row: presets left + proptype+reset right -->
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+  <!-- [4] Presets left + stress test right -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;margin-top:12px;">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:12px;color:var(--muted);" data-i18n="c1_preset_label">Сценарий:</span>
       <div class="calc-btn-group" id="c1-preset-btns">
@@ -256,16 +265,18 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <div class="calc-btn-group" id="c1-proptype-btns">
-        <button class="calc-btn active" onclick="setPropertyType1('secondary',this)" data-i18n="c1_secondary">Вторичка ★</button>
-        <button class="calc-btn"        onclick="setPropertyType1('new',this)"       data-i18n="c1_new">Новостройка</button>
+      <span style="font-size:12px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</span>
+      <div class="calc-btn-group" id="c1-stress-btns">
+        <button class="calc-btn"        onclick="setStressTest1('opt',this)"  data-i18n="c1_opt">Оптимистичный +5%</button>
+        <button class="calc-btn active" onclick="setStressTest1('base',this)" data-i18n="c1_base">Базовый 3% ★</button>
+        <button class="calc-btn"        onclick="setStressTest1('pess',this)" data-i18n="c1_pess">Пессимистичный +1%</button>
       </div>
-      <button class="calc-btn" onclick="resetCalc1ToRegion()" data-i18n="c1_reset">↺ Сброс</button>
+      <span class="info-icon" data-i18n-title="c1_stress_tip" title="">ⓘ</span>
     </div>
   </div>
 
   <!-- [5] 3 cards horizontal full-width -->
-  <div class="calc-summary-cards" style="margin-bottom:20px;">
+  <div class="calc-summary-cards" style="margin-bottom:12px;">
     <div class="calc-card">
       <div class="calc-card-label" data-i18n="c1_card_winner_label">ПОБЕДИТЕЛЬ</div>
       <div class="calc-card-value" id="c1-winner">—</div>
@@ -286,26 +297,28 @@
     </div>
   </div>
 
-  <!-- [6] Nominal/Real + ⓘ + horizon toggles -->
-  <div class="calc-chart-controls">
-    <div style="display:flex;align-items:center;gap:6px;">
+  <!-- [6] Nominal/Real + ⓘ + horizon + anchor button -->
+  <div class="calc-chart-controls" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <div class="calc-btn-group" id="c1-mode-btns">
         <button class="calc-btn active" onclick="setPriceMode1('nominal',this)" data-i18n="c1_nominal">Номинал</button>
         <button class="calc-btn"        onclick="setPriceMode1('real',this)"    data-i18n="c1_real">Реальные цены</button>
       </div>
       <span class="info-icon" data-i18n-title="c1_nominal_tip" title="">ⓘ</span>
+      <div class="calc-btn-group" id="c1-horizon-btns">
+        <button class="calc-btn"        onclick="setHorizon1(5,this)"  data-i18n="c1_y5">5 лет</button>
+        <button class="calc-btn"        onclick="setHorizon1(10,this)" data-i18n="c1_y10">10 лет</button>
+        <button class="calc-btn active" onclick="setHorizon1(20,this)" data-i18n="c1_y20">20 лет</button>
+        <button class="calc-btn"        onclick="setHorizon1(30,this)" data-i18n="c1_y30">30 лет</button>
+      </div>
     </div>
-    <div class="calc-btn-group" id="c1-horizon-btns">
-      <button class="calc-btn"        onclick="setHorizon1(5,this)"  data-i18n="c1_y5">5 лет</button>
-      <button class="calc-btn"        onclick="setHorizon1(10,this)" data-i18n="c1_y10">10 лет</button>
-      <button class="calc-btn active" onclick="setHorizon1(20,this)" data-i18n="c1_y20">20 лет</button>
-      <button class="calc-btn"        onclick="setHorizon1(30,this)" data-i18n="c1_y30">30 лет</button>
-    </div>
+    <button class="calc-anchor-btn" data-i18n="c1_anchor_btn" onclick="document.getElementById('calc-params').scrollIntoView({behavior:'smooth'})">↓ Настроить свои параметры</button>
   </div>
 
-  <!-- [7] Chart title + chart -->
-  <div class="calc-chart-title" id="c1-chart-title">—</div>
+  <!-- [7] Chart wrap -->
   <div class="calc-chart-wrap">
+    <div class="c1-chart-legend" id="c1-chart-legend"></div>
+    <div class="c1-tooltip" id="c1-tooltip" style="display:none;"></div>
     <canvas id="calcChart"></canvas>
   </div>
 
@@ -315,16 +328,6 @@
   <!-- [9] Summary label + text -->
   <div class="calc-summary-label" data-i18n="c1_sum_label">ВЫВОД</div>
   <div class="calc-summary-text" id="c1-summary-text">—</div>
-
-  <!-- [10] Stress test — one line -->
-  <div style="display:flex;align-items:center;gap:8px;padding:10px 0;flex-wrap:wrap;border-top:1px solid var(--border);">
-    <span style="font-size:13px;color:var(--muted);" data-i18n="c1_stress_label">Стресс-тест:</span>
-    <div class="calc-btn-group" id="c1-stress-btns">
-      <button class="calc-btn"        onclick="setStressTest1('opt',this)"  data-i18n="c1_opt">Оптимистичный</button>
-      <button class="calc-btn active" onclick="setStressTest1('base',this)" data-i18n="c1_base">Базовый ★</button>
-      <button class="calc-btn"        onclick="setStressTest1('pess',this)" data-i18n="c1_pess">Пессимистичный</button>
-    </div>
-  </div>
 
   <!-- [11] Breakdown table -->
   <div class="c1-breakdown">
