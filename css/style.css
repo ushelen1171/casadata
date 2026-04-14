@@ -908,6 +908,24 @@ input[type=range] {
 
 .tooltip-trigger:hover { color: #c9a84c; }
 
+/* ---- GLOBAL TOOLTIP ---- */
+#global-tip {
+  display: none;
+  position: fixed;
+  background: #16181c;
+  border: 1px solid #2a2d35;
+  color: #8a8f9e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  max-width: 280px;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
 /* ---- CALC1 INFO BUTTON + POPUP ---- */
 .c1-info-btn {
   display: inline-flex;
@@ -927,56 +945,50 @@ input[type=range] {
   line-height: 1;
   padding: 0;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
 .c1-info-btn:hover {
   background: rgba(201,168,76,0.12);
 }
-.c1-popup-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 999;
-}
-.c1-popup-overlay.visible { display: block; }
 .c1-popup {
   display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px 28px;
-  max-width: 480px;
-  width: 90%;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #16181c;
+  border: 1px solid #2a2d35;
+  border-radius: 8px;
+  padding: 18px 20px;
+  max-width: 400px;
+  width: max-content;
   z-index: 1000;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .c1-popup.visible { display: block; }
 .c1-popup-close {
   position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 18px;
-  color: var(--muted);
+  top: 10px;
+  right: 14px;
+  font-size: 16px;
+  color: #8a8f9e;
   cursor: pointer;
   background: transparent;
   border: none;
   line-height: 1;
   padding: 0;
 }
-.c1-popup-close:hover { color: var(--text); }
+.c1-popup-close:hover { color: #ffffff; }
 .c1-popup-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--accent);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  padding-right: 20px;
 }
 .c1-popup-text {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 13px;
+  color: #8a8f9e;
   line-height: 1.7;
   white-space: pre-line;
   margin: 0;

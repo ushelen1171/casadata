@@ -232,15 +232,15 @@
   <!-- [1] Title + subtitle -->
   <div class="section-head">
     <h2 data-i18n="c1_title">Купить или арендовать?</h2>
-    <p><span data-i18n="c1_sub">Узнайте, что выгоднее в вашем регионе</span><button class="c1-info-btn" onclick="openC1Popup()" aria-label="Как это работает?">?</button></p>
-  </div>
-
-  <!-- Popup overlay -->
-  <div class="c1-popup-overlay" id="c1-popup-overlay" onclick="closeC1Popup()"></div>
-  <div class="c1-popup" id="c1-popup" onclick="event.stopPropagation()">
-    <button class="c1-popup-close" onclick="closeC1Popup()">×</button>
-    <div class="c1-popup-title" data-i18n="c1_popup_title">Как работает калькулятор</div>
-    <p class="c1-popup-text" data-i18n="c1_popup_text"></p>
+    <p style="position:relative;display:inline-flex;align-items:center;gap:0;">
+      <span data-i18n="c1_sub">Узнайте, что выгоднее в вашем регионе</span>
+      <button class="c1-info-btn" onclick="openC1Popup(event)" aria-label="Как это работает?">?</button>
+      <div class="c1-popup" id="c1-popup">
+        <button class="c1-popup-close" onclick="closeC1Popup()">×</button>
+        <div class="c1-popup-title" data-i18n="c1_popup_title">Как работает калькулятор</div>
+        <p class="c1-popup-text" data-i18n="c1_popup_text"></p>
+      </div>
+    </p>
   </div>
 
   <!-- [3] Region row: dropdown left + proptype right -->
@@ -1037,6 +1037,9 @@
 <script src="js/compare-all.js?v=2"></script>
 <script src="js/flip-analyzer.js?v=5"></script>
 <script src="js/app.js?v=11"></script>
+
+<!-- Global tooltip -->
+<div id="global-tip"></div>
 
 </body>
 </html>

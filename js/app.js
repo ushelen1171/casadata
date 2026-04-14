@@ -4,6 +4,8 @@
 
 // ---- INITIALIZATION ----
 document.addEventListener('DOMContentLoaded', () => {
+  initGlobalTooltips();
+
   // Set default language based on browser
   const browserLang = (navigator.language || 'en').toLowerCase();
   const defaultLang = browserLang.startsWith('es') ? 'es'
@@ -1038,13 +1040,77 @@ function toggleCalcSection(contentId, arrowId) {
   if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
-function openC1Popup() {
-  document.getElementById('c1-popup-overlay')?.classList.add('visible');
-  document.getElementById('c1-popup')?.classList.add('visible');
+// ---- Global tooltip (info-icons) ----
+function initGlobalTooltips() {
+  const tip = document.getElementById('global-tip');
+  if (!tip) return;
+
+  function positionTip(clientX, clientY) {
+    tip.style.left = (clientX + 16) + 'px';
+    tip.style.top  = (clientY - 8)  + 'px';
+    const r = tip.getBoundingClientRect();
+    if (r.right > window.innerWidth)  tip.style.left = (clientX - tip.offsetWidth  - 8) + 'px';
+    if (r.bottom > window.innerHeight) tip.style.top  = (clientY - tip.offsetHeight - 8) + 'px';
+  }
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tip]');
+    if (!el) return;
+    const text = el.getAttribute('data-tip');
+    if (!text) return;
+    tip.textContent = text;
+    tip.style.display = 'block';
+    positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', e => {
+    if (tip.style.display === 'none') return;
+    if (!e.target.closest('[data-tip]')) { tip.style.display = 'none'; return; }
+    positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseout', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el && !el.contains(e.relatedTarget)) tip.style.display = 'none';
+  });
+
+  // Touch
+  document.addEventListener('touchstart', e => {
+    const el = e.target.closest('[data-tip]');
+    if (!el) return;
+    const text = el.getAttribute('data-tip');
+    if (!text) return;
+    tip.textContent = text;
+    tip.style.display = 'block';
+    const touch = e.touches[0];
+    positionTip(touch.clientX, touch.clientY);
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!e.target.closest('#global-tip')) tip.style.display = 'none';
+  }, { passive: true });
+}
+
+// ---- Calc1 "How it works" popup ----
+let c1PopupOutsideHandler = null;
+
+function openC1Popup(e) {
+  if (e) e.stopPropagation();
+  const popup = document.getElementById('c1-popup');
+  if (!popup) return;
+  popup.classList.add('visible');
+  // Close when clicking outside
+  setTimeout(() => {
+    c1PopupOutsideHandler = ev => {
+      if (!popup.contains(ev.target)) closeC1Popup();
+    };
+    document.addEventListener('click', c1PopupOutsideHandler);
+  }, 0);
 }
 function closeC1Popup() {
-  document.getElementById('c1-popup-overlay')?.classList.remove('visible');
-  document.getElementById('c1-popup')?.classList.remove('visible');
+  const popup = document.getElementById('c1-popup');
+  if (popup) popup.classList.remove('visible');
+  if (c1PopupOutsideHandler) {
+    document.removeEventListener('click', c1PopupOutsideHandler);
+    c1PopupOutsideHandler = null;
+  }
 }
 
 function initCalc1() {
@@ -1288,12 +1354,8 @@ function calc1Update() {
   const netROI   = downAmt > 0 ? ((finalPropVal - price - totalInterestPaid - totalMaintPaid) / downAmt * 100) : 0;
   const tipEl = document.getElementById('c1-roi-tip-icon');
   if (tipEl) {
-    const p = t('c1_roi_tip_prefix') || 'Насколько выгодна покупка именно для ваших денег.';
-    const g = t('c1_roi_tip_gross')  || 'Gross ROI (до расходов)';
-    const n = t('c1_roi_tip_net')    || 'Net ROI (после расходов)';
-    const f = t('c1_roi_tip_formula')|| 'Формула: (рост цены − проценты − расходы) ÷ взнос × 100%';
-    const c = t('c1_roi_tip_compare')|| 'Для сравнения: индексный фонд 7%';
-    tipEl.title = `${p}\n${g}: ${grossROI.toFixed(1)}%\n${n}: ${netROI.toFixed(1)}%\n${f}\n${c}`;
+    tipEl.setAttribute('data-tip', t('c1_roi_tip') || 'Среднегодовая доходность на вложенные деньги.');
+    tipEl.title = '';
   }
 
   // ---- Summary cards ----

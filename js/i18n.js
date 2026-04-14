@@ -126,11 +126,7 @@ const TRANSLATIONS = {
     c1_buyer:      'Капитал покупателя',
     c1_renter:     'Портфель арендатора',
     c1_nominal_tip:'Номинальные — сколько вырастет сумма в евро.\nРеальные — сколько вырастет ваша покупательная способность с учётом инфляции.\n\nПример при инфляции 2.5%:\nНоминальная доходность: 9.2%/год\nРеальная доходность: ~6.5%/год\n\nРеальные цены честнее для долгосрочного планирования.',
-    c1_roi_tip_prefix: 'Насколько выгодна покупка для ваших денег.\nУчитывает рост цены квартиры, проценты по ипотеке и расходы.',
-    c1_roi_tip_gross:  'Gross ROI (рост цены / взнос)',
-    c1_roi_tip_net:    'Net ROI (после процентов и расходов)',
-    c1_roi_tip_formula:'Формула:\n(рост цены − проценты − расходы)\n÷ (взнос + ITP + нотариус) × 100%',
-    c1_roi_tip_compare:'Для сравнения: индексный фонд ~7%/год',
+    c1_roi_tip: 'Среднегодовая доходность на вложенные деньги за весь период расчёта.\n\n(Рост цены − Проценты − Расходы)\n÷ (Взнос + ITP + Нотариус) × 100%\n\nДля сравнения: индексный фонд ~7%/год',
     c1_sum_label:  'ВЫВОД',
     c1_chart_sub_tpl: 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}% · доходность инвестиций {inv}%',
     c1_breakdown_title:    'Детальная разбивка',
@@ -526,11 +522,7 @@ const TRANSLATIONS = {
     c1_chart_title_prefix:'Capital growth',
     c1_buyer:'Buyer\'s equity', c1_renter:'Renter\'s portfolio',
     c1_nominal_tip:'Nominal — how much the amount grows in euros.\nReal — how much your purchasing power grows adjusted for inflation.\n\nExample at 2.5% inflation:\nNominal return: 9.2%/year\nReal return: ~6.5%/year\n\nReal prices are more honest for long-term planning.',
-    c1_roi_tip_prefix:'How profitable the purchase is for your money.\nIncludes price growth, mortgage interest and costs.',
-    c1_roi_tip_gross:'Gross ROI (price growth / down payment)',
-    c1_roi_tip_net:'Net ROI (after interest and costs)',
-    c1_roi_tip_formula:'Formula:\n(price gain − interest − costs)\n÷ (down payment + ITP + notary) × 100%',
-    c1_roi_tip_compare:'Compare with: index fund ~7%/year',
+    c1_roi_tip:'Average annual return on your invested money over the full calculation period.\n\n(Price gain − Interest − Costs)\n÷ (Down payment + ITP + Notary) × 100%\n\nCompare with: index fund ~7%/year',
     c1_sum_label:'SUMMARY',
     c1_chart_sub_tpl:'Based on {appr}%/yr price growth · {rate}% mortgage rate · {inv}% investment return',
     c1_breakdown_title:'Detailed breakdown',
@@ -828,11 +820,7 @@ const TRANSLATIONS = {
     c1_chart_title_prefix:'Acumulación de capital',
     c1_buyer:'Capital del comprador', c1_renter:'Cartera del inquilino',
     c1_nominal_tip:'Nominal — cuánto crece la cantidad en euros.\nReal — cuánto crece tu poder adquisitivo ajustado por inflación.\n\nEjemplo con inflación del 2.5%:\nRentabilidad nominal: 9.2%/año\nRentabilidad real: ~6.5%/año\n\nLos precios reales son más honestos para la planificación a largo plazo.',
-    c1_roi_tip_prefix:'Rentabilidad de tu dinero en la compra.\nIncluye revalorización, intereses y gastos.',
-    c1_roi_tip_gross:'Gross ROI (revalorización / entrada)',
-    c1_roi_tip_net:'Net ROI (tras intereses y gastos)',
-    c1_roi_tip_formula:'Fórmula:\n(revalorización − intereses − gastos)\n÷ (entrada + ITP + notaría) × 100%',
-    c1_roi_tip_compare:'Comparar con: fondo índice ~7%/año',
+    c1_roi_tip:'Rentabilidad media anual sobre tu dinero invertido durante todo el período.\n\n(Revalorización − Intereses − Gastos)\n÷ (Entrada + ITP + Notaría) × 100%\n\nComparar con: fondo índice ~7%/año',
     c1_sum_label:'RESUMEN',
     c1_chart_sub_tpl:'Con revalorización del {appr}%/año · hipoteca al {rate}% · inversión al {inv}%',
     c1_breakdown_title:'Desglose detallado',
@@ -1076,7 +1064,8 @@ function setLang(lang) {
   });
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');
-    el.title = t(key);
+    el.setAttribute('data-tip', t(key));
+    el.title = '';
   });
   document.documentElement.lang = lang;
   // re-render dynamic content
