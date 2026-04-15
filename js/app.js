@@ -52,12 +52,35 @@ function switchTab(group, id, btn) {
   document.getElementById(group + '-' + id).classList.add('active');
 }
 
+// ---- PLURAL YEARS (i18n) ----
+function pluralYears(n) {
+  if (currentLang === 'ru') {
+    if (n % 10 === 1 && n % 100 !== 11) return n + ' год';
+    if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return n + ' года';
+    return n + ' лет';
+  }
+  if (currentLang === 'es') {
+    return n === 1 ? '1 año' : n + ' años';
+  }
+  // en
+  return n === 1 ? '1 year' : n + ' years';
+}
+
 // ---- CALC 1 STATE ----
 let c1Chart = null;
 let c1Horizon = 20;
 let c1PriceMode = 'nominal';
 let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
+let c1PrimeraVivienda = true;
+
+// Returns effective combined tax rate (ITP/itpInv + notary) in percent
+// Respects manual override; does NOT read manual when resetting (pass skipManual=true)
+function getC1AutoTaxRate(r) {
+  if (c1PropertyType === 'new') return 12.5;
+  const itpBase = c1PrimeraVivienda ? r.itp : (r.itpInv ?? r.itp);
+  return (itpBase + 0.015) * 100;
+}
 
 // ---- MARKET TABLE ----
 // D3 + TopoJSON карта Испании
@@ -1045,47 +1068,88 @@ function initGlobalTooltips() {
   const tip = document.getElementById('global-tip');
   if (!tip) return;
 
-  function positionTip(clientX, clientY) {
+  let pinnedEl = null; // element whose tooltip is pinned (click/tap)
+
+  function positionNearEl(el) {
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.bottom + 8;
+    tip.style.left = cx + 'px';
+    tip.style.top  = cy + 'px';
+    tip.style.transform = 'translateX(-50%)';
+    // clamp right edge
+    const tr = tip.getBoundingClientRect();
+    if (tr.right > window.innerWidth - 8) {
+      tip.style.left = (window.innerWidth - tip.offsetWidth - 8) + 'px';
+      tip.style.transform = '';
+    }
+    if (tr.left < 8) {
+      tip.style.left = '8px';
+      tip.style.transform = '';
+    }
+    // flip above if overflows bottom
+    if (tr.bottom > window.innerHeight - 8) {
+      tip.style.top = (r.top - tip.offsetHeight - 8) + 'px';
+    }
+  }
+
+  function positionAtCursor(clientX, clientY) {
+    tip.style.transform = '';
     tip.style.left = (clientX + 16) + 'px';
     tip.style.top  = (clientY - 8)  + 'px';
     const r = tip.getBoundingClientRect();
-    if (r.right > window.innerWidth)  tip.style.left = (clientX - tip.offsetWidth  - 8) + 'px';
-    if (r.bottom > window.innerHeight) tip.style.top  = (clientY - tip.offsetHeight - 8) + 'px';
+    if (r.right > window.innerWidth - 8)  tip.style.left = (clientX - tip.offsetWidth - 8) + 'px';
+    if (r.bottom > window.innerHeight - 8) tip.style.top  = (clientY - tip.offsetHeight - 8) + 'px';
   }
 
+  function showTip(text, el) {
+    tip.textContent = text;
+    tip.style.display = 'block';
+    positionNearEl(el);
+  }
+
+  function hideTip() {
+    tip.style.display = 'none';
+    pinnedEl = null;
+  }
+
+  // Hover (desktop)
   document.addEventListener('mouseover', e => {
+    if (pinnedEl) return; // don't override pinned tooltip
     const el = e.target.closest('[data-tip]');
     if (!el) return;
     const text = el.getAttribute('data-tip');
     if (!text) return;
     tip.textContent = text;
     tip.style.display = 'block';
-    positionTip(e.clientX, e.clientY);
+    positionAtCursor(e.clientX, e.clientY);
   });
   document.addEventListener('mousemove', e => {
+    if (pinnedEl) return;
     if (tip.style.display === 'none') return;
     if (!e.target.closest('[data-tip]')) { tip.style.display = 'none'; return; }
-    positionTip(e.clientX, e.clientY);
+    positionAtCursor(e.clientX, e.clientY);
   });
   document.addEventListener('mouseout', e => {
+    if (pinnedEl) return;
     const el = e.target.closest('[data-tip]');
     if (el && !el.contains(e.relatedTarget)) tip.style.display = 'none';
   });
 
-  // Touch
-  document.addEventListener('touchstart', e => {
+  // Click / tap — toggle pin
+  document.addEventListener('click', e => {
+    if (e.target.closest('#global-tip')) return; // click inside tooltip — keep open
     const el = e.target.closest('[data-tip]');
-    if (!el) return;
-    const text = el.getAttribute('data-tip');
-    if (!text) return;
-    tip.textContent = text;
-    tip.style.display = 'block';
-    const touch = e.touches[0];
-    positionTip(touch.clientX, touch.clientY);
-  }, { passive: true });
-  document.addEventListener('touchend', e => {
-    if (!e.target.closest('#global-tip')) tip.style.display = 'none';
-  }, { passive: true });
+    if (el) {
+      const text = el.getAttribute('data-tip');
+      if (!text) return;
+      if (pinnedEl === el) { hideTip(); return; } // second tap same element → close
+      pinnedEl = el;
+      showTip(text, el);
+    } else {
+      if (pinnedEl) hideTip();
+    }
+  });
 }
 
 // ---- Calc1 "How it works" popup ----
@@ -1149,9 +1213,10 @@ function onCalc1RegionChange() {
   const sqm = 70;
   document.getElementById('c1-price').value = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c1-rent').value  = Math.round(r.rent * sqm / 50) * 50;
-  // Set tax based on property type
-  const tax = c1PropertyType === 'new' ? 12.5 : (r.itp + 0.015) * 100;
-  document.getElementById('c1-tax').value = tax.toFixed(1);
+  // Reset manual tax override on region change
+  const manualEl = document.getElementById('c1-tax-manual');
+  if (manualEl) manualEl.value = '';
+  document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
   calc1Update();
 }
 
@@ -1159,20 +1224,83 @@ function resetCalc1ToRegion() {
   onCalc1RegionChange();
 }
 
+function resetCalc1() {
+  // Reset all sliders to defaults
+  document.getElementById('c1-down').value      = 20;
+  document.getElementById('c1-rate').value      = 3.2;
+  document.getElementById('c1-term').value      = 25;
+  document.getElementById('c1-appr').value      = 3;
+  document.getElementById('c1-rentg').value     = 3;
+  document.getElementById('c1-maint').value     = 1.2;
+  document.getElementById('c1-inflation').value = 2.5;
+  document.getElementById('c1-inv').value       = 7;
+
+  // Reset Primera vivienda
+  const cbPrimera = document.getElementById('c1-primera');
+  if (cbPrimera) { cbPrimera.checked = true; c1PrimeraVivienda = true; }
+
+  // Clear manual tax override
+  const manualEl = document.getElementById('c1-tax-manual');
+  if (manualEl) manualEl.value = '';
+
+  // Reset button group states
+  c1Horizon   = 20;
+  c1PriceMode = 'nominal';
+  document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 2));
+  document.querySelectorAll('#c1-stress-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
+  document.querySelectorAll('#c1-mode-btns    .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#c1-preset-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+  // Re-apply region-based values (price, rent, tax) and recalculate
+  onCalc1RegionChange();
+}
+
 function setPropertyType1(type, btn) {
   c1PropertyType = type;
   document.querySelectorAll('#c1-proptype-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Re-apply tax rate
+  // Re-apply auto tax rate (clears manual override)
+  const manualEl = document.getElementById('c1-tax-manual');
+  if (manualEl) manualEl.value = '';
   const id = document.getElementById('c1-region').value;
   if (id) {
     const r = REGIONS.find(x => x.id === id);
     if (r) {
-      const tax = type === 'new' ? 12.5 : (r.itp + 0.015) * 100;
-      document.getElementById('c1-tax').value = tax.toFixed(1);
+      document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
     }
   } else {
     document.getElementById('c1-tax').value = type === 'new' ? '12.5' : '7.5';
+  }
+  calc1Update();
+}
+
+function onC1PrimeraChange() {
+  const cb = document.getElementById('c1-primera');
+  c1PrimeraVivienda = cb ? cb.checked : true;
+  // Reset manual override and recalculate auto rate
+  const manualEl = document.getElementById('c1-tax-manual');
+  if (manualEl) manualEl.value = '';
+  const id = document.getElementById('c1-region').value;
+  if (id) {
+    const r = REGIONS.find(x => x.id === id);
+    if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+  }
+  calc1Update();
+}
+
+function onC1TaxManualChange() {
+  const manualEl = document.getElementById('c1-tax-manual');
+  if (!manualEl) return;
+  const val = parseFloat(manualEl.value);
+  if (!isNaN(val) && val >= 0) {
+    document.getElementById('c1-tax').value = val.toFixed(1);
+  } else {
+    // If cleared, restore auto rate
+    const id = document.getElementById('c1-region').value;
+    if (id) {
+      const r = REGIONS.find(x => x.id === id);
+      if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+    }
   }
   calc1Update();
 }
@@ -1214,23 +1342,16 @@ function setHorizon1(years, btn) {
 function setStressTest1(scenario, btn) {
   document.querySelectorAll('#c1-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const base = {
-    rate:  +document.getElementById('c1-rate').value,
-    appr:  +document.getElementById('c1-appr').value,
-    rentg: +document.getElementById('c1-rentg').value,
-  };
+  // Absolute values only — mortgage rate is never changed
   if (scenario === 'opt') {
-    document.getElementById('c1-rate').value  = Math.max(1, base.rate - 1);
-    document.getElementById('c1-appr').value  = Math.min(10, base.appr + 1);
-    document.getElementById('c1-rentg').value = Math.min(8, base.rentg + 1);
+    document.getElementById('c1-appr').value  = 5;
+    document.getElementById('c1-rentg').value = 4;
   } else if (scenario === 'base') {
-    document.getElementById('c1-rate').value  = 3.2;
     document.getElementById('c1-appr').value  = 3;
     document.getElementById('c1-rentg').value = 3;
   } else if (scenario === 'pess') {
-    document.getElementById('c1-rate').value  = Math.min(10, base.rate + 2);
-    document.getElementById('c1-appr').value  = Math.max(-2, base.appr - 1);
-    document.getElementById('c1-rentg').value = Math.max(0, base.rentg - 1.5);
+    document.getElementById('c1-appr').value  = 1;
+    document.getElementById('c1-rentg').value = 1;
   }
   calc1Update();
 }
@@ -1257,18 +1378,23 @@ function calc1Update() {
   document.getElementById('c1v-rate').textContent     = (annRate*100).toFixed(1) + '%';
   document.getElementById('c1v-term').textContent     = termYears + ' лет';
   document.getElementById('c1v-tax').textContent      = (taxPct*100).toFixed(1) + '%';
-  document.getElementById('c1v-appr').textContent     = (appr*100).toFixed(1) + '%';
-  document.getElementById('c1v-maint').textContent    = (maint*100).toFixed(1) + '%';
+  const itpDisplay = document.getElementById('c1-itp-display');
+  if (itpDisplay) itpDisplay.textContent = (taxPct*100).toFixed(1) + '% = ' + fmt(price * taxPct) + ' €';
+  const apprEl = document.getElementById('c1v-appr');
+  if (apprEl) apprEl.textContent = (appr*100).toFixed(1) + '%';
+  const rentgEl = document.getElementById('c1v-rentg');
+  if (rentgEl) rentgEl.textContent = (rentGrowth*100).toFixed(1) + '%';
+  const inflEl = document.getElementById('c1v-inflation');
+  if (inflEl) inflEl.textContent = (inflation*100).toFixed(1) + '%';
+  const yrSfx = t('c1_yr_suffix') || '/год';
+  document.getElementById('c1v-maint').textContent    = (maint*100).toFixed(1) + '%' + yrSfx + ' = ' + fmt(price * maint) + ' €' + yrSfx;
   document.getElementById('c1v-rent').textContent     = fmt(rent0) + ' €';
-  document.getElementById('c1v-rentg').textContent    = (rentGrowth*100).toFixed(1) + '%';
   document.getElementById('c1v-inv').textContent      = (invRate*100).toFixed(1) + '%';
-  document.getElementById('c1v-inflation').textContent= (inflation*100).toFixed(1) + '%';
 
   const downAmt = price * downPct;
   const taxAmt  = price * taxPct;
   document.getElementById('c1v-down-amt').textContent  = '= ' + fmt(downAmt) + ' €';
   document.getElementById('c1v-tax-amt').textContent   = '= ' + fmt(taxAmt) + ' €';
-  document.getElementById('c1v-maint-amt').textContent = '= ' + fmt(price * maint) + ' €/год';
 
   // Mortgage
   const loan  = price * (1 - downPct);
@@ -1362,9 +1488,9 @@ function calc1Update() {
   const winLabel = winner === 'buy' ? (t('c1_buy')||'Покупка') : (t('c1_rent_word')||'Аренда');
   document.getElementById('c1-winner').textContent     = '🏆 ' + winLabel;
   document.getElementById('c1-winner-sub').textContent = (t('c1_winner_sub_pre')||'выгоднее · разница') + ' +' + fmt(Math.abs(diff)) + ' €';
-  document.getElementById('c1-parity').textContent     = parityYear ? parityYear + ' ' + (t('c1_years')||'лет') : '>' + horizon;
+  document.getElementById('c1-parity').textContent     = parityYear ? pluralYears(parityYear) : '>' + horizon;
   document.getElementById('c1-roi').textContent     = roiAnn.toFixed(1) + '%';
-  document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + horizon + ' ' + (t('c1_years')||'лет');
+  document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
   updateC1ChartSub();
   fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
@@ -1372,13 +1498,13 @@ function calc1Update() {
   updateC1ChartTitle();
 
   // ---- Chart ----
-  drawCalc1Chart(labels, buyData, rentData, parityYear);
+  drawCalc1Chart(labels, buyData, rentData, parityYear, termYears);
 
   // ---- Auto-summary text ----
   buildCalc1Summary(winner, buyFinal, rentFinal, parityYear, roiAnn, horizon, downAmt, taxAmt, monthlyMortgage, rent0);
 }
 
-function drawCalc1Chart(labels, buyData, rentData, parityYear) {
+function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
   const canvas = document.getElementById('calcChart');
   if (!canvas) return;
   if (c1Chart) { c1Chart.destroy(); c1Chart = null; }
@@ -1395,7 +1521,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
       ctx.font = '13px DM Sans, sans-serif';
       ctx.fillStyle = '#8a8f9e';
       ctx.textAlign = 'left';
-      ctx.fillText(c1ChartTitleText, chartArea.left + 8, chartArea.top + 18);
+      ctx.fillText(c1ChartTitleText, chartArea.left + 8, chartArea.top - 10);
       ctx.restore();
     }
   };
@@ -1444,8 +1570,10 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
             const tooltipEl = document.getElementById('c1-tooltip');
             if (!tooltipEl) return;
             const { tooltip } = context;
+            const canvas = context.chart.canvas;
+            const pinned = canvas._c1PinnedTip;
             if (tooltip.opacity === 0 || !tooltip.dataPoints?.length) {
-              tooltipEl.style.display = 'none';
+              if (!pinned) tooltipEl.style.display = 'none';
               return;
             }
             let html = '';
@@ -1460,19 +1588,38 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
             tooltipEl.style.display = 'block';
           }
         },
-        annotation: crossoverIdx ? {
-          annotations: {
-            cross: {
+        annotation: (() => {
+          const annotations = {};
+          if (crossoverIdx) {
+            annotations.cross = {
               type: 'line',
               xMin: crossoverIdx,
               xMax: crossoverIdx,
               borderColor: 'rgba(201,168,76,0.6)',
               borderWidth: 1.5,
               borderDash: [4,4],
-              label: { display: true, content: (t('c1_year')||'Год') + ' ' + crossoverIdx + ': ' + (t('c1_buy_wins_label')||'купить выгоднее, чем снимать'), color: '#c9a84c', font: { size: 11 }, position: 'start' }
-            }
+              label: { display: true, content: (t('c1_year')||'Год') + ' ' + crossoverIdx + ': ' + (t('c1_buy_wins_label')||'купить выгоднее, чем снимать'), color: '#c9a84c', font: { size: 11 }, position: 'end' }
+            };
           }
-        } : {}
+          if (termYears && termYears < labels.length - 1) {
+            annotations.mortgagePaid = {
+              type: 'line',
+              xMin: termYears,
+              xMax: termYears,
+              borderColor: 'rgba(201,168,76,0.4)',
+              borderWidth: 1,
+              borderDash: [4,4],
+              label: {
+                display: true,
+                content: t('c1_mortgage_paid') || 'Ипотека выплачена',
+                color: '#8a8f9e',
+                font: { size: 11 },
+                position: 'end'
+              }
+            };
+          }
+          return { annotations };
+        })()
       },
       scales: {
         x: {
@@ -1491,17 +1638,55 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear) {
     plugins: [c1TitlePlugin]
   });
 
-  // Tooltip position follows mouse — attach once per canvas element
+  // Tooltip position follows mouse / pinned on click — attach once per canvas element
   if (!canvas._c1Listeners) {
     canvas._c1Listeners = true;
-    canvas.addEventListener('mousemove', e => {
+    canvas._c1PinnedTip = false;
+
+    function posC1Tip(clientX, clientY) {
       const tooltipEl = document.getElementById('c1-tooltip');
       if (!tooltipEl) return;
       const rect = canvas.getBoundingClientRect();
-      tooltipEl.style.left = (e.clientX - rect.left + 16) + 'px';
-      tooltipEl.style.top  = (e.clientY - rect.top  - 80) + 'px';
+      let x = clientX - rect.left + 16;
+      let y = clientY - rect.top  - 80;
+      x = Math.min(x, rect.width  - tooltipEl.offsetWidth  - 4);
+      y = Math.max(y, 4);
+      tooltipEl.style.left = x + 'px';
+      tooltipEl.style.top  = y + 'px';
+    }
+
+    canvas.addEventListener('mousemove', e => {
+      if (canvas._c1PinnedTip) return;
+      posC1Tip(e.clientX, e.clientY);
     });
+
     canvas.addEventListener('mouseleave', () => {
+      if (canvas._c1PinnedTip) return;
+      const tooltipEl = document.getElementById('c1-tooltip');
+      if (tooltipEl) tooltipEl.style.display = 'none';
+    });
+
+    // Click/tap: pin tooltip so it stays visible; second click unpins
+    canvas.addEventListener('click', e => {
+      const tooltipEl = document.getElementById('c1-tooltip');
+      if (!tooltipEl) return;
+      if (tooltipEl.style.display === 'block') {
+        canvas._c1PinnedTip = !canvas._c1PinnedTip;
+      }
+      if (!canvas._c1PinnedTip) posC1Tip(e.clientX, e.clientY);
+    });
+
+    // Touch: position tooltip at touch point
+    canvas.addEventListener('touchstart', e => {
+      const touch = e.touches[0];
+      posC1Tip(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    // Click outside canvas → unpin
+    document.addEventListener('click', e => {
+      if (!canvas._c1PinnedTip) return;
+      if (e.target === canvas) return;
+      canvas._c1PinnedTip = false;
       const tooltipEl = document.getElementById('c1-tooltip');
       if (tooltipEl) tooltipEl.style.display = 'none';
     });
@@ -1568,7 +1753,7 @@ function buildCalc1Summary(winner, buyFinal, rentFinal, parityYear, roiAnn, hori
   const diff = Math.abs(buyFinal - rentFinal);
   const parStr = parityYear ? `${t('c1_parity_year_at')||'Точка паритета'} — год ${parityYear}.` : '';
   el.innerHTML = `<strong>${t('c1_sum_intro')||'Вывод:'}</strong> ${t('c1_sum_winner')||'Стратегия'}
-    <strong>${winWord}</strong> ${t('c1_sum_better')||'выгоднее через'} <strong>${horizon} ${t('c1_years')||'лет'}</strong>
+    <strong>${winWord}</strong> ${t('c1_sum_better')||'выгоднее через'} <strong>${pluralYears(horizon)}</strong>
     ${t('c1_sum_diff')||'— разница'} <strong>${fmt(diff)} €</strong>. ${parStr}
     ${t('c1_sum_roi')||'ROI на первоначальный взнос (покупка):'} <strong>${roiAnn.toFixed(1)}% ${t('c1_per_year')||'годовых'}</strong>.
     ${t('c1_sum_inputs')||'Начальные вложения:'} ${fmt(downAmt + taxAmt)} €

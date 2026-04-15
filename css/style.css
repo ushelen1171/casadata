@@ -535,7 +535,7 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 .calc-btn {
   padding: 6px 14px;
   background: transparent;
-  border: 1px solid #2a2d35;
+  border: 1.5px solid #3d4150;
   border-radius: 6px;
   color: #8a8f9e;
   cursor: pointer;
@@ -583,7 +583,7 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 /* ---- CALC1 TOOLTIP ---- */
 .c1-tooltip {
   position: absolute;
-  background: rgba(22,24,28,0.96);
+  background: rgba(22,24,28,0.72);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
@@ -721,8 +721,10 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   gap: 4px 20px;
 }
 .slider-row {
-  display: flex; flex-direction: column; gap: 4px;
-  padding: 10px 0;
+  display: flex; flex-direction: column; gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border);
 }
 .slider-row:last-child { border-bottom: none; }
@@ -730,19 +732,28 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   display: flex; justify-content: space-between; align-items: baseline;
 }
 .slider-label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--muted);
 }
-.slider-label::after { content: ':'; }
+.slider-label::after { content: ':\00a0'; }
+/* Key sliders (price, rent) */
+.slider-row--key .slider-label { color: #c9a84c; font-weight: 500; }
+.slider-row--key input[type=range] { accent-color: #c9a84c; }
+/* Unit suffix (%) in ITP manual row */
+.c1-unit-label { font-size: 13px; color: var(--muted); }
 .slider-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
+  white-space: nowrap;
+}
+/* Sub-text inline next to value */
+.slider-val-group {
+  display: flex; align-items: baseline; gap: 5px;
 }
 .slider-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  text-align: right;
 }
 input[type=range] {
   width: 100%;
@@ -761,7 +772,7 @@ input[type=range] {
 .calc-advanced-arrow { transition: transform 0.2s; font-size: 11px; }
 .calc-advanced-arrow.open { transform: rotate(180deg); }
 .calc-advanced-content { display: none; }
-.calc-advanced-content.open { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+.calc-advanced-content.open { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
 .calc-stress-row {
   display: flex; gap: 6px; flex-wrap: wrap;
   padding: 14px 0;
@@ -992,4 +1003,131 @@ input[type=range] {
   line-height: 1.7;
   white-space: pre-line;
   margin: 0;
+}
+
+/* ---- SECTION LABEL (Период анализа / Стресс тест) ---- */
+.calc-section-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ---- BLOCK ABOVE CHART ---- */
+.c1-above-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.c1-above-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.c1-above-row2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.c1-appr-slider {
+  flex: 1;
+  min-width: 180px;
+  margin: 0 !important;
+}
+
+/* ---- BELOW CHART ROW ---- */
+.c1-below-chart-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.c1-below-chart-row .chart-subtitle {
+  margin: 0;
+  flex: 1;
+}
+
+/* ---- COLLAPSIBLE (block, not grid) ---- */
+.c1-collapsible { display: none; }
+.c1-collapsible.open { display: block; }
+
+/* ---- PARAMS HEADER + RESET BUTTON ---- */
+.c1-params-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+.c1-reset-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.c1-reset-btn:hover { color: var(--text); border-color: var(--accent); }
+.c1-reset-icon { font-size: 14px; line-height: 1; }
+
+/* ---- ITP / PRIMERA VIVIENDA BLOCK ---- */
+.c1-itp-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.c1-itp-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.c1-itp-info-row > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.c1-primera-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.c1-primera-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.c1-itp-manual-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.c1-tax-manual-input {
+  width: 64px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 13px;
+  text-align: right;
+}
+.c1-tax-manual-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
