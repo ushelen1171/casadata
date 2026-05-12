@@ -5,6 +5,7 @@
    ============================================================ */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { overflow-x: hidden; }
 body { overflow-x: hidden; }
 
 :root {
@@ -95,7 +96,7 @@ nav {
 .hstat-label { font-size: 12px; color: var(--muted); }
 
 /* ---- PAGES ---- */
-.page { display: none; max-width: 1100px; margin: 0 auto; padding: 32px 32px 64px; }
+.page { display: none; max-width: 1100px; margin: 0 auto; padding: 32px 32px 64px; overflow-x: hidden; }
 .page.active { display: block; }
 
 /* ---- SECTION HEADINGS ---- */
@@ -256,7 +257,7 @@ select {
 }
 
 /* ---- TABLE ---- */
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table th {
   text-align: left; padding: 8px 12px; color: var(--muted);
   font-weight: 400; border-bottom: 1px solid var(--border);
@@ -572,9 +573,9 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 
 /* ---- CHART SUBTITLE ---- */
 .chart-subtitle {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--muted);
-  text-align: center;
+  text-align: left;
   margin-top: -10px;
   margin-bottom: 14px;
   line-height: 1.5;
@@ -739,6 +740,8 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 /* Key sliders (price, rent) */
 .slider-row--key .slider-label { color: #c9a84c; font-weight: 500; }
 .slider-row--key input[type=range] { accent-color: #c9a84c; }
+/* Calc2: uniform slider height — all sub-text rows same height */
+#page-rental .slider-sub { min-height: 16px; }
 /* Unit suffix (%) in ITP manual row */
 .c1-unit-label { font-size: 13px; color: var(--muted); }
 .slider-value {
@@ -796,6 +799,66 @@ input[type=range] {
   opacity: 0.8;
 }
 .calc-summary-text strong { color: var(--text); }
+.c2-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.c2-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text);
+  user-select: none;
+}
+.c2-legend-item input { display: none; }
+.c2-legend-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid var(--color, #888);
+  background: transparent;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.15s;
+}
+.c2-legend-item input:checked + .c2-legend-check {
+  background: var(--color, #888);
+}
+.c2-legend-item input:checked + .c2-legend-check::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 7px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+.c2-legend-item.disabled {
+  opacity: 0.35;
+}
+.c2-index-footnote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -10px;
+  margin-bottom: 18px;
+  padding: 6px 12px 6px 10px;
+  border-left: 2px solid #5cb88a;
+  background: rgba(92,184,138,0.05);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.c2-index-footnote:empty { display: none; }
 .calc-disclaimer {
   font-size: 12px;
   color: var(--muted);

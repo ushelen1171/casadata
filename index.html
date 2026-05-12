@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=10">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -349,7 +349,7 @@
       </div>
       <input type="range" id="c1-price" min="50000" max="1500000" step="5000" value="294000" oninput="calc1Update()">
     </div>
-    <div class="slider-row">
+    <div id="c1-down-row" class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
         <span class="slider-val-group">
@@ -359,7 +359,7 @@
       </div>
       <input type="range" id="c1-down" min="5" max="80" step="1" value="20" oninput="calc1Update()">
     </div>
-    <div class="slider-row">
+    <div id="c1-rate-row" class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
         <span class="slider-val-group">
@@ -369,7 +369,7 @@
       </div>
       <input type="range" id="c1-rate" min="1" max="10" step="0.1" value="3.2" oninput="calc1Update()">
     </div>
-    <div class="slider-row">
+    <div id="c1-term-row" class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
         <span class="slider-value" id="c1v-term">25 лет</span>
@@ -505,7 +505,7 @@
 <div class="page" id="page-rental">
   <div class="section-head">
     <h2 data-i18n="c2_title">Доход от недвижимости</h2>
-    <p data-i18n="c2_sub">4 стратегии на одном графике: живу сам, сдаю, Airbnb и индексный фонд</p>
+    <p data-i18n="c2_sub">4 стратегии на одном графике: Держу, Сдаю, Посуточно и индексный фонд</p>
   </div>
 
   <!-- Top bar: region + property type -->
@@ -519,12 +519,20 @@
     </div>
   </div>
 
+  <!-- Preset row: С ипотекой / За наличные -->
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;margin-bottom:20px;">
+    <div class="calc-btn-group" id="c2-preset-btns">
+      <button class="calc-btn active" onclick="applyCalc2Preset('mortgage',this)" data-i18n="c1_preset_mortgage">С ипотекой</button>
+      <button class="calc-btn"        onclick="applyCalc2Preset('cash',this)"     data-i18n="c1_preset_cash">За наличные</button>
+    </div>
+  </div>
+
   <!-- Summary cards -->
   <div class="calc-summary-cards" style="grid-template-columns:repeat(4,1fr);">
     <div class="calc-card">
-      <div class="calc-card-label" data-i18n="c2_card_best">Лучшая стратегия</div>
+      <div class="calc-card-label" data-i18n="c2_card_best_re">ЛУЧШАЯ СТРАТЕГИЯ</div>
       <div class="calc-card-value" id="c2-best">—</div>
-      <div class="calc-card-sub"   id="c2-best-sub">—</div>
+      <div class="calc-card-sub" id="c2-best-sub">—</div>
     </div>
     <div class="calc-card">
       <div class="calc-card-label" data-i18n="c2_card_cashflow">Cashflow / мес</div>
@@ -542,39 +550,128 @@
       <div class="calc-card-sub"   id="c2-roi-sub" data-i18n="c2_card_roi_sub">Лучшая стратегия, 20 лет</div>
     </div>
   </div>
+  <div id="c2-index-footnote" class="c2-index-footnote"></div>
 
   <!-- Chart controls -->
-  <div class="calc-chart-controls">
-    <div class="calc-btn-group" id="c2-horizon-btns">
-      <button class="calc-btn"        onclick="setHorizon2(5,this)"  data-i18n="c1_y5">5 лет</button>
-      <button class="calc-btn"        onclick="setHorizon2(10,this)" data-i18n="c1_y10">10 лет</button>
-      <button class="calc-btn active" onclick="setHorizon2(20,this)" data-i18n="c1_y20">20 лет</button>
-      <button class="calc-btn"        onclick="setHorizon2(30,this)" data-i18n="c1_y30">30 лет</button>
+  <div class="c1-above-chart">
+    <!-- Строка 1: Период анализа + Номинал/Реальные -->
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="calc-section-label" data-i18n="c1_period_label">Период анализа:</span>
+        <div class="calc-btn-group" id="c2-horizon-btns">
+          <button class="calc-btn"        onclick="setHorizon2(5,this)"  data-i18n="c1_y5">5 лет</button>
+          <button class="calc-btn"        onclick="setHorizon2(10,this)" data-i18n="c1_y10">10 лет</button>
+          <button class="calc-btn active" onclick="setHorizon2(20,this)" data-i18n="c1_y20">20 лет</button>
+          <button class="calc-btn"        onclick="setHorizon2(30,this)" data-i18n="c1_y30">30 лет</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="calc-btn-group" id="c2-mode-btns">
+          <button class="calc-btn active" onclick="setPriceMode2('nominal',this)" data-i18n="c1_nominal">Номинал</button>
+          <button class="calc-btn"        onclick="setPriceMode2('real',this)"    data-i18n="c1_real">Реальные цены</button>
+        </div>
+        <span class="info-icon" data-i18n-title="c1_nominal_tip" title="">ⓘ</span>
+      </div>
     </div>
-    <!-- legend chips -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto;">
-      <span style="font-size:12px;color:#4a90d9;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_live">Живу сам</span>
-      <span style="font-size:12px;color:#c9a84c;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_rent">Сдаю</span>
-      <span style="font-size:12px;color:#e8955a;">■</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_airbnb">Airbnb</span>
-      <span style="font-size:12px;color:#5cb88a;">- -</span><span style="font-size:12px;color:var(--muted);" data-i18n="c2_s_index">Индекс</span>
+    <!-- Строка 2: Сценарий + Доход от аренды -->
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="calc-section-label" data-i18n="c1_stress_label">Сценарий:</span>
+        <div class="calc-btn-group" id="c2-stress-btns">
+          <button class="calc-btn"        onclick="setStressTest2('pess',this)" data-i18n="c1_pess">Пессимист.</button>
+          <button class="calc-btn active" onclick="setStressTest2('base',this)" data-i18n="c1_base">Базовый ★</button>
+          <button class="calc-btn"        onclick="setStressTest2('opt',this)"  data-i18n="c1_opt">Оптимист.</button>
+        </div>
+        <span class="info-icon" data-i18n-title="c1_stress_tip" title="">ⓘ</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;position:relative;">
+        <span class="calc-section-label" data-i18n="c2_reinvest_label">Доход от аренды:</span>
+        <div class="calc-btn-group" id="c2-reinvest-btns">
+          <button class="calc-btn active" onclick="setReinvest2(false,this)" data-i18n="c2_reinvest_cash">Деньги на счету ★</button>
+          <button class="calc-btn"        onclick="setReinvest2(true,this)"  data-i18n="c2_reinvest_fund">Реинвестирую в фонды</button>
+        </div>
+        <button class="c1-info-btn"
+          onmouseenter="openC2ReinvestPopup(event)"
+          onmouseleave="closeC2ReinvestPopupDelayed()"
+          onclick="openC2ReinvestPopup(event)"
+          aria-label="О реинвестировании">ⓘ</button>
+        <div class="c1-popup" id="c2-reinvest-popup"
+          onmouseenter="cancelCloseC2ReinvestPopup()"
+          onmouseleave="closeC2ReinvestPopupDelayed()">
+          <button class="c1-popup-close" onclick="closeC2ReinvestPopup()">×</button>
+          <div class="c1-popup-title" data-i18n="c2_reinvest_tip_title">О реинвестировании</div>
+          <p class="c1-popup-text" data-i18n="c2_reinvest_tip"></p>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Chart -->
-  <div class="calc-chart-wrap" style="height:320px;">
-    <canvas id="rc-cf-chart"></canvas>
+  <p style="margin-top:16px;margin-bottom:2px;font-size:15px;font-weight:500;color:var(--text);" data-i18n="c2_equity_chart_title">Накопленное состояние по каждой стратегии</p>
+  <p id="c2-chart1-sub" class="chart-subtitle" style="margin-top:0;margin-bottom:8px;" data-i18n="c2_chart1_sub">График: чистый капитал по стратегиям, начиная с первоначального взноса + налог</p>
+  <div class="c2-legend">
+    <label class="c2-legend-item" id="c2-li-live" style="--color:#4a90d9">
+      <input type="checkbox" checked onchange="toggleStrategy2('live',this)">
+      <span class="c2-legend-check"></span>
+      <span data-i18n="c2_s_live">Держу</span>
+    </label>
+    <label class="c2-legend-item" id="c2-li-rent" style="--color:#c9a84c">
+      <input type="checkbox" checked onchange="toggleStrategy2('rent',this)">
+      <span class="c2-legend-check"></span>
+      <span data-i18n="c2_s_rent">Сдаю</span>
+    </label>
+    <label class="c2-legend-item" id="c2-li-airbnb" style="--color:#e8955a">
+      <input type="checkbox" checked onchange="toggleStrategy2('airbnb',this)">
+      <span class="c2-legend-check"></span>
+      <span data-i18n="c2_s_airbnb">Посуточно</span>
+    </label>
+    <label class="c2-legend-item" id="c2-li-index" style="--color:#5cb88a;position:relative;">
+      <input type="checkbox" checked onchange="toggleStrategy2('index',this)">
+      <span class="c2-legend-check"></span>
+      <span data-i18n="c2_s_index">Индексный фонд 7%/год</span>
+      <button class="c1-info-btn"
+        onmouseenter="openC2IndexTip(event)"
+        onmouseleave="closeC2IndexTipDelayed()"
+        onclick="openC2IndexTip(event)"
+        aria-label="Об индексном фонде">ⓘ</button>
+      <div class="c1-popup" id="c2-index-tip"
+        onmouseenter="cancelCloseC2IndexTip()"
+        onmouseleave="closeC2IndexTipDelayed()">
+        <button class="c1-popup-close" onclick="closeC2IndexTip()">×</button>
+        <p class="c1-popup-text" data-i18n="c2_index_tooltip"></p>
+      </div>
+    </label>
   </div>
-  <p class="chart-subtitle" data-i18n="c2_chart1_sub">График: чистый капитал по стратегиям, начиная с первоначального взноса + налог</p>
-  <p style="font-size:11px;color:var(--muted);text-align:right;margin-top:-10px;margin-bottom:8px;opacity:0.75;" data-i18n="c2_index_footnote">* 7% — историческая доходность MSCI World ETF за 30 лет с реинвестированием дивидендов (сложный процент). Без реинвестирования: ~5%.</p>
+  <div style="display:flex;align-items:stretch;">
+    <div style="position:relative;width:22px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:var(--muted);white-space:nowrap;" data-i18n="c2_y_axis_label">Чистые активы, €</span>
+      <button class="c1-info-btn"
+        onmouseenter="openC2EquityPopup(event)"
+        onmouseleave="closeC2EquityPopupDelayed()"
+        onclick="openC2EquityPopup(event)"
+        aria-label="Ключевые показатели">ⓘ</button>
+      <div class="c1-popup" id="c2-equity-popup"
+        onmouseenter="cancelCloseC2EquityPopup()"
+        onmouseleave="closeC2EquityPopupDelayed()">
+        <button class="c1-popup-close" onclick="closeC2EquityPopup()">×</button>
+        <div class="c1-popup-title" data-i18n="c2_equity_tip_title">Ключевые показатели</div>
+        <p class="c1-popup-text" data-i18n="c2_equity_tip_text"></p>
+      </div>
+    </div>
+    <div class="calc-chart-wrap" style="height:320px;flex:1;">
+      <canvas id="rc-cf-chart"></canvas>
+    </div>
+  </div>
 
   <!-- Strategy tabs for cashflow chart -->
   <div class="calc-chart-controls" style="margin-top:8px;">
     <div class="calc-btn-group" id="c2-strategy-btns">
-      <button class="calc-btn" onclick="setStrategy2('live',this)" data-i18n="c2_tab_live">Живу сам</button>
-      <button class="calc-btn active" onclick="setStrategy2('rent',this)" data-i18n="c2_tab_rent">Покупаю и сдаю</button>
+      <button class="calc-btn" onclick="setStrategy2('live',this)"><span data-i18n="c2_tab_live">Держу</span><span data-i18n="c2_tab_live_sub" style="font-size:11px;color:var(--muted);display:block;font-weight:400;">Покупаю, не сдаю</span></button>
+      <button class="calc-btn active" onclick="setStrategy2('rent',this)" data-i18n="c2_tab_rent">Сдаю</button>
       <button class="calc-btn" onclick="setStrategy2('airbnb',this)" data-i18n="c2_tab_airbnb">Посуточно</button>
     </div>
   </div>
+  <div id="c2-airbnb-warning" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(224,92,92,0.1);border-left:3px solid #e05c5c;border-radius:0 6px 6px 0;font-size:13px;line-height:1.5;color:var(--text);"></div>
 
   <!-- CF section: visible for rent/airbnb strategies -->
   <div id="c2-cf-section" style="display:none;">
@@ -584,19 +681,22 @@
         <div class="calc-card-value" id="c2-mini-paid">—</div>
       </div>
       <div class="calc-card">
-        <div class="calc-card-label" data-i18n="c2_mini_breakeven_label">CF выходит в плюс</div>
+        <div class="calc-card-label" data-i18n="c2_mini_breakeven_label">Денежный поток выходит в плюс</div>
         <div class="calc-card-value" id="c2-mini-breakeven">—</div>
       </div>
       <div class="calc-card">
-        <div class="calc-card-label" data-i18n="c2_mini_total_label">Итого CF за период</div>
+        <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
+          <span data-i18n="c2_mini_total_label">Накопленный денежный поток за период</span>
+          <span class="info-icon" data-i18n-title="c2_mini_total_tip">ⓘ</span>
+        </div>
         <div class="calc-card-value" id="c2-mini-total">—</div>
       </div>
     </div>
-    <p class="chart-subtitle" style="margin-top:4px;" data-i18n="c2_chart2_sub">Помесячный денежный поток и накопленный CF</p>
-    <div class="calc-chart-wrap" style="height:280px;margin-top:4px;">
+    <p class="chart-subtitle" style="margin-bottom:8px;margin-top:4px;" data-i18n="c2_chart2_sub">Помесячный денежный поток и накопленный денежный поток</p>
+    <div class="calc-chart-wrap" style="height:280px;">
       <canvas id="rc-cashflow-chart"></canvas>
     </div>
-    <p id="c2-no-breakeven" style="display:none;font-size:12px;color:var(--muted);text-align:center;margin-top:6px;" data-i18n="c2_no_breakeven">CF не выходит в плюс за указанный период</p>
+    <p id="c2-no-breakeven" style="display:none;font-size:12px;color:var(--muted);text-align:center;margin-top:6px;" data-i18n="c2_no_breakeven">Денежный поток не выходит в плюс за указанный период</p>
     <div class="calc-summary-cards" style="grid-template-columns:repeat(3,1fr);margin-top:12px;margin-bottom:0;">
       <div class="calc-card">
         <div class="calc-card-label" style="display:flex;align-items:center;gap:4px;">
@@ -624,14 +724,15 @@
 
   <!-- Main sliders -->
   <div class="calc-sliders">
-    <div class="slider-row">
+    <div class="slider-row slider-row--key">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_price">Цена квартиры</span>
         <span class="slider-value" id="c2v-price">300 000 €</span>
       </div>
       <input type="range" id="c2-price" min="50000" max="1500000" step="5000" value="294000" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
-    <div class="slider-row">
+    <div id="c2-down-row" class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_down">Первоначальный взнос</span>
         <span class="slider-value" id="c2v-down">20%</span>
@@ -639,7 +740,7 @@
       <input type="range" id="c2-down" min="0" max="100" step="1" value="20" oninput="calcRental()">
       <div class="slider-sub" id="c2v-down-amt">= 58 800 €</div>
     </div>
-    <div class="slider-row">
+    <div id="c2-rate-row" class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_rate">Ставка ипотеки / год</span>
         <span class="slider-value" id="c2v-rate">3.2%</span>
@@ -647,26 +748,39 @@
       <input type="range" id="c2-rate" min="0" max="10" step="0.1" value="3.2" oninput="calcRental()">
       <div class="slider-sub" id="c2v-rate-pmt">≈ 1 050 €/мес</div>
     </div>
-    <div class="slider-row">
+    <div id="c2-term-row" class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
+        <span class="slider-value" id="c2v-term">25 лет</span>
+      </div>
+      <input type="range" id="c2-term" min="5" max="30" step="1" value="25" oninput="calcRental()">
+      <div class="slider-sub"></div>
+    </div>
+    <div class="slider-row slider-row--key">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c2_long_rent">Аренда / мес (долгосрочная)</span>
         <span class="slider-value" id="c2v-long-rent">1 309 €</span>
       </div>
       <input type="range" id="c2-long-rent" min="200" max="6000" step="50" value="1309" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
-    <div class="slider-row">
+    <div class="slider-row slider-row--key">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c2_night_rate">Цена ночи (Airbnb)</span>
         <span class="slider-value" id="c2v-night">90 €</span>
       </div>
       <input type="range" id="c2-night" min="20" max="500" step="5" value="90" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
-    <div class="slider-row">
+    <div class="slider-row" style="grid-column:1/-1;">
       <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c2_occupancy">Заполняемость Airbnb</span>
-        <span class="slider-value" id="c2v-occ">65%</span>
+        <span class="slider-label" data-i18n="lbl_tax_res">Налоговый статус</span>
       </div>
-      <input type="range" id="c2-occ" min="20" max="95" step="1" value="65" oninput="calcRental()">
+      <select id="c2-tax-status" onchange="onCalc2TaxStatusChange()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+        <option value="resident" selected data-i18n="tax_resident">Резидент Испании</option>
+        <option value="eu" data-i18n="tax_eu">Резидент ЕС (не резидент Испании)</option>
+        <option value="noneu" data-i18n="tax_noneu">Нерезидент (не ЕС)</option>
+      </select>
     </div>
   </div>
 
@@ -678,10 +792,19 @@
   <div class="calc-advanced-content" id="c2-adv">
     <div class="slider-row">
       <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c1_term">Срок ипотеки</span>
-        <span class="slider-value" id="c2v-term">25 лет</span>
+        <span class="slider-label" data-i18n="lbl_vacancy">Простой (долгосрочная)</span>
+        <span class="slider-value" id="c2v-vacancy">5%</span>
       </div>
-      <input type="range" id="c2-term" min="5" max="30" step="1" value="25" oninput="calcRental()">
+      <input type="range" id="c2-vacancy" min="0" max="30" step="1" value="5" oninput="calcRental()">
+      <div class="slider-sub"></div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_occupancy">Заполняемость Airbnb</span>
+        <span class="slider-value" id="c2v-occ">65%</span>
+      </div>
+      <input type="range" id="c2-occ" min="20" max="95" step="1" value="65" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
@@ -689,13 +812,7 @@
         <span class="slider-value" id="c2v-tax">7.5%</span>
       </div>
       <input type="range" id="c2-tax" min="1" max="15" step="0.5" value="7.5" oninput="calcRental()">
-    </div>
-    <div class="slider-row">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="lbl_vacancy">Простой (vacancy)</span>
-        <span class="slider-value" id="c2v-vacancy">5%</span>
-      </div>
-      <input type="range" id="c2-vacancy" min="0" max="30" step="1" value="5" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
@@ -703,6 +820,7 @@
         <span class="slider-value" id="c2v-mgmt">10%</span>
       </div>
       <input type="range" id="c2-mgmt" min="0" max="25" step="1" value="10" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
@@ -710,6 +828,7 @@
         <span class="slider-value" id="c2v-platform">20%</span>
       </div>
       <input type="range" id="c2-platform" min="10" max="40" step="1" value="20" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
@@ -717,31 +836,23 @@
         <span class="slider-value" id="c2v-maint">1.2%</span>
       </div>
       <input type="range" id="c2-maint" min="0.3" max="3" step="0.1" value="1.2" oninput="calcRental()">
+      <p id="c2-maint-breakdown" style="font-size:11px;color:var(--muted);margin:4px 0 0;"></p>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_appr">Рост цены / год</span>
         <span class="slider-value" id="c2v-appr">3%</span>
       </div>
-      <input type="range" id="c2-appr" min="-2" max="10" step="0.5" value="3" oninput="calcRental()">
+      <input type="range" id="c2-appr" min="-2" max="15" step="0.5" value="3" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_rentg">Рост аренды / год</span>
         <span class="slider-value" id="c2v-rentg">3%</span>
       </div>
-      <input type="range" id="c2-rentg" min="0" max="8" step="0.5" value="3" oninput="calcRental()">
-    </div>
-    <div class="slider-row" style="grid-column:1/-1;">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="lbl_tax_res">Налоговый статус</span>
-        <span class="slider-value" id="c2v-tax-status"></span>
-      </div>
-      <select id="c2-tax-status" onchange="calcRental()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);">
-        <option value="resident" data-i18n="tax_resident">Резидент Испании (19%)</option>
-        <option value="eu" selected data-i18n="tax_eu">Резидент ЕС (19%)</option>
-        <option value="noneu" data-i18n="tax_noneu">Нерезидент (24%)</option>
-      </select>
+      <input type="range" id="c2-rentg" min="0" max="12" step="0.5" value="3" oninput="calcRental()">
+      <div class="slider-sub"></div>
     </div>
   </div>
 
@@ -974,7 +1085,7 @@
     <h2 data-i18n="itp_by_region">ITP по регионам</h2>
     <p data-i18n="itp_by_region_sub">Ставки налога на передачу права собственности (вторичный рынок)</p>
   </div>
-  <div class="card" style="padding:0;overflow:hidden;">
+  <div class="card" style="padding:0;overflow-x:auto;">
     <table class="data-table">
       <thead><tr>
         <th data-i18n="col_region">Регион</th>
@@ -991,7 +1102,7 @@
     <h2 data-i18n="reno_costs_ref">Сметы ремонта</h2>
     <p data-i18n="reno_costs_sub">Ориентировочная стоимость ремонта в €/м² и общая смета для квартиры 70м²</p>
   </div>
-  <div class="card" style="padding:0;overflow:hidden;">
+  <div class="card" style="padding:0;overflow-x:auto;">
     <table class="data-table" style="font-size: 13px;">
       <thead><tr>
         <th data-i18n="reno_type">Тип</th>
@@ -1046,12 +1157,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-<script src="js/data.js?v=2"></script>
-<script src="js/i18n.js?v=10"></script>
-<script src="js/rental-calc.js?v=4"></script>
+<script src="js/data.js?v=3"></script>
+<script src="js/i18n.js?v=13"></script>
+<script src="js/rental-calc.js?v=9"></script>
 <script src="js/compare-all.js?v=2"></script>
 <script src="js/flip-analyzer.js?v=5"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/app.js?v=13"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>

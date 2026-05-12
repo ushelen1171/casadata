@@ -70,12 +70,12 @@ function pluralYears(n) {
 let c1Chart = null;
 let c1Horizon = 20;
 let c1PriceMode = 'nominal';
+let c1IsCash = false;
 let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
 let c1PrimeraVivienda = true;
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
-// Respects manual override; does NOT read manual when resetting (pass skipManual=true)
 function getC1AutoTaxRate(r) {
   if (c1PropertyType === 'new') return 12.5;
   const itpBase = c1PrimeraVivienda ? r.itp : (r.itpInv ?? r.itp);
@@ -227,7 +227,7 @@ const PALETTES = {
     stops:[{v:7,c:'#E1F5EE'},{v:10,c:'#5DCAA5'},{v:14,c:'#1D9E75'},{v:18,c:'#0F6E56'},{v:99,c:'#04342C'}]},
   pr:     {fn:r=>(r.rent*12)/r.price*100, fmt:v=>v.toFixed(1)+'%', title:'Доходность аренды',
     stops:[{v:3.5,c:'#EAF3DE'},{v:4.5,c:'#97C459'},{v:5.5,c:'#639922'},{v:6.5,c:'#3B6D11'},{v:99,c:'#173404'}]},
-  growth: {fn:r=>r.growth1, fmt:v=>'+'+v.toFixed(1)+'%', title:'Рост цен за год',
+  growth: {fn:r=>r.growth1, fmt:v=>v != null ? '+'+v.toFixed(1)+'%' : '—', title:'Рост цен за год',
     stops:[{v:10,c:'#FAEEDA'},{v:11,c:'#EF9F27'},{v:12,c:'#BA7517'},{v:13,c:'#854F0B'},{v:99,c:'#412402'}]},
 };
 
@@ -268,6 +268,7 @@ function isLightColor(hex){
 
 function getMapColor(r){
   const v=PALETTES[mapMode].fn(r);
+  if(v==null) return '#6b7280';
   for(const s of PALETTES[mapMode].stops) if(v<=s.v) return s.c;
   return PALETTES[mapMode].stops.at(-1).c;
 }
@@ -724,6 +725,9 @@ function renderMarket() {
     const va = getRegionValue(a, marketSortCol);
     const vb = getRegionValue(b, marketSortCol);
     if (typeof va === 'string') return marketSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
     return marketSortDir === 'asc' ? va - vb : vb - va;
   });
 
@@ -742,8 +746,8 @@ function renderMarket() {
                  : '#f97';
 
     // Цвет роста за год
-    const g1Color = r.growth1 >= 12 ? '#f0c040'
-                  : r.growth1 >= 8  ? '#c8e6c9'
+    const g1Color = r.growth1 != null && r.growth1 >= 12 ? '#f0c040'
+                  : r.growth1 != null && r.growth1 >= 8  ? '#c8e6c9'
                   : '#aaa';
 
     const tr = document.createElement('tr');
@@ -759,7 +763,7 @@ function renderMarket() {
       <td style="color:${yColor};font-weight:600;">${r.yield.toFixed(1)}%</td>
       <td style="color:var(--muted);">${r.pr.toFixed(1)}</td>
       <td style="color:var(--muted);">${r.prAdj.toFixed(1)}</td>
-      <td style="color:${g1Color};">${r.growth1 >= 0 ? '+' : ''}${r.growth1.toFixed(1)}%</td>
+      <td style="color:${g1Color};">${r.growth1 != null ? (r.growth1 >= 0 ? '+' : '') + r.growth1.toFixed(1) + '%' : '—'}</td>
       <td style="color:var(--muted);">+${cagr10.toFixed(1)}%</td>
     `;
     tbody.appendChild(tr);
@@ -838,15 +842,21 @@ function renderHeatmaps() {
 
 // Growth bar chart (BLOCK 2.1)
 function renderGrowthBarChart() {
-  const sorted = [...REGIONS].sort((a, b) => b.growth1 - a.growth1);
+  const sorted = [...REGIONS].sort((a, b) => {
+    if (a.growth1 == null && b.growth1 == null) return 0;
+    if (a.growth1 == null) return 1;
+    if (b.growth1 == null) return -1;
+    return b.growth1 - a.growth1;
+  });
   const height = (sorted.length * 38) + 80;
   
   const canvas = document.getElementById('growthBarChart');
   if (!canvas) return;
   if (growthBarChartInst) { growthBarChartInst.destroy(); growthBarChartInst = null; }
 
-  const minGrowth = Math.min(...sorted.map(r => r.growth1));
-  const maxGrowth = Math.max(...sorted.map(r => r.growth1));
+  const validGrowths = sorted.map(r => r.growth1).filter(v => v != null);
+  const minGrowth = validGrowths.length ? Math.min(...validGrowths) : 0;
+  const maxGrowth = validGrowths.length ? Math.max(...validGrowths) : 10;
 
   growthBarChartInst = new Chart(canvas, {
     type: 'bar',
@@ -856,6 +866,7 @@ function renderGrowthBarChart() {
         label: 'Рост %',
         data: sorted.map(r => r.growth1),
         backgroundColor: sorted.map(r => {
+          if (r.growth1 == null) return '#ccc';
           const t = (r.growth1 - minGrowth) / (maxGrowth - minGrowth);
           const hue = 100 - (t * 100);
           const lightness = 60 - (t * 20);
@@ -1177,6 +1188,62 @@ function closeC1Popup() {
   }
 }
 
+let c2EquityPopupCloseTimer = null;
+let c2EquityPopupOutsideHandler = null;
+function openC2EquityPopup(e) {
+  if (e) e.stopPropagation();
+  if (c2EquityPopupCloseTimer) { clearTimeout(c2EquityPopupCloseTimer); c2EquityPopupCloseTimer = null; }
+  const popup = document.getElementById('c2-equity-popup');
+  if (!popup) return;
+  popup.classList.add('visible');
+  setTimeout(() => {
+    c2EquityPopupOutsideHandler = ev => { if (!popup.contains(ev.target)) closeC2EquityPopup(); };
+    document.addEventListener('click', c2EquityPopupOutsideHandler);
+  }, 0);
+}
+function closeC2EquityPopup() {
+  const popup = document.getElementById('c2-equity-popup');
+  if (popup) popup.classList.remove('visible');
+  if (c2EquityPopupOutsideHandler) {
+    document.removeEventListener('click', c2EquityPopupOutsideHandler);
+    c2EquityPopupOutsideHandler = null;
+  }
+}
+function closeC2EquityPopupDelayed() {
+  c2EquityPopupCloseTimer = setTimeout(closeC2EquityPopup, 150);
+}
+function cancelCloseC2EquityPopup() {
+  if (c2EquityPopupCloseTimer) { clearTimeout(c2EquityPopupCloseTimer); c2EquityPopupCloseTimer = null; }
+}
+
+let c2IndexTipCloseTimer = null;
+let c2IndexTipOutsideHandler = null;
+function openC2IndexTip(e) {
+  if (e) e.stopPropagation();
+  if (c2IndexTipCloseTimer) { clearTimeout(c2IndexTipCloseTimer); c2IndexTipCloseTimer = null; }
+  const popup = document.getElementById('c2-index-tip');
+  if (!popup) return;
+  popup.classList.add('visible');
+  setTimeout(() => {
+    c2IndexTipOutsideHandler = ev => { if (!popup.contains(ev.target)) closeC2IndexTip(); };
+    document.addEventListener('click', c2IndexTipOutsideHandler);
+  }, 0);
+}
+function closeC2IndexTip() {
+  const popup = document.getElementById('c2-index-tip');
+  if (popup) popup.classList.remove('visible');
+  if (c2IndexTipOutsideHandler) {
+    document.removeEventListener('click', c2IndexTipOutsideHandler);
+    c2IndexTipOutsideHandler = null;
+  }
+}
+function closeC2IndexTipDelayed() {
+  c2IndexTipCloseTimer = setTimeout(closeC2IndexTip, 150);
+}
+function cancelCloseC2IndexTip() {
+  if (c2IndexTipCloseTimer) { clearTimeout(c2IndexTipCloseTimer); c2IndexTipCloseTimer = null; }
+}
+
 function initCalc1() {
   const sel = document.getElementById('c1-region');
   if (!sel) return;
@@ -1213,6 +1280,8 @@ function onCalc1RegionChange() {
   const sqm = 70;
   document.getElementById('c1-price').value = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c1-rent').value  = Math.round(r.rent * sqm / 50) * 50;
+  if (r.cagr10     != null) document.getElementById('c1-appr').value  = r.cagr10;
+  if (r.rentCagr10 != null) document.getElementById('c1-rentg').value = r.rentCagr10;
   // Reset manual tax override on region change
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
@@ -1305,21 +1374,43 @@ function onC1TaxManualChange() {
   calc1Update();
 }
 
+let c1SavedDown = 20;
+let c1SavedRate = 3.2;
+let c1SavedTerm = 25;
+
 function applyCalc1Preset(preset, btn) {
   document.querySelectorAll('#c1-preset-btns .calc-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (preset === 'mortgage') {
-    document.getElementById('c1-down').value  = 20;
-    document.getElementById('c1-rate').value  = 3.2;
-    document.getElementById('c1-inv').value   = 7;
-  } else if (preset === 'cash') {
-    document.getElementById('c1-down').value  = 100;
-    document.getElementById('c1-rate').value  = 0;
-    document.getElementById('c1-inv').value   = 7;
-  } else if (preset === 'noninv') {
-    document.getElementById('c1-down').value  = 20;
-    document.getElementById('c1-rate').value  = 3.2;
-    document.getElementById('c1-inv').value   = 0;
+
+  const downRow = document.getElementById('c1-down-row');
+  const rateRow = document.getElementById('c1-rate-row');
+  const termRow = document.getElementById('c1-term-row');
+
+  if (preset === 'cash') {
+    // Save current values before hiding
+    c1SavedDown = +document.getElementById('c1-down').value;
+    c1SavedRate = +document.getElementById('c1-rate').value;
+    c1SavedTerm = +document.getElementById('c1-term').value;
+    c1IsCash = true;
+    if (downRow) downRow.style.display = 'none';
+    if (rateRow) rateRow.style.display = 'none';
+    if (termRow) termRow.style.display = 'none';
+    document.getElementById('c1-down').value = 100;
+    document.getElementById('c1-inv').value  = 7;
+  } else {
+    c1IsCash = false;
+    if (downRow) downRow.style.display = '';
+    if (rateRow) rateRow.style.display = '';
+    if (termRow) termRow.style.display = '';
+    // Restore saved values
+    document.getElementById('c1-down').value = c1SavedDown;
+    document.getElementById('c1-rate').value = c1SavedRate;
+    document.getElementById('c1-term').value = c1SavedTerm;
+    if (preset === 'noninv') {
+      document.getElementById('c1-inv').value = 0;
+    } else {
+      document.getElementById('c1-inv').value = 7;
+    }
   }
   calc1Update();
 }
@@ -1339,20 +1430,22 @@ function setHorizon1(years, btn) {
   updateC1ChartTitle();
 }
 
+function getApprForScenario(regionId, scenario) {
+  const r = REGIONS.find(x => x.id === regionId);
+  if (scenario === 'opt')  return r?.cagr3  ?? 5;
+  if (scenario === 'base') return r?.cagr5  ?? 3;
+  if (scenario === 'pess') return r?.cagr10 ?? 1;
+  return 3;
+}
+
 function setStressTest1(scenario, btn) {
   document.querySelectorAll('#c1-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Absolute values only — mortgage rate is never changed
-  if (scenario === 'opt') {
-    document.getElementById('c1-appr').value  = 5;
-    document.getElementById('c1-rentg').value = 4;
-  } else if (scenario === 'base') {
-    document.getElementById('c1-appr').value  = 3;
-    document.getElementById('c1-rentg').value = 3;
-  } else if (scenario === 'pess') {
-    document.getElementById('c1-appr').value  = 1;
-    document.getElementById('c1-rentg').value = 1;
-  }
+  const regionId = document.getElementById('c1-region').value;
+  document.getElementById('c1-appr').value = getApprForScenario(regionId, scenario);
+  if (scenario === 'opt')  document.getElementById('c1-rentg').value = 4;
+  else if (scenario === 'base') document.getElementById('c1-rentg').value = 3;
+  else if (scenario === 'pess') document.getElementById('c1-rentg').value = 1;
   calc1Update();
 }
 
@@ -1714,10 +1807,15 @@ function updateC1ChartSub() {
   const el = document.getElementById('c1-chart-sub');
   if (!el) return;
   const appr = parseFloat(document.getElementById('c1-appr')?.value || 3).toFixed(1);
-  const rate = parseFloat(document.getElementById('c1-rate')?.value || 3.2).toFixed(1);
   const inv  = parseFloat(document.getElementById('c1-inv')?.value || 7).toFixed(1);
-  const tpl = t('c1_chart_sub_tpl') || 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}% · доходность инвестиций {inv}%';
-  el.textContent = tpl.replace('{appr}', appr).replace('{rate}', rate).replace('{inv}', inv);
+  if (c1IsCash) {
+    const tpl = t('c1_chart_sub_cash_tpl') || 'Расчёт при покупке за наличные · рост цен {appr}%/год · доходность инвестиций {inv}%';
+    el.textContent = tpl.replace('{appr}', appr).replace('{inv}', inv);
+  } else {
+    const rate = parseFloat(document.getElementById('c1-rate')?.value || 3.2).toFixed(1);
+    const tpl = t('c1_chart_sub_tpl') || 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}% · доходность инвестиций {inv}%';
+    el.textContent = tpl.replace('{appr}', appr).replace('{rate}', rate).replace('{inv}', inv);
+  }
 }
 
 function fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
