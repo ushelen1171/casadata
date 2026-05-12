@@ -1083,34 +1083,27 @@ function initGlobalTooltips() {
 
   function positionNearEl(el) {
     const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.bottom + 8;
-    tip.style.left = cx + 'px';
-    tip.style.top  = cy + 'px';
-    tip.style.transform = 'translateX(-50%)';
-    // clamp right edge
-    const tr = tip.getBoundingClientRect();
-    if (tr.right > window.innerWidth - 8) {
-      tip.style.left = (window.innerWidth - tip.offsetWidth - 8) + 'px';
-      tip.style.transform = '';
-    }
-    if (tr.left < 8) {
-      tip.style.left = '8px';
-      tip.style.transform = '';
-    }
-    // flip above if overflows bottom
-    if (tr.bottom > window.innerHeight - 8) {
-      tip.style.top = (r.top - tip.offsetHeight - 8) + 'px';
-    }
+    void tip.offsetWidth; // force reflow so dimensions are current
+    const tw = tip.offsetWidth;
+    const th = tip.offsetHeight;
+    // Prefer above the element to avoid covering content below (e.g. charts)
+    let top = r.top - th - 8;
+    if (top < 8) top = r.bottom + 8; // not enough space above → go below
+    let left = Math.round(r.left + r.width / 2 - tw / 2);
+    left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+    tip.style.transform = '';
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
   }
 
   function positionAtCursor(clientX, clientY) {
     tip.style.transform = '';
     tip.style.left = (clientX + 16) + 'px';
     tip.style.top  = (clientY - 8)  + 'px';
+    void tip.offsetWidth; // force reflow so getBoundingClientRect reflects current content
     const r = tip.getBoundingClientRect();
-    if (r.right > window.innerWidth - 8)  tip.style.left = (clientX - tip.offsetWidth - 8) + 'px';
-    if (r.bottom > window.innerHeight - 8) tip.style.top  = (clientY - tip.offsetHeight - 8) + 'px';
+    if (r.right  > window.innerWidth  - 8) tip.style.left = Math.max(8, clientX - tip.offsetWidth - 16) + 'px';
+    if (r.bottom > window.innerHeight - 8) tip.style.top  = Math.max(8, clientY - tip.offsetHeight - 8) + 'px';
   }
 
   function showTip(text, el) {
