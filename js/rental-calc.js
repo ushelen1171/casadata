@@ -385,9 +385,10 @@ function calcRental() {
       }
 
       // Содержание: три ставки для каждой стратегии
-      const maintMo_live   = s.live.propVal * maint / 12;         // 100% — всё платит владелец
-      const maintMo_rent   = s.live.propVal * maint * 0.6 / 12;   // 60%  — коммунальные на арендаторе
-      const maintMo_airbnb = s.live.propVal * maint * 1.8 / 12;   // 180% — уборка + износ + коммунальные гостей
+      // Используем price (цена покупки), а не propVal — реальные расходы растут с инфляцией, а не с рынком
+      const maintMo_live   = price * maint / 12;
+      const maintMo_rent   = price * maint * 0.6 / 12;
+      const maintMo_airbnb = price * maint * 1.8 / 12;
 
       // ── «Держу»: платит ипотеку + содержание, дохода нет ──
 
