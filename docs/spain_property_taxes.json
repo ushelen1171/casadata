@@ -1,0 +1,446 @@
+{
+  "version": "1.1",
+  "last_updated": "2026-05",
+  "jurisdiction": "Spain",
+  "currency": "EUR",
+  "sources": [
+    "Agencia Tributaria (AEAT)",
+    "Ley 35/2006 IRPF",
+    "Ley 12/2023 de Vivienda",
+    "RD-ley 2/2026",
+    "Audiencia Nacional 28/07/2025"
+  ],
+
+  "constants": {
+    "imputed_income_coefficient_revised": 0.011,
+    "imputed_income_coefficient_old": 0.02,
+    "imputed_income_revised_threshold_year": 2012,
+    "irnr_rate_eu": 0.19,
+    "irnr_rate_non_eu_conservative": 0.24,
+    "irnr_rate_non_eu_new_post_audnac": 0.19,
+    "irpf_rate_default": 0.30,
+    "irpf_rate_min": 0.19,
+    "irpf_rate_max": 0.47,
+    "amortization_rate_building": 0.03,
+    "cadastral_to_market_ratio_default": 0.50,
+    "iva_new_housing": 0.10,
+    "iva_vpo_special": 0.04,
+    "reduction_default_post_2023": 0.50,
+    "reduction_old_contracts_pre_26052023": 0.60,
+    "reduction_law_change_date": "2023-05-26"
+  },
+
+  "cadastral_estimation": {
+    "description": "Оценка valor catastral от рыночной цены. Используется для расчёта IBI, амортизации и imputed income, когда пользователь не знает точное значение из квитанции IBI.",
+    "default_ratio": 0.50,
+    "ratio_by_region": {
+      "Madrid": 0.35,
+      "Barcelona": 0.35,
+      "Baleares": 0.35,
+      "San_Sebastian": 0.40,
+      "Malaga": 0.40,
+      "Bilbao": 0.45,
+      "Valencia": 0.45,
+      "Sevilla": 0.50,
+      "Alicante": 0.50,
+      "Zaragoza": 0.55,
+      "Murcia": 0.55,
+      "Castilla_La_Mancha": 0.60,
+      "Extremadura": 0.65
+    },
+    "notes": "valor_catastral = market_price × ratio. Если регион не в списке — использовать default_ratio = 0.50. Реальное значение может отличаться ±15% — это оценка."
+  },
+
+  "input_variables": {
+    "resident_status": {
+      "type": "enum",
+      "values": ["resident", "non_resident_eu", "non_resident_non_eu"],
+      "description": "Tax residency status"
+    },
+    "property_role": {
+      "type": "enum",
+      "values": ["primary_residence", "second_property"],
+      "description": "Primary residence (vivienda habitual) or second property",
+      "constraint": "primary_residence is only valid if resident_status == 'resident'"
+    },
+    "rental_situation": {
+      "type": "enum",
+      "values": ["not_rented", "rented_full_year", "rented_partial_year"],
+      "description": "Rental status"
+    },
+    "rental_type": {
+      "type": "enum",
+      "values": ["long_term_habitual", "tourist", "seasonal", "none"],
+      "description": "Type of rental — affects eligibility for IRPF reductions"
+    },
+    "months_rented": {
+      "type": "integer",
+      "range": [0, 12],
+      "description": "Number of months the property was rented (0 if not rented)"
+    },
+    "cadastral_value": {
+      "type": "number",
+      "description": "Valor catastral in EUR, from IBI receipt"
+    },
+    "cadastral_revised_after_2012": {
+      "type": "boolean",
+      "description": "True if cadastral value was revised on or after 2012-01-01"
+    },
+    "rental_income_gross_annual": {
+      "type": "number",
+      "description": "Gross rental income for the months rented (EUR)"
+    },
+    "deductible_expenses_annual": {
+      "type": "number",
+      "description": "Sum of deductible expenses (EUR) — IBI, comunidad, insurance, mortgage interest, repairs, amortization, etc."
+    },
+    "irpf_marginal_rate": {
+      "type": "number",
+      "default": 0.30,
+      "description": "Resident's marginal IRPF rate (19% to 47%)"
+    },
+    "reduction_eligibility": {
+      "type": "enum",
+      "values": ["none", "general_50_new_contract", "rehabilitation_60", "young_tenant_70", "social_housing_70", "tensioned_zone_90", "old_contract_60_pre_26052023"],
+      "description": "Which IRPF reduction applies. CRITICAL: 50% is the new default for contracts signed on/after 2023-05-26 (Ley 12/2023). 60% applies ONLY to contracts signed BEFORE 2023-05-26 (transitional regime, Disposición Transitoria 38ª). The 60% pre-26052023 reduction continues for the lifetime of that original contract. Higher reductions (70%, 90%) require specific conditions (tensioned zone, young tenant, etc.). Residents only, long_term_habitual only.",
+      "notes_on_60_percent": "There are TWO different cases that yield 60%: (1) old_contract_60_pre_26052023 — transitional regime for old contracts, applies regardless of zone or tenant; (2) rehabilitation_60 — new contracts where property was rehabilitated in the previous 2 years. These are mutually exclusive — a contract is either old (transitional 60%) or new (general 50% or rehab 60% or higher)."
+    },
+    "non_eu_regime": {
+      "type": "enum",
+      "values": ["conservative", "new"],
+      "default": "conservative",
+      "description": "For non-EU non-residents: conservative (24% gross, no deductions) or new (19% net, with deductions, post-Audiencia Nacional 28/07/2025 ruling)"
+    }
+  },
+
+  "derived_values": {
+    "imputed_coefficient": {
+      "formula": "cadastral_revised_after_2012 ? 0.011 : 0.02",
+      "description": "Coefficient for imputed income calculation"
+    },
+    "months_unrented": {
+      "formula": "12 - months_rented",
+      "description": "Months the property was not rented"
+    },
+    "reduction_pct": {
+      "formula_lookup": {
+        "none": 0,
+        "general_50_new_contract": 0.50,
+        "rehabilitation_60": 0.60,
+        "young_tenant_70": 0.70,
+        "social_housing_70": 0.70,
+        "tensioned_zone_90": 0.90,
+        "old_contract_60_pre_26052023": 0.60
+      },
+      "applicable_only_if": "resident_status == 'resident' AND rental_type == 'long_term_habitual'",
+      "default_for_new_contracts": "general_50_new_contract",
+      "default_for_old_contracts": "old_contract_60_pre_26052023"
+    }
+  },
+
+  "purchase_taxes": {
+    "description": "One-off taxes paid at the moment of property purchase. Two mutually exclusive regimes apply depending on whether the property is new (obra nueva, first transmission from developer) or second-hand (segunda mano).",
+    "applies_to": "all buyers regardless of resident status — residents and non-residents pay the same purchase taxes",
+    "tax_base": "the higher of (a) the price stated in the deed or (b) the valor de referencia catastral (cadastral reference value, set by Hacienda since January 2022). For new builds with VAT, the base is the price.",
+    "payment_deadline_days": 30,
+    "payment_authority": "regional tax authority (Hacienda autonómica) where the property is located",
+
+    "new_construction": {
+      "description": "First transmission directly from developer or constructor",
+      "taxes_paid": ["IVA", "AJD"],
+      "iva_general_rate": 0.10,
+      "iva_vpo_special_rate": 0.04,
+      "iva_canary_islands": "IGIC instead of IVA, generally 6.5% — verify regionally",
+      "ajd_rate_range_by_region": [0.005, 0.02],
+      "ajd_typical_range": [0.01, 0.015],
+      "ajd_notes": "AJD rate is set by each Comunidad Autónoma. Pays for notarial document formalization. Excluded in País Vasco and Navarra (foral territories). Reductions for young buyers, large families, disability available in many regions."
+    },
+
+    "second_hand": {
+      "description": "All subsequent transmissions of property after first sale by developer. Most properties on the market.",
+      "taxes_paid": ["ITP"],
+      "ajd_for_purchase": "subsumed in ITP — not paid separately for the purchase deed",
+      "ajd_for_mortgage": "if buyer takes mortgage, AJD on mortgage deed is paid by the bank since Ley 5/2019",
+      "general_rate_range": [0.04, 0.13],
+      "general_rate_typical": [0.06, 0.10],
+      "rates_by_region_2026": {
+        "Madrid": {"general": 0.06, "notes": "Lowest among large CCAA. 4% for large families on habitual residence. 100% bonification for under-35 buying habitual residence in towns under 2500 inhabitants."},
+        "Pais_Vasco": {"general": 0.04, "habitual_residence": 0.025, "notes": "Foral regime — three provincial Haciendas (Álava, Bizkaia, Gipuzkoa). General 4% for residential. Reduced 2.5% for vivienda habitual: conditions include no other owned property in the municipality, and area limit ≤96 m² useful (Gipuzkoa) or ≤120 m² useful (Bizkaia). 7% for non-residential."},
+        "Navarra": {"general": 0.06, "notes": "5% reduced rate for habitual residence of large families with 2+ children, base ≤ 180,304 €."},
+        "Canarias": {"general": 0.065, "notes": "Reductions for habitual residence under 150,000 €."},
+        "Ceuta": {"general": 0.06, "notes": "50% bonification in special regime."},
+        "Melilla": {"general": 0.06, "notes": "50% bonification in special regime."},
+        "Andalucia": {"general": 0.07, "notes": "6% if habitual residence ≤ 150,000 €. 3.5% for under-35, large families, disabled, depopulated municipalities."},
+        "La_Rioja": {"general": 0.07, "notes": "Reductions for young, large families, rural areas."},
+        "Castilla_La_Mancha": {"general": 0.09, "notes": "Reductions available."},
+        "Aragon": {"general": 0.08, "notes": "Tramos progresivos in some cases."},
+        "Asturias": {"general": 0.08, "notes": "3% for VPO transmissions."},
+        "Castilla_y_Leon": {"general": 0.08, "notes": "4% reduced for some habitual residence cases."},
+        "Murcia": {"general": 0.08, "notes": "5% reduced for under-40 entrepreneurs."},
+        "Extremadura": {"general_max": 0.11, "notes": "Up to 11% in higher tramos."},
+        "Cataluña": {"general": 0.10, "general_max": 0.13, "notes": "Progressive tramos. 10% on first 600,000 €, 11% above. Up to 13% on highest tramos. Reductions for young, large families."},
+        "Comunidad_Valenciana": {"general": 0.10, "notes": "Reductions for young (8%), large families, disabled."},
+        "Galicia": {"general": 0.10, "notes": "Reductions for habitual residence and rural areas."},
+        "Cantabria": {"general": 0.10, "notes": "Reductions available."},
+        "Baleares": {"general_max": 0.13, "notes": "Progressive tramos. 4% reduced for habitual residence ≤ 270,151.20 € if buyer has no other property."}
+      },
+      "tramos_progresivos_warning": "7 CCAA use progressive brackets (similar to IRPF) where each price band is taxed at a different rate. Effective average rate depends on total price. For example, Cataluña: 10% on first 600k €, 11% above. This means a 800k € property has effective rate of ~10.25%."
+    },
+
+    "additional_purchase_costs_non_tax": {
+      "description": "Costs that are NOT taxes but must be added to total acquisition cost",
+      "items": {
+        "notary_fees": {"range_eur": [600, 1500], "notes": "Set by national tariff, slight regional variation"},
+        "registry_fees": {"range_eur": [400, 1000], "notes": "Property Registry inscription"},
+        "gestoria_fees": {"range_eur": [300, 800], "notes": "Optional but recommended for non-residents — paperwork management"},
+        "legal_fees": {"range_eur": [1000, 3000], "notes": "Lawyer (abogado), highly recommended for non-residents"},
+        "valuation_fees": {"range_eur": [250, 600], "notes": "Required if buyer takes mortgage — bank's tasación"}
+      }
+    },
+
+    "summary_typical_total_purchase_cost_pct": {
+      "new_construction_eu": "12-13% (10% IVA + 1-1.5% AJD + 1-1.5% other)",
+      "new_construction_non_eu": "12-13% (same as EU — no buyer-side discrimination)",
+      "second_hand_lowest_regions": "8-10% (Madrid 6% ITP, Pais Vasco 4% ITP + 1.5-2% other)",
+      "second_hand_typical": "9-11% (most regions 7-8% ITP + 1.5-2% other)",
+      "second_hand_highest_regions": "11-14% (Cataluña, Valencia, Galicia, Baleares 10-13% ITP + 1.5-2% other)"
+    }
+  },
+
+
+  "tax_scenarios": {
+    "S1_resident_primary_residence": {
+      "applies_when": {
+        "resident_status": "resident",
+        "property_role": "primary_residence"
+      },
+      "income_tax_formula": "0",
+      "notes": "No IRPF on primary residence ownership. IBI, comunidad, basura still apply (handled separately)."
+    },
+
+    "S2_resident_second_not_rented": {
+      "applies_when": {
+        "resident_status": "resident",
+        "property_role": "second_property",
+        "rental_situation": "not_rented"
+      },
+      "income_tax_formula": "cadastral_value * imputed_coefficient * irpf_marginal_rate",
+      "deductible_expenses": false,
+      "notes": "Renta imputada included in IRPF general base. No expense deductions allowed."
+    },
+
+    "S3_resident_second_rented_long_term_habitual": {
+      "applies_when": {
+        "resident_status": "resident",
+        "property_role": "second_property",
+        "rental_situation": "rented_full_year",
+        "rental_type": "long_term_habitual"
+      },
+      "income_tax_formula": "(rental_income_gross_annual - deductible_expenses_annual) * (1 - reduction_pct) * irpf_marginal_rate",
+      "deductible_expenses": true,
+      "reduction_applicable": true,
+      "notes": "Net income reduced by IRPF reduction (default 50% for contracts signed on/after 2023-05-26, or 60% for contracts signed before that date). Higher reductions (60% rehab, 70% young/social, 90% tensioned zone) require specific conditions. Resulting amount taxed at marginal IRPF rate. Reduction is applied by taxpayer in annual Renta declaration — system applies 50% automatically when long_term_habitual is detected, higher reductions require manual selection with supporting documents."
+    },
+
+    "S4_resident_second_rented_tourist_or_seasonal": {
+      "applies_when": {
+        "resident_status": "resident",
+        "property_role": "second_property",
+        "rental_situation": "rented_full_year",
+        "rental_type": ["tourist", "seasonal"]
+      },
+      "income_tax_formula": "(rental_income_gross_annual - deductible_expenses_annual) * irpf_marginal_rate",
+      "deductible_expenses": true,
+      "reduction_applicable": false,
+      "notes": "Tourist/seasonal rentals: deductions allowed but no 50–90% reduction."
+    },
+
+    "S5_resident_second_rented_partial_year": {
+      "applies_when": {
+        "resident_status": "resident",
+        "property_role": "second_property",
+        "rental_situation": "rented_partial_year"
+      },
+      "income_tax_formula": "rental_part + imputed_part",
+      "components": {
+        "rental_part": {
+          "if_long_term_habitual": "(rental_income_gross_annual - deductible_expenses_annual * (months_rented/12)) * (1 - reduction_pct) * irpf_marginal_rate",
+          "if_tourist_or_seasonal": "(rental_income_gross_annual - deductible_expenses_annual * (months_rented/12)) * irpf_marginal_rate"
+        },
+        "imputed_part": "cadastral_value * imputed_coefficient * (months_unrented/12) * irpf_marginal_rate"
+      },
+      "notes": "Pro-rated: rental income for rented months + imputed income for vacant months."
+    },
+
+    "S6_non_resident_eu_not_rented": {
+      "applies_when": {
+        "resident_status": "non_resident_eu",
+        "rental_situation": "not_rented"
+      },
+      "income_tax_formula": "cadastral_value * imputed_coefficient * 0.19",
+      "deductible_expenses": false,
+      "notes": "Modelo 210, due by Dec 31 of following year."
+    },
+
+    "S7_non_resident_eu_rented_full": {
+      "applies_when": {
+        "resident_status": "non_resident_eu",
+        "rental_situation": "rented_full_year"
+      },
+      "income_tax_formula": "(rental_income_gross_annual - deductible_expenses_annual) * 0.19",
+      "deductible_expenses": true,
+      "reduction_applicable": false,
+      "notes": "EU residents can deduct expenses. No 50–90% reduction (residents only). Modelo 210 annual, due Jan 20."
+    },
+
+    "S8_non_resident_eu_rented_partial": {
+      "applies_when": {
+        "resident_status": "non_resident_eu",
+        "rental_situation": "rented_partial_year"
+      },
+      "income_tax_formula": "rental_part + imputed_part",
+      "components": {
+        "rental_part": "(rental_income_gross_annual - deductible_expenses_annual * (months_rented/12)) * 0.19",
+        "imputed_part": "cadastral_value * imputed_coefficient * (months_unrented/12) * 0.19"
+      },
+      "notes": "Two Modelo 210 declarations: type 01 (rental) and type 02 (imputed)."
+    },
+
+    "S9_non_resident_non_eu_not_rented": {
+      "applies_when": {
+        "resident_status": "non_resident_non_eu",
+        "rental_situation": "not_rented"
+      },
+      "income_tax_formula": "cadastral_value * imputed_coefficient * 0.24",
+      "deductible_expenses": false,
+      "notes": "24% rate applies regardless of regime — imputed income never has deductions. Modelo 210 by Dec 31."
+    },
+
+    "S10_non_resident_non_eu_rented_full_conservative": {
+      "applies_when": {
+        "resident_status": "non_resident_non_eu",
+        "rental_situation": "rented_full_year",
+        "non_eu_regime": "conservative"
+      },
+      "income_tax_formula": "rental_income_gross_annual * 0.24",
+      "deductible_expenses": false,
+      "notes": "Historical regime: 24% on gross rental income, no deductions."
+    },
+
+    "S11_non_resident_non_eu_rented_full_new": {
+      "applies_when": {
+        "resident_status": "non_resident_non_eu",
+        "rental_situation": "rented_full_year",
+        "non_eu_regime": "new"
+      },
+      "income_tax_formula": "(rental_income_gross_annual - deductible_expenses_annual) * 0.19",
+      "deductible_expenses": true,
+      "notes": "Post-Audiencia Nacional 28/07/2025 ruling and Supreme Court rulings of 29/10/2025 and 03/11/2025: 19% on net income with deductions, on basis of free movement of capital (TFEU art. 63). Hacienda's online system still defaults non-EU residence to 24% gross — taxpayer must override or file rectification request. As of May 2026, this regime is supported by jurisprudence but Hacienda has not yet updated its formal procedure. Conservative taxpayers still file at 24% gross then claim refund. Aggressive taxpayers file at 19% net directly."
+    },
+
+    "S12_non_resident_non_eu_rented_partial_conservative": {
+      "applies_when": {
+        "resident_status": "non_resident_non_eu",
+        "rental_situation": "rented_partial_year",
+        "non_eu_regime": "conservative"
+      },
+      "income_tax_formula": "rental_part + imputed_part",
+      "components": {
+        "rental_part": "rental_income_gross_annual * 0.24",
+        "imputed_part": "cadastral_value * imputed_coefficient * (months_unrented/12) * 0.24"
+      }
+    },
+
+    "S13_non_resident_non_eu_rented_partial_new": {
+      "applies_when": {
+        "resident_status": "non_resident_non_eu",
+        "rental_situation": "rented_partial_year",
+        "non_eu_regime": "new"
+      },
+      "income_tax_formula": "rental_part + imputed_part",
+      "components": {
+        "rental_part": "(rental_income_gross_annual - deductible_expenses_annual * (months_rented/12)) * 0.19",
+        "imputed_part": "cadastral_value * imputed_coefficient * (months_unrented/12) * 0.24"
+      },
+      "notes": "Imputed income still taxed at 24% — new regime applies only to real rental income, not imputed."
+    }
+  },
+
+  "deductible_expenses_list": {
+    "applicable_to": ["resident", "non_resident_eu", "non_resident_non_eu (new regime only)"],
+    "applies_only_to": "real rental income, NOT imputed income",
+    "items": [
+      {"name": "IBI", "description": "Municipal property tax"},
+      {"name": "Cuota_comunidad_ordinaria", "description": "Regular community fees"},
+      {"name": "Insurance", "description": "Property insurance"},
+      {"name": "Mortgage_interest", "description": "Interest only, NOT principal"},
+      {"name": "Repairs_maintenance", "description": "Conservation, not improvements"},
+      {"name": "Management_fees", "description": "Property management or agency fees"},
+      {"name": "Amortization", "description": "3% of building value (excluding land) per year"},
+      {"name": "Tasa_de_basura", "description": "Garbage collection tax"},
+      {"name": "Legal_notarial_fees", "description": "Costs related to rental contract"},
+      {"name": "Utilities_paid_by_landlord", "description": "Only if landlord pays them"}
+    ]
+  },
+
+  "additional_costs_outside_income_tax": {
+    "description": "These costs apply regardless of resident status and are NOT income taxes — handle separately in calculator",
+    "items": {
+      "IBI_annual": {
+        "formula": "cadastral_value * IBI_municipal_rate",
+        "rate_range": [0.004, 0.011],
+        "default_rate": 0.0075
+      },
+      "tasa_basura_annual": {
+        "range": [50, 250],
+        "default": 100
+      },
+      "comunidad_ordinaria_annual": {
+        "range": [600, 2400],
+        "default": 1200
+      },
+      "derrama_reserve_annual": {
+        "description": "Provision for extraordinary repairs — recommended for buildings 30+ years",
+        "formula": "market_value * derrama_reserve_rate",
+        "rate_range": [0.003, 0.005],
+        "default_rate_old_building": 0.004,
+        "default_rate_new_building": 0
+      },
+      "insurance_annual": {
+        "range": [200, 500],
+        "default": 300
+      }
+    }
+  },
+
+  "tax_refund_handling": {
+    "include_in_base_calculation": false,
+    "rationale": "Tax refunds are one-off events that distort annual yield comparison. Mention separately in UI.",
+    "scenarios": [
+      "3% retention refund on sale (non-residents)",
+      "Past 4-year refund claims for non-EU after Audiencia Nacional 2025 ruling"
+    ]
+  },
+
+  "ui_recommendations": {
+    "required_inputs": [
+      "resident_status",
+      "rental_situation",
+      "months_rented (if partial)",
+      "rental_type",
+      "cadastral_value (or auto-estimate as market_value * 0.5)"
+    ],
+    "optional_inputs": [
+      "cadastral_revised_after_2012 (default: true)",
+      "irpf_marginal_rate (default: 0.30)",
+      "reduction_eligibility (default: general_50_new_contract if long_term_habitual; old_contract_60_pre_26052023 only if contract date < 2023-05-26)",
+      "non_eu_regime (default: conservative)",
+      "deductible_expenses_annual"
+    ],
+    "auto_filters": {
+      "if_non_resident": "hide primary_residence option",
+      "if_not_rented": "hide rental_type, rental_income, reduction fields",
+      "if_resident_long_term_habitual": "show reduction_eligibility selector"
+    }
+  }
+}

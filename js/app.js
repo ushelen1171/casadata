@@ -74,12 +74,13 @@ let c1IsCash = false;
 let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
 let c1PrimeraVivienda = true;
+let c1NotaryPct = 1.5; // %
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
 function getC1AutoTaxRate(r) {
   if (c1PropertyType === 'new') return 12.5;
-  const itpBase = c1PrimeraVivienda ? r.itp : (r.itpInv ?? r.itp);
-  return (itpBase + 0.015) * 100;
+  const itpBase = c1PrimeraVivienda ? (r.itpHab ?? r.itp) : (r.itpInv ?? r.itp);
+  return (itpBase * 100) + c1NotaryPct;
 }
 
 // ---- MARKET TABLE ----
@@ -1366,6 +1367,7 @@ function onC1TaxManualChange() {
   }
   calc1Update();
 }
+
 
 let c1SavedDown = 20;
 let c1SavedRate = 3.2;
