@@ -264,7 +264,7 @@
   </div>
 
   <!-- [4] 3 cards horizontal full-width -->
-  <div class="calc-summary-cards" style="margin-bottom:20px;">
+  <div class="calc-summary-cards" style="margin-bottom:8px;">
     <div class="calc-card">
       <div class="calc-card-label" data-i18n="c1_card_winner_label">ПОБЕДИТЕЛЬ</div>
       <div class="calc-card-value" id="c1-winner">—</div>
@@ -283,6 +283,9 @@
       <div class="calc-card-value" id="c1-roi">—</div>
       <div class="calc-card-sub" id="c1-roi-sub">среднегодовая за 20 лет</div>
     </div>
+  </div>
+  <div id="c1-sell-note" style="display:none;font-size:12px;color:var(--muted);margin:0 0 16px 2px;">
+    <span data-i18n="c1_sell_at_end_note">Учтены: налог на прирост капитала и расходы продажи</span>
   </div>
 
   <!-- [5] Block above chart -->
@@ -389,6 +392,7 @@
         <span class="slider-value" id="c1v-inv">7.0%</span>
       </div>
       <input type="range" id="c1-inv" min="1" max="14" step="0.5" value="7" oninput="calc1Update()">
+      <span class="slider-sub c1-slider-hint" id="c1-inv-hint"></span>
     </div>
   </div>
 
@@ -432,6 +436,13 @@
         <span class="slider-value" id="c1v-maint">1.2%/год = 3 528 €/год</span>
       </div>
       <input type="range" id="c1-maint" min="0.3" max="3" step="0.1" value="1.2" oninput="calc1Update()">
+    </div>
+    <div class="slider-row">
+      <label class="c1-primera-label">
+        <input type="checkbox" id="c1-sell-at-end" onchange="calc1Update()">
+        <span data-i18n="c1_sell_at_end_label">Обналичить капитал в конце</span>
+        <span class="info-icon" data-i18n-title="c1_sell_at_end_tip" title="">ⓘ</span>
+      </label>
     </div>
   </div>
 

@@ -105,8 +105,8 @@ function initRentalCalc() {
     document.getElementById('c2-rate').value     = DEFAULTS.mortgageRate;
     document.getElementById('c2-term').value     = DEFAULTS.mortgageTerm;
     document.getElementById('c2-maint').value    = DEFAULTS.maintenancePct;
-    document.getElementById('c2-appr').value     = DEFAULTS.apprDefaultNominal;
-    document.getElementById('c2-rentg').value    = DEFAULTS.rentGrowthDefaultNominal;
+    document.getElementById('c2-appr').value     = DEFAULTS.apprDefault;
+    document.getElementById('c2-rentg').value    = DEFAULTS.rentGrowthDefault;
     document.getElementById('c2-vacancy').value  = DEFAULTS.vacancyPct;
     document.getElementById('c2-occ').value      = DEFAULTS.occupancyPct;
     document.getElementById('c2-mgmt').value     = DEFAULTS.managementFeePct;
@@ -251,7 +251,7 @@ function setStressTest2(scenario, btn) {
 function updateC2ChartSub() {
   const el = document.getElementById('c2-chart1-sub');
   if (!el) return;
-  const appr = parseFloat(document.getElementById('c2-appr')?.value || DEFAULTS.apprDefaultNominal).toFixed(1);
+  const appr = parseFloat(document.getElementById('c2-appr')?.value || DEFAULTS.apprDefault).toFixed(1);
   if (c2IsCash) {
     const tpl = t('c2_chart_sub_cash_tpl') || 'Расчёт при покупке за наличные · рост цен {appr}%/год';
     el.textContent = tpl.replace('{appr}', appr);
@@ -325,7 +325,7 @@ function calcRental() {
 
   // Год 0: покупатель стартует с equity, индекс стартует ВЫШЕ (с полной суммой входа)
   const initialCash = downAmt + taxAmt;
-  const INV_RATE    = (DEFAULTS.investmentReturnNominal / 100);
+  const INV_RATE    = (DEFAULTS.investmentReturn / 100);
   const airbnbGross0 = nightRate * occRate * 365 / 12;
 
   const purchasePrice = price; // фиксируется до цикла, для амортизации

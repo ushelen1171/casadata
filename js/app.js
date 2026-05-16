@@ -1256,9 +1256,9 @@ function initCalc1() {
     document.getElementById('c1-term').value      = DEFAULTS.mortgageTerm;
     document.getElementById('c1-maint').value     = DEFAULTS.maintenancePct;
     // По умолчанию режим nominal — берём *Nominal значения.
-    document.getElementById('c1-inv').value       = DEFAULTS.investmentReturnNominal;
-    document.getElementById('c1-appr').value      = DEFAULTS.apprDefaultNominal;
-    document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefaultNominal;
+    document.getElementById('c1-inv').value       = DEFAULTS.investmentReturn;
+    document.getElementById('c1-appr').value      = DEFAULTS.apprDefault;
+    document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefault;
     document.getElementById('c1-inflation').value = DEFAULTS.inflation;
     document.getElementById('c1-tax').value       = DEFAULTS.defaultTaxFallbackSecondary;
   }
@@ -1286,9 +1286,9 @@ function onCalc1RegionChange() {
   const sqm = DEFAULTS.defaultSqm;
   document.getElementById('c1-price').value = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c1-rent').value  = Math.round(r.rent * sqm / 50) * 50;
-  // r.cagr10 / r.rentCagr10 — номинальные исторические темпы; конвертируем в текущий режим.
-  if (r.cagr10     != null) document.getElementById('c1-appr').value  = c1NominalToCurrent(r.cagr10);
-  if (r.rentCagr10 != null) document.getElementById('c1-rentg').value = c1NominalToCurrent(r.rentCagr10);
+  // Темпы роста (c1-appr, c1-rentg) при смене региона НЕ перезаписываются —
+  // используются дефолты из DEFAULTS или ручной ввод пользователя. Региональные
+  // CAGR подставляются только через кнопки стресс-теста (setStressTest1).
   // Reset manual tax override on region change
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
@@ -1305,11 +1305,11 @@ function resetCalc1() {
   document.getElementById('c1-down').value      = DEFAULTS.downPaymentPct;
   document.getElementById('c1-rate').value      = DEFAULTS.mortgageRate;
   document.getElementById('c1-term').value      = DEFAULTS.mortgageTerm;
-  document.getElementById('c1-appr').value      = DEFAULTS.apprDefaultNominal;
-  document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefaultNominal;
+  document.getElementById('c1-appr').value      = DEFAULTS.apprDefault;
+  document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefault;
   document.getElementById('c1-maint').value     = DEFAULTS.maintenancePct;
   document.getElementById('c1-inflation').value = DEFAULTS.inflation;
-  document.getElementById('c1-inv').value       = DEFAULTS.investmentReturnNominal;
+  document.getElementById('c1-inv').value       = DEFAULTS.investmentReturn;
 
   // Reset Primera vivienda
   const cbPrimera = document.getElementById('c1-primera');
@@ -1388,16 +1388,6 @@ let c1SavedDown = DEFAULTS.downPaymentPct;
 let c1SavedRate = DEFAULTS.mortgageRate;
 let c1SavedTerm = DEFAULTS.mortgageTerm;
 
-// Возвращает значение, скорректированное под текущий c1PriceMode:
-// в режиме 'real' — nominal − inflation, в 'nominal' — без изменений.
-// Используется когда нужно поставить в слайдер «номинальное» значение
-// (пресет, стресс-тест, дефолт), но интерпретировать его в текущем режиме.
-function c1NominalToCurrent(nominalValue) {
-  if (c1PriceMode !== 'real') return nominalValue;
-  const inflation = parseFloat(document.getElementById('c1-inflation')?.value) || 0;
-  return nominalValue - inflation;
-}
-
 function applyCalc1Preset(preset, btn) {
   document.querySelectorAll('#c1-preset-btns .calc-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -1416,7 +1406,7 @@ function applyCalc1Preset(preset, btn) {
     if (rateRow) rateRow.style.display = 'none';
     if (termRow) termRow.style.display = 'none';
     document.getElementById('c1-down').value = 100;
-    document.getElementById('c1-inv').value  = c1NominalToCurrent(DEFAULTS.investmentReturnNominal);
+    document.getElementById('c1-inv').value  = DEFAULTS.investmentReturn;
   } else {
     c1IsCash = false;
     if (downRow) downRow.style.display = '';
@@ -1427,30 +1417,20 @@ function applyCalc1Preset(preset, btn) {
     document.getElementById('c1-rate').value = c1SavedRate;
     document.getElementById('c1-term').value = c1SavedTerm;
     if (preset === 'noninv') {
-      // 0% доходности — это «не инвестирую», семантика одинакова в обоих режимах.
       document.getElementById('c1-inv').value = 0;
     } else {
-      document.getElementById('c1-inv').value = c1NominalToCurrent(DEFAULTS.investmentReturnNominal);
+      document.getElementById('c1-inv').value = DEFAULTS.investmentReturn;
     }
   }
   calc1Update();
 }
 
+// Переключение режима показа результата (Номинал ↔ Реальные).
+// Слайдеры appr / rentg / inv / maint / rate / inflation НЕ изменяются —
+// они всегда хранят номинальные значения. В режиме 'real' calc1Update
+// дефлирует buyData/rentData на (1+inflation)^y и показывает real-эквивалент
+// под слайдером c1-inv.
 function setPriceMode1(mode, btn) {
-  const oldMode = c1PriceMode;
-  if (mode !== oldMode) {
-    // Конвертируем три «реально-зависимых» слайдера между режимами.
-    // c1-rate (ипотека) и c1-maint (содержание) остаются как есть — они не зависят от режима.
-    // c1-inflation тоже не трогаем — это параметр самого режима.
-    const inflation = parseFloat(document.getElementById('c1-inflation')?.value) || 0;
-    const delta = (mode === 'real') ? -inflation : +inflation;
-    ['c1-appr', 'c1-rentg', 'c1-inv'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const cur = parseFloat(el.value);
-      if (Number.isFinite(cur)) el.value = (cur + delta).toFixed(1);
-    });
-  }
   c1PriceMode = mode;
   document.querySelectorAll('#c1-mode-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1465,25 +1445,24 @@ function setHorizon1(years, btn) {
   updateC1ChartTitle();
 }
 
-// Возвращает рост цен (%/год) в НОМИНАЛЬНОМ выражении для сценария.
+// Возвращает рост цен (%/год) в номинальном выражении для сценария.
 // Данные региона (r.cagr3/5/10) и fallback-константы хранятся как nominal.
-// Перевод в текущий режим выполняется на стороне вызывающего кода через c1NominalToCurrent.
 function getApprForScenario(regionId, scenario) {
   const r = REGIONS.find(x => x.id === regionId);
   if (scenario === 'opt')  return r?.cagr3  ?? DEFAULTS.apprOptimistFallback;
   if (scenario === 'base') return r?.cagr5  ?? DEFAULTS.apprBaseFallback;
   if (scenario === 'pess') return r?.cagr10 ?? DEFAULTS.apprPessimistFallback;
-  return DEFAULTS.apprDefaultNominal;
+  return DEFAULTS.apprDefault;
 }
 
 function setStressTest1(scenario, btn) {
   document.querySelectorAll('#c1-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const regionId = document.getElementById('c1-region').value;
-  document.getElementById('c1-appr').value = c1NominalToCurrent(getApprForScenario(regionId, scenario));
-  if (scenario === 'opt')  document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthOptimist);
-  else if (scenario === 'base') document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthBase);
-  else if (scenario === 'pess') document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthPessimist);
+  document.getElementById('c1-appr').value = getApprForScenario(regionId, scenario);
+  if (scenario === 'opt')  document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthOptimist;
+  else if (scenario === 'base') document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthBase;
+  else if (scenario === 'pess') document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthPessimist;
   calc1Update();
 }
 
@@ -1547,6 +1526,12 @@ function calc1Update() {
   const rentData = [];
   const labels   = [];
 
+  // Стартовая годовая сумма расходов на содержание. В симуляции (всегда номинальной)
+  // индексируется инфляцией каждый месяц — IBI/страховка/коммуналка растут с CPI,
+  // не с ценой жилья. В режиме 'real' конечный результат дефлируется на ту же
+  // инфляцию, что эквивалентно реально-постоянным расходам.
+  const annualMaintInitial = price * maint;
+
   let propVal   = price;
   let loanBal   = loan;
   let portfolio = initialCash; // renter invests this initial lump sum
@@ -1556,6 +1541,8 @@ function calc1Update() {
   let totalMaintPaid    = 0;
 
   for (let y = 0; y <= horizon; y++) {
+    // Симуляция всегда идёт в номинале. В режиме 'real' значения дефлируются
+    // на (1+inflation)^y, чтобы показать капитал в покупательной способности.
     const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, y) : 1;
     labels.push(y === 0 ? t('c1_now') || 'Сейчас' : `${t('c1_year')||'Год'} ${y}`);
     buyData.push(Math.round((propVal - loanBal) / inflFactor));
@@ -1575,8 +1562,10 @@ function calc1Update() {
           loanBal = Math.max(0, loanBal - principal);
           payment = monthlyMortgage;
         }
-        // Maintenance monthly (% of current property value)
-        const maintMonthly = propVal * maint / 12;
+        // Maintenance monthly: всегда индексируется на инфляцию внутри симуляции.
+        // Для режима 'real' дефляция результата приводит расходы к константе.
+        const yearsElapsed = mo / 12;
+        const maintMonthly = annualMaintInitial * Math.pow(1 + inflation, yearsElapsed) / 12;
         totalMaintPaid += maintMonthly;
         const buyerTotal   = payment + maintMonthly;
 
@@ -1594,6 +1583,22 @@ function calc1Update() {
       }
     }
   }
+
+  // Опция: «обналичить капитал в конце» — продажа квартиры в конце горизонта.
+  // Применяется только к финальной точке: налог на gain + издержки продажи.
+  // Промежуточные точки графика — это «бумажный» капитал, при удержании квартиры
+  // налог не платится, поэтому их не корректируем.
+  const sellAtEnd = document.getElementById('c1-sell-at-end')?.checked || false;
+  if (sellAtEnd) {
+    const salePrice    = propVal;
+    const capitalGain  = Math.max(0, salePrice - price);
+    const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
+    const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
+    const inflFactorH  = c1PriceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
+    buyData[horizon]   = Math.round((salePrice - loanBal - cgTax - sellingCosts) / inflFactorH);
+  }
+  const sellNoteEl = document.getElementById('c1-sell-note');
+  if (sellNoteEl) sellNoteEl.style.display = sellAtEnd ? '' : 'none';
 
   const buyFinal  = buyData[horizon];
   const rentFinal = rentData[horizon];
@@ -1628,6 +1633,7 @@ function calc1Update() {
   document.getElementById('c1-roi').textContent     = roiAnn.toFixed(1) + '%';
   document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
   updateC1ChartSub();
+  updateC1SliderHints();
   fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // ---- Chart title ----
@@ -1846,11 +1852,27 @@ function updateC1ChartLegend() {
   ).join('');
 }
 
+// Обновляет real-эквивалент под слайдером c1-inv: "≈ 5.0% реальных при инфляции 2%".
+// Вызывается из calc1Update при любом изменении inv или inflation.
+function updateC1SliderHints() {
+  const hintEl = document.getElementById('c1-inv-hint');
+  if (!hintEl) return;
+  const nominal = parseFloat(document.getElementById('c1-inv')?.value);
+  const inflation = parseFloat(document.getElementById('c1-inflation')?.value);
+  if (!Number.isFinite(nominal) || !Number.isFinite(inflation)) {
+    hintEl.textContent = '';
+    return;
+  }
+  const real = (nominal - inflation).toFixed(1);
+  const tpl = t('c1_slider_real_hint') || '≈ {real}% реальных при инфляции {infl}%';
+  hintEl.textContent = tpl.replace('{real}', real).replace('{infl}', inflation.toFixed(1));
+}
+
 function updateC1ChartSub() {
   const el = document.getElementById('c1-chart-sub');
   if (!el) return;
-  const appr = parseFloat(document.getElementById('c1-appr')?.value || DEFAULTS.apprDefaultNominal).toFixed(1);
-  const inv  = parseFloat(document.getElementById('c1-inv')?.value || DEFAULTS.investmentReturnNominal).toFixed(1);
+  const appr = parseFloat(document.getElementById('c1-appr')?.value || DEFAULTS.apprDefault).toFixed(1);
+  const inv  = parseFloat(document.getElementById('c1-inv')?.value || DEFAULTS.investmentReturn).toFixed(1);
   if (c1IsCash) {
     const tpl = t('c1_chart_sub_cash_tpl') || 'Расчёт при покупке за наличные · рост цен {appr}%/год · доходность инвестиций {inv}%';
     el.textContent = tpl.replace('{appr}', appr).replace('{inv}', inv);
