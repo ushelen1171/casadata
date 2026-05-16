@@ -5,21 +5,21 @@
 
 let c2Chart         = null;
 let c2CashflowChart = null;
-let c2Horizon       = 20;
+let c2Horizon       = DEFAULTS.horizonYears;
 let c2PropertyType  = 'secondary';
 let c2ActiveStrategy = 'rent';
 let c2ComputedData  = null;
 let c2FinalEquity   = null;
 let c2PriceMode     = 'nominal';
 let c2IsCash        = false;
-let c2SavedDown     = 20;
-let c2SavedRate     = 3.2;
-let c2SavedTerm     = 25;
+let c2SavedDown     = DEFAULTS.downPaymentPct;
+let c2SavedRate     = DEFAULTS.mortgageRate;
+let c2SavedTerm     = DEFAULTS.mortgageTerm;
 let c2Reinvest      = false;
 
 const fmt = v => Math.round(v).toLocaleString('ru');
 
-const IRPF_MARGINAL_RATE_DEFAULT = 0.30; // средняя предельная ставка IRPF для резидента
+const IRPF_MARGINAL_RATE_DEFAULT = DEFAULTS.irpfMarginalRate;
 
 // ---- Tax helper: ITP rate by residency ----
 function getItpRateByStatus(r, taxStatus) {
@@ -35,7 +35,7 @@ function onCalc2TaxStatusChange() {
     if (r) {
       const taxStatus = document.getElementById('c2-tax-status').value;
       const itpRate = getItpRateByStatus(r, taxStatus);
-      const tax = c2PropertyType === 'new' ? 12.5 : (itpRate + 0.015) * 100;
+      const tax = c2PropertyType === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
       document.getElementById('c2-tax').value = tax.toFixed(1);
     }
   }
@@ -44,9 +44,9 @@ function onCalc2TaxStatusChange() {
 
 // Вычеты для резидента/ЕС-нерезидента (IRPF / IRNR):
 // IBI и страховка НЕ добавляются — они уже в maintMo (слайдер «Содержание + IBI»)
-// Амортизация считается от valorCatastral × 60% (доля здания без земли) × 3%
+// Амортизация считается от valorCatastral × buildingShareOfCadastral × annualDepreciationRate
 function calcMonthlyResidentDeductions(valorCatastral, interestThisMonth, maintMo) {
-  const monthlyDepreciation = valorCatastral * 0.60 * 0.03 / 12;
+  const monthlyDepreciation = valorCatastral * DEFAULTS.buildingShareOfCadastral * DEFAULTS.annualDepreciationRate / 12;
   return monthlyDepreciation + interestThisMonth + maintMo;
 }
 
@@ -93,12 +93,25 @@ function updateC2Display() {
 function initRentalCalc() {
   const sel = document.getElementById('c2-region');
   if (!sel) return;
-  if (sel.options.length <= 1) {
+  const firstInit = sel.options.length <= 1;
+  if (firstInit) {
     REGIONS.forEach(r => {
       const o = document.createElement('option');
       o.value = r.id; o.textContent = r.name;
       sel.appendChild(o);
     });
+    // Apply slider defaults from DEFAULTS (overrides HTML fallback values)
+    document.getElementById('c2-down').value     = DEFAULTS.downPaymentPct;
+    document.getElementById('c2-rate').value     = DEFAULTS.mortgageRate;
+    document.getElementById('c2-term').value     = DEFAULTS.mortgageTerm;
+    document.getElementById('c2-maint').value    = DEFAULTS.maintenancePct;
+    document.getElementById('c2-appr').value     = DEFAULTS.apprDefaultNominal;
+    document.getElementById('c2-rentg').value    = DEFAULTS.rentGrowthDefaultNominal;
+    document.getElementById('c2-vacancy').value  = DEFAULTS.vacancyPct;
+    document.getElementById('c2-occ').value      = DEFAULTS.occupancyPct;
+    document.getElementById('c2-mgmt').value     = DEFAULTS.managementFeePct;
+    document.getElementById('c2-platform').value = DEFAULTS.platformFeePct;
+    document.getElementById('c2-tax').value      = DEFAULTS.defaultTaxFallbackSecondary;
   }
   if (!sel.value) {
     sel.value = 'madrid';
@@ -114,15 +127,15 @@ function onCalc2RegionChange() {
   updateAirbnbWarning();
   const r = REGIONS.find(x => x.id === id);
   if (!r) return;
-  const sqm = 70;
+  const sqm = DEFAULTS.defaultSqm;
   document.getElementById('c2-price').value     = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c2-long-rent').value = Math.round(r.rent * sqm / 50) * 50;
-  document.getElementById('c2-night').value = Math.round(r.rent * sqm / 30 * 2.5 / 5) * 5;
+  document.getElementById('c2-night').value = Math.round(r.rent * sqm / 30 * DEFAULTS.airbnbNightMultiplier / 5) * 5;
   if (r.cagr10     != null) document.getElementById('c2-appr').value  = r.cagr10;
   if (r.rentCagr10 != null) document.getElementById('c2-rentg').value = r.rentCagr10;
   const taxStatus = document.getElementById('c2-tax-status')?.value || 'eu';
   const itpRate   = getItpRateByStatus(r, taxStatus);
-  const tax = c2PropertyType === 'new' ? 12.5 : (itpRate + 0.015) * 100;
+  const tax = c2PropertyType === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
   document.getElementById('c2-tax').value = tax.toFixed(1);
   calcRental();
 }
@@ -137,11 +150,13 @@ function setPropertyType2(type, btn) {
     if (r) {
       const taxStatus = document.getElementById('c2-tax-status')?.value || 'eu';
       const itpRate = getItpRateByStatus(r, taxStatus);
-      const tax = type === 'new' ? 12.5 : (itpRate + 0.015) * 100;
+      const tax = type === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
       document.getElementById('c2-tax').value = tax.toFixed(1);
     }
   } else {
-    document.getElementById('c2-tax').value = type === 'new' ? '12.5' : '7.5';
+    document.getElementById('c2-tax').value = type === 'new'
+      ? String(DEFAULTS.newPropertyTaxPct)
+      : String(DEFAULTS.defaultTaxFallbackSecondary);
   }
   calcRental();
 }
@@ -227,21 +242,21 @@ function setStressTest2(scenario, btn) {
   if (btn) btn.classList.add('active');
   const regionId = document.getElementById('c2-region').value;
   document.getElementById('c2-appr').value = getApprForScenario(regionId, scenario);
-  if (scenario === 'opt')  document.getElementById('c2-rentg').value = 4;
-  else if (scenario === 'base') document.getElementById('c2-rentg').value = 3;
-  else if (scenario === 'pess') document.getElementById('c2-rentg').value = 1;
+  if (scenario === 'opt')  document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthOptimist;
+  else if (scenario === 'base') document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthBase;
+  else if (scenario === 'pess') document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthPessimist;
   calcRental();
 }
 
 function updateC2ChartSub() {
   const el = document.getElementById('c2-chart1-sub');
   if (!el) return;
-  const appr = parseFloat(document.getElementById('c2-appr')?.value || 3).toFixed(1);
+  const appr = parseFloat(document.getElementById('c2-appr')?.value || DEFAULTS.apprDefaultNominal).toFixed(1);
   if (c2IsCash) {
     const tpl = t('c2_chart_sub_cash_tpl') || 'Расчёт при покупке за наличные · рост цен {appr}%/год';
     el.textContent = tpl.replace('{appr}', appr);
   } else {
-    const rate = parseFloat(document.getElementById('c2-rate')?.value || 3.2).toFixed(1);
+    const rate = parseFloat(document.getElementById('c2-rate')?.value || DEFAULTS.mortgageRate).toFixed(1);
     const tpl = t('c2_chart_sub_tpl') || 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}%';
     el.textContent = tpl.replace('{appr}', appr).replace('{rate}', rate);
   }
@@ -276,8 +291,8 @@ function calcRental() {
   if (maintEl) {
     const fmtM = v => Math.round(v);
     const mLive   = fmtM(price * maint / 12);
-    const mRent   = fmtM(price * maint * 0.6 / 12);
-    const mAirbnb = fmtM(price * maint * 1.8 / 12);
+    const mRent   = fmtM(price * maint * DEFAULTS.longTermMaintMultiplier / 12);
+    const mAirbnb = fmtM(price * maint * DEFAULTS.airbnbMaintMultiplier / 12);
     const lbl = t('c2_maint_breakdown') || 'Содержание:';
     const sLive   = t('c2_s_live')   || 'Держу';
     const sRent   = t('c2_s_rent')   || 'Сдаю';
@@ -310,26 +325,19 @@ function calcRental() {
 
   // Год 0: покупатель стартует с equity, индекс стартует ВЫШЕ (с полной суммой входа)
   const initialCash = downAmt + taxAmt;
-  const INV_RATE    = 0.07;
+  const INV_RATE    = (DEFAULTS.investmentReturnNominal / 100);
   const airbnbGross0 = nightRate * occRate * 365 / 12;
 
   const purchasePrice = price; // фиксируется до цикла, для амортизации
-  const irnrNonResident = taxStatus === 'noneu' ? 0.24 : 0.19; // ставка для не-резидентов (EU/non-EU)
 
   // Кадастральная стоимость фиксируется на дату покупки (revaluation раз в 10+ лет, игнорируем)
-  const CADASTRAL_BY_REGION = {
-    'madrid': 0.35, 'cataluna': 0.35, 'baleares': 0.35,
-    'pais_vasco': 0.40, 'andalucia': 0.45, 'canarias': 0.45,
-    'valencia': 0.45, 'aragon': 0.55, 'murcia': 0.55,
-    'clm': 0.60, 'extremadura': 0.65,
-  };
   const regionId      = document.getElementById('c2-region')?.value || '';
-  const cadastralRatio = CADASTRAL_BY_REGION[regionId] ?? 0.50;
+  const cadastralRatio = DEFAULTS.cadastralByRegion[regionId] ?? DEFAULTS.cadastralFallback;
   const valorCatastral = price * cadastralRatio;
 
   // Налог на вменённый доход: без вычетов, только ставка по статусу
-  const imputedTaxRate = taxStatus === 'resident' ? IRPF_MARGINAL_RATE_DEFAULT : taxStatus === 'noneu' ? 0.24 : 0.19;
-  const imputedTaxMo   = valorCatastral * 0.011 * imputedTaxRate / 12;
+  const imputedTaxRate = taxStatus === 'resident' ? IRPF_MARGINAL_RATE_DEFAULT : taxStatus === 'noneu' ? DEFAULTS.irnrRateNonEU : DEFAULTS.irnrRateEU;
+  const imputedTaxMo   = valorCatastral * DEFAULTS.imputedIncomeRate * imputedTaxRate / 12;
 
   // Состояние стратегий
   const s = {
@@ -387,8 +395,8 @@ function calcRental() {
       // Содержание: три ставки для каждой стратегии
       // Используем price (цена покупки), а не propVal — реальные расходы растут с инфляцией, а не с рынком
       const maintMo_live   = price * maint / 12;
-      const maintMo_rent   = price * maint * 0.6 / 12;
-      const maintMo_airbnb = price * maint * 1.8 / 12;
+      const maintMo_rent   = price * maint * DEFAULTS.longTermMaintMultiplier / 12;
+      const maintMo_airbnb = price * maint * DEFAULTS.airbnbMaintMultiplier / 12;
 
       // ── «Держу»: платит ипотеку + содержание, дохода нет ──
 
@@ -401,15 +409,15 @@ function calcRental() {
         const deductions = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_rent) + rentMgmtCost;
         const taxBase    = Math.max(0, rentGross - deductions);
         if (taxBase === 0) residentDeductionsExceededCount++;
-        rentTax = taxBase * 0.50 * IRPF_MARGINAL_RATE_DEFAULT;
+        rentTax = taxBase * DEFAULTS.longTermRentalIrpfReduction * IRPF_MARGINAL_RATE_DEFAULT;
       } else if (taxStatus === 'eu') {
-        // IRNR 19%: резидент ЕС — вычеты применяются, льготы нет
+        // IRNR: резидент ЕС — вычеты применяются, льготы нет
         const deductions = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_rent) + rentMgmtCost;
         const taxBase    = Math.max(0, rentGross - deductions);
-        rentTax = taxBase * 0.19;
+        rentTax = taxBase * DEFAULTS.irnrRateEU;
       } else {
-        // IRNR 24%: нерезидент не из ЕС — с валового дохода, без вычетов
-        rentTax = rentGross * 0.24;
+        // IRNR: нерезидент не из ЕС — с валового дохода, без вычетов
+        rentTax = rentGross * DEFAULTS.irnrRateNonEU;
       }
       const rentNetIncome = rentGross - rentMgmtCost - rentTax;
       const rentCF = rentNetIncome - payment - maintMo_rent;
@@ -427,13 +435,13 @@ function calcRental() {
       const airbnbNet = airbnb * (1 - platform);
       let airbnbTax = 0;
       if (taxStatus === 'resident' || taxStatus === 'eu') {
-        // IRPF/IRNR 19%: вычеты применяются; для краткосрочной аренды льготы 50% нет
+        // IRPF/IRNR EU: вычеты применяются; для краткосрочной аренды льготы 50% нет
         const deductionsA = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_airbnb);
         const taxBaseA    = Math.max(0, airbnbNet - deductionsA);
-        airbnbTax = taxBaseA * 0.19;
+        airbnbTax = taxBaseA * DEFAULTS.irnrRateEU;
       } else {
-        // IRNR 24%: нерезидент не из ЕС — с валового дохода
-        airbnbTax = airbnbNet * 0.24;
+        // IRNR: нерезидент не из ЕС — с валового дохода
+        airbnbTax = airbnbNet * DEFAULTS.irnrRateNonEU;
       }
       const airbnbNetIncome = airbnbNet - airbnbTax;
       const airbnbCF = airbnbNetIncome - payment - maintMo_airbnb;
@@ -471,7 +479,7 @@ function calcRental() {
     }
 
     // Годовые снэпшоты капитала
-    const C2_INFL = 0.025;
+    const C2_INFL = (DEFAULTS.inflation / 100);
     const inflFactor = c2PriceMode === 'real' ? Math.pow(1 + C2_INFL, y + 1) : 1;
     // «Держу»: equity = propVal − loanBal + cumCF (cumCF ≤ 0 — расходы без дохода)
     equityLive.push(Math.round((s.live.propVal - s.live.loanBal + s.live.cumCF) / inflFactor));

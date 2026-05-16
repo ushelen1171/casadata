@@ -190,8 +190,8 @@ const GROWTH_DATA = {
 
 const YEARS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
-// Нотариус + регистр (одинаково для всех регионов)
-const NOTARY_RATE = 0.015;
+// Нотариус + регистр (одинаково для всех регионов) — единый источник правды в defaults.js.
+const NOTARY_RATE = DEFAULTS.notaryPct / 100;
 
 // ITP таблица для гида
 const ITP_TABLE = [

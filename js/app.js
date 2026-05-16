@@ -68,17 +68,17 @@ function pluralYears(n) {
 
 // ---- CALC 1 STATE ----
 let c1Chart = null;
-let c1Horizon = 20;
+let c1Horizon = DEFAULTS.horizonYears;
 let c1PriceMode = 'nominal';
 let c1IsCash = false;
 let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
 let c1PrimeraVivienda = true;
-let c1NotaryPct = 1.5; // %
+let c1NotaryPct = DEFAULTS.notaryPct;
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
 function getC1AutoTaxRate(r) {
-  if (c1PropertyType === 'new') return 12.5;
+  if (c1PropertyType === 'new') return DEFAULTS.newPropertyTaxPct;
   const itpBase = c1PrimeraVivienda ? (r.itpHab ?? r.itp) : (r.itpInv ?? r.itp);
   return (itpBase * 100) + c1NotaryPct;
 }
@@ -1020,7 +1020,7 @@ function renderPRDetail() {
   const name = document.getElementById('pr-detail-select').value;
   const r = REGIONS.find(x => x.name === name);
   if (!r) return;
-  const sqm = 70;
+  const sqm = DEFAULTS.defaultSqm;
   const totalBuy  = Math.round(r.totalCost * sqm);
   const itpAmt    = Math.round(r.price * sqm * r.itp);
   const notaryAmt = Math.round(r.price * sqm * NOTARY_RATE);
@@ -1034,14 +1034,14 @@ function renderPRDetail() {
           <div style="font-size:18px;font-weight:500;">${r.name}</div>
           <span class="pill" style="background:rgba(255,255,255,0.06);color:${vc};">${verdict}</span>
         </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Квартира 70 м²</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Квартира ${sqm} м²</p>
         <div class="grid-2" style="gap:10px;margin-bottom:14px;">
           <div class="card-sm"><div class="metric-label">Цена покупки</div><div style="font-size:16px;font-weight:500;">${(r.price*sqm).toLocaleString('ru')} €</div></div>
           <div class="card-sm"><div class="metric-label">Аренда / мес</div><div style="font-size:16px;font-weight:500;">${Math.round(r.rent*sqm).toLocaleString('ru')} €</div></div>
         </div>
         <div style="font-size:13px;">
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">ITP (${(r.itp*100).toFixed(0)}%)</span><span>${itpAmt.toLocaleString('ru')} €</span></div>
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">Нотариус + реестр (1.5%)</span><span>${notaryAmt.toLocaleString('ru')} €</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">Нотариус + реестр (${DEFAULTS.notaryPct}%)</span><span>${notaryAmt.toLocaleString('ru')} €</span></div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;font-weight:500;"><span>Итого с расходами</span><span style="color:var(--accent2);">${totalBuy.toLocaleString('ru')} €</span></div>
         </div>
       </div>
@@ -1242,13 +1242,25 @@ function initCalc1() {
   const sel = document.getElementById('c1-region');
   if (!sel) return;
   // Only populate once
-  if (sel.options.length <= 1) {
+  const firstInit = sel.options.length <= 1;
+  if (firstInit) {
     REGIONS.forEach(r => {
       const opt = document.createElement('option');
       opt.value = r.id;
       opt.textContent = r.name;
       sel.appendChild(opt);
     });
+    // Apply slider defaults from DEFAULTS (overrides HTML fallback values)
+    document.getElementById('c1-down').value      = DEFAULTS.downPaymentPct;
+    document.getElementById('c1-rate').value      = DEFAULTS.mortgageRate;
+    document.getElementById('c1-term').value      = DEFAULTS.mortgageTerm;
+    document.getElementById('c1-maint').value     = DEFAULTS.maintenancePct;
+    // По умолчанию режим nominal — берём *Nominal значения.
+    document.getElementById('c1-inv').value       = DEFAULTS.investmentReturnNominal;
+    document.getElementById('c1-appr').value      = DEFAULTS.apprDefaultNominal;
+    document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefaultNominal;
+    document.getElementById('c1-inflation').value = DEFAULTS.inflation;
+    document.getElementById('c1-tax').value       = DEFAULTS.defaultTaxFallbackSecondary;
   }
   // Default to Madrid
   if (!sel.value) {
@@ -1271,11 +1283,12 @@ function onCalc1RegionChange() {
   if (!id) return;
   const r = REGIONS.find(x => x.id === id);
   if (!r) return;
-  const sqm = 70;
+  const sqm = DEFAULTS.defaultSqm;
   document.getElementById('c1-price').value = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c1-rent').value  = Math.round(r.rent * sqm / 50) * 50;
-  if (r.cagr10     != null) document.getElementById('c1-appr').value  = r.cagr10;
-  if (r.rentCagr10 != null) document.getElementById('c1-rentg').value = r.rentCagr10;
+  // r.cagr10 / r.rentCagr10 — номинальные исторические темпы; конвертируем в текущий режим.
+  if (r.cagr10     != null) document.getElementById('c1-appr').value  = c1NominalToCurrent(r.cagr10);
+  if (r.rentCagr10 != null) document.getElementById('c1-rentg').value = c1NominalToCurrent(r.rentCagr10);
   // Reset manual tax override on region change
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
@@ -1288,15 +1301,15 @@ function resetCalc1ToRegion() {
 }
 
 function resetCalc1() {
-  // Reset all sliders to defaults
-  document.getElementById('c1-down').value      = 20;
-  document.getElementById('c1-rate').value      = 3.2;
-  document.getElementById('c1-term').value      = 25;
-  document.getElementById('c1-appr').value      = 3;
-  document.getElementById('c1-rentg').value     = 3;
-  document.getElementById('c1-maint').value     = 1.2;
-  document.getElementById('c1-inflation').value = 2.5;
-  document.getElementById('c1-inv').value       = 7;
+  // Reset all sliders to defaults (режим сбрасывается в 'nominal' ниже, значит ставим *Nominal)
+  document.getElementById('c1-down').value      = DEFAULTS.downPaymentPct;
+  document.getElementById('c1-rate').value      = DEFAULTS.mortgageRate;
+  document.getElementById('c1-term').value      = DEFAULTS.mortgageTerm;
+  document.getElementById('c1-appr').value      = DEFAULTS.apprDefaultNominal;
+  document.getElementById('c1-rentg').value     = DEFAULTS.rentGrowthDefaultNominal;
+  document.getElementById('c1-maint').value     = DEFAULTS.maintenancePct;
+  document.getElementById('c1-inflation').value = DEFAULTS.inflation;
+  document.getElementById('c1-inv').value       = DEFAULTS.investmentReturnNominal;
 
   // Reset Primera vivienda
   const cbPrimera = document.getElementById('c1-primera');
@@ -1307,7 +1320,7 @@ function resetCalc1() {
   if (manualEl) manualEl.value = '';
 
   // Reset button group states
-  c1Horizon   = 20;
+  c1Horizon   = DEFAULTS.horizonYears;
   c1PriceMode = 'nominal';
   document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 2));
   document.querySelectorAll('#c1-stress-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
@@ -1332,7 +1345,9 @@ function setPropertyType1(type, btn) {
       document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
     }
   } else {
-    document.getElementById('c1-tax').value = type === 'new' ? '12.5' : '7.5';
+    document.getElementById('c1-tax').value = type === 'new'
+      ? String(DEFAULTS.newPropertyTaxPct)
+      : String(DEFAULTS.defaultTaxFallbackSecondary);
   }
   calc1Update();
 }
@@ -1369,9 +1384,19 @@ function onC1TaxManualChange() {
 }
 
 
-let c1SavedDown = 20;
-let c1SavedRate = 3.2;
-let c1SavedTerm = 25;
+let c1SavedDown = DEFAULTS.downPaymentPct;
+let c1SavedRate = DEFAULTS.mortgageRate;
+let c1SavedTerm = DEFAULTS.mortgageTerm;
+
+// Возвращает значение, скорректированное под текущий c1PriceMode:
+// в режиме 'real' — nominal − inflation, в 'nominal' — без изменений.
+// Используется когда нужно поставить в слайдер «номинальное» значение
+// (пресет, стресс-тест, дефолт), но интерпретировать его в текущем режиме.
+function c1NominalToCurrent(nominalValue) {
+  if (c1PriceMode !== 'real') return nominalValue;
+  const inflation = parseFloat(document.getElementById('c1-inflation')?.value) || 0;
+  return nominalValue - inflation;
+}
 
 function applyCalc1Preset(preset, btn) {
   document.querySelectorAll('#c1-preset-btns .calc-btn').forEach(b => b.classList.remove('active'));
@@ -1391,7 +1416,7 @@ function applyCalc1Preset(preset, btn) {
     if (rateRow) rateRow.style.display = 'none';
     if (termRow) termRow.style.display = 'none';
     document.getElementById('c1-down').value = 100;
-    document.getElementById('c1-inv').value  = 7;
+    document.getElementById('c1-inv').value  = c1NominalToCurrent(DEFAULTS.investmentReturnNominal);
   } else {
     c1IsCash = false;
     if (downRow) downRow.style.display = '';
@@ -1402,15 +1427,30 @@ function applyCalc1Preset(preset, btn) {
     document.getElementById('c1-rate').value = c1SavedRate;
     document.getElementById('c1-term').value = c1SavedTerm;
     if (preset === 'noninv') {
+      // 0% доходности — это «не инвестирую», семантика одинакова в обоих режимах.
       document.getElementById('c1-inv').value = 0;
     } else {
-      document.getElementById('c1-inv').value = 7;
+      document.getElementById('c1-inv').value = c1NominalToCurrent(DEFAULTS.investmentReturnNominal);
     }
   }
   calc1Update();
 }
 
 function setPriceMode1(mode, btn) {
+  const oldMode = c1PriceMode;
+  if (mode !== oldMode) {
+    // Конвертируем три «реально-зависимых» слайдера между режимами.
+    // c1-rate (ипотека) и c1-maint (содержание) остаются как есть — они не зависят от режима.
+    // c1-inflation тоже не трогаем — это параметр самого режима.
+    const inflation = parseFloat(document.getElementById('c1-inflation')?.value) || 0;
+    const delta = (mode === 'real') ? -inflation : +inflation;
+    ['c1-appr', 'c1-rentg', 'c1-inv'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const cur = parseFloat(el.value);
+      if (Number.isFinite(cur)) el.value = (cur + delta).toFixed(1);
+    });
+  }
   c1PriceMode = mode;
   document.querySelectorAll('#c1-mode-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1425,22 +1465,25 @@ function setHorizon1(years, btn) {
   updateC1ChartTitle();
 }
 
+// Возвращает рост цен (%/год) в НОМИНАЛЬНОМ выражении для сценария.
+// Данные региона (r.cagr3/5/10) и fallback-константы хранятся как nominal.
+// Перевод в текущий режим выполняется на стороне вызывающего кода через c1NominalToCurrent.
 function getApprForScenario(regionId, scenario) {
   const r = REGIONS.find(x => x.id === regionId);
-  if (scenario === 'opt')  return r?.cagr3  ?? 5;
-  if (scenario === 'base') return r?.cagr5  ?? 3;
-  if (scenario === 'pess') return r?.cagr10 ?? 1;
-  return 3;
+  if (scenario === 'opt')  return r?.cagr3  ?? DEFAULTS.apprOptimistFallback;
+  if (scenario === 'base') return r?.cagr5  ?? DEFAULTS.apprBaseFallback;
+  if (scenario === 'pess') return r?.cagr10 ?? DEFAULTS.apprPessimistFallback;
+  return DEFAULTS.apprDefaultNominal;
 }
 
 function setStressTest1(scenario, btn) {
   document.querySelectorAll('#c1-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const regionId = document.getElementById('c1-region').value;
-  document.getElementById('c1-appr').value = getApprForScenario(regionId, scenario);
-  if (scenario === 'opt')  document.getElementById('c1-rentg').value = 4;
-  else if (scenario === 'base') document.getElementById('c1-rentg').value = 3;
-  else if (scenario === 'pess') document.getElementById('c1-rentg').value = 1;
+  document.getElementById('c1-appr').value = c1NominalToCurrent(getApprForScenario(regionId, scenario));
+  if (scenario === 'opt')  document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthOptimist);
+  else if (scenario === 'base') document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthBase);
+  else if (scenario === 'pess') document.getElementById('c1-rentg').value = c1NominalToCurrent(DEFAULTS.rentGrowthPessimist);
   calc1Update();
 }
 
@@ -1537,10 +1580,15 @@ function calc1Update() {
         totalMaintPaid += maintMonthly;
         const buyerTotal   = payment + maintMonthly;
 
-        // Renter: compound invest, then add monthly diff if buyer costs > rent
+        // Renter: compound invest, then adjust portfolio by cash-flow difference vs buyer.
+        // Симметричное сравнение: разница (buyerTotal − rent) идёт в портфель арендатора,
+        // если положительна (расходы покупателя выше аренды → арендатор инвестирует разницу),
+        // или вычитается, если отрицательна (аренда дороже расходов покупателя → арендатор
+        // тратит из портфеля). Без этого арендатор «бесплатно живёт» в месяцы, когда
+        // аренда дороже, что искусственно завышает его итоговый портфель.
         portfolio *= (1 + invRate / 12);
         const diff = buyerTotal - rent;
-        portfolio += Math.max(0, diff); // renter invests saved difference
+        portfolio += diff;
         totalMortgagePaid += payment;
         rent *= (1 + rentGrowth / 12);
       }
@@ -1801,13 +1849,13 @@ function updateC1ChartLegend() {
 function updateC1ChartSub() {
   const el = document.getElementById('c1-chart-sub');
   if (!el) return;
-  const appr = parseFloat(document.getElementById('c1-appr')?.value || 3).toFixed(1);
-  const inv  = parseFloat(document.getElementById('c1-inv')?.value || 7).toFixed(1);
+  const appr = parseFloat(document.getElementById('c1-appr')?.value || DEFAULTS.apprDefaultNominal).toFixed(1);
+  const inv  = parseFloat(document.getElementById('c1-inv')?.value || DEFAULTS.investmentReturnNominal).toFixed(1);
   if (c1IsCash) {
     const tpl = t('c1_chart_sub_cash_tpl') || 'Расчёт при покупке за наличные · рост цен {appr}%/год · доходность инвестиций {inv}%';
     el.textContent = tpl.replace('{appr}', appr).replace('{inv}', inv);
   } else {
-    const rate = parseFloat(document.getElementById('c1-rate')?.value || 3.2).toFixed(1);
+    const rate = parseFloat(document.getElementById('c1-rate')?.value || DEFAULTS.mortgageRate).toFixed(1);
     const tpl = t('c1_chart_sub_tpl') || 'Расчёт при росте цен {appr}%/год · ставка ипотеки {rate}% · доходность инвестиций {inv}%';
     el.textContent = tpl.replace('{appr}', appr).replace('{rate}', rate).replace('{inv}', inv);
   }
