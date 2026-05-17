@@ -282,3 +282,31 @@ fs.writeFileSync(DATA_JS, newDataJs);
 console.log(`✓ data.js обновлён: ${REGIONS.length} регионов, ${Object.keys(enriched).length} обогащено`);
 console.log(`  Поля добавлены: growth1/5/10/20, cagr5/10/20/Max, maxHistoric, pctFromMax`);
 console.log(`  + rentGrowth1/5/10/20, rentCagr5/10/20/Max, rentMaxHistoric, rentPctFromMax\n`);
+
+// ── history.json для рантайма (yield mean/std/zScore в браузере) ─────────────
+const HISTORY_JSON = path.join(ROOT, 'data', 'history.json');
+
+const history = {
+  generated_at: new Date().toISOString(),
+  source: 'data/idealista_raw.json',
+  regions: {},
+};
+
+const trim = arr => arr
+  .filter(x => x.precio_m2 !== null)
+  .map(x => ({ mes: x.mes, precio_m2: x.precio_m2 }))
+  .sort((a, b) => a.mes.localeCompare(b.mes));
+
+for (const r of REGIONS) {
+  const slug = ID_TO_SLUG[r.id];
+  const reg  = slug && raw.regions[slug];
+  if (!reg) continue;
+  history.regions[r.id] = {
+    venta:    trim(reg.venta.monthly_history),
+    alquiler: trim(reg.alquiler.monthly_history),
+  };
+}
+
+fs.writeFileSync(HISTORY_JSON, JSON.stringify(history, null, 2));
+const sizeKB = (fs.statSync(HISTORY_JSON).size / 1024).toFixed(1);
+console.log(`✓ history.json: ${Object.keys(history.regions).length} регионов, ${sizeKB} KB\n`);

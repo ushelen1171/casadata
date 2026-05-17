@@ -1273,9 +1273,13 @@ function updateC1ChartTitle() {
   const regionId = document.getElementById('c1-region')?.value;
   const region = REGIONS.find(r => r.id === regionId);
   const regionName = region ? region.name : '—';
-  c1ChartTitleText = (t('c1_chart_title_prefix') || 'Накопление капитала') +
-    ' · ' + regionName + ' · ' + c1Horizon + ' ' + (t('c1_years') || 'лет');
-  if (c1Chart) c1Chart.update('none');
+  const tpl = t('c1_chart_title') || 'Чистый капитал по годам · {region} · {horizon} лет';
+  c1ChartTitleText = tpl.replace('{region}', regionName).replace('{horizon}', c1Horizon);
+  if (c1Chart) {
+    if (c1Chart.options?.scales?.x?.title) c1Chart.options.scales.x.title.text = t('c1_chart_x_axis') || 'Срок владения, лет';
+    if (c1Chart.options?.scales?.y?.title) c1Chart.options.scales.y.title.text = t('c1_chart_y_axis') || 'Чистый капитал, €';
+    c1Chart.update('none');
+  }
 }
 
 function onCalc1RegionChange() {
@@ -1322,7 +1326,9 @@ function resetCalc1() {
   // Reset button group states
   c1Horizon   = DEFAULTS.horizonYears;
   c1PriceMode = 'nominal';
-  document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 2));
+  document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent) === DEFAULTS.horizonYears);
+  });
   document.querySelectorAll('#c1-stress-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
   document.querySelectorAll('#c1-mode-btns    .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
   document.querySelectorAll('#c1-preset-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
@@ -1765,10 +1771,12 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
       },
       scales: {
         x: {
+          title: { display: true, text: t('c1_chart_x_axis') || 'Срок владения, лет', color: '#8a8f9e', font: { size: 12 } },
           ticks: { color: '#8a8f9e', font: { size: 13 }, maxTicksLimit: 8 },
           grid:  { color: 'rgba(255,255,255,0.04)' }
         },
         y: {
+          title: { display: true, text: t('c1_chart_y_axis') || 'Чистый капитал, €', color: '#8a8f9e', font: { size: 12 } },
           ticks: {
             color: '#8a8f9e', font: { size: 13 },
             callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M €' : v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+'€'

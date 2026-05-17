@@ -1,2 +1,44 @@
 [build]
   command = ""
+
+# ─── Cache-Control headers ──────────────────────────────────────────────────
+# Netlify применяет первый совпадающий блок сверху вниз, поэтому конкретные
+# пути (HTML, history.json) идут раньше широких (*.js, *.css).
+# gzip / brotli включаются Netlify автоматически для text/javascript,
+# application/json, text/html, text/css — отдельно настраивать не нужно.
+
+# HTML: всегда проверять свежесть (обновления видны без задержки).
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# То же для корневого "/" (index.html без расширения в URL).
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Данные региональной истории: 1 час кэш (компромисс между свежестью и
+# нагрузкой при многих посетителях).
+[[headers]]
+  for = "/data/history.json"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/data/idealista_raw.json"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# JS / CSS: короткий кэш с обязательной revalidation. Реальное обновление
+# происходит через ?v={hash} в HTML — браузер видит новую URL и тянет файл.
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
