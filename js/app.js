@@ -75,6 +75,7 @@ let c1ChartTitleText = '';
 let c1PropertyType = 'secondary';
 let c1PrimeraVivienda = true;
 let c1NotaryPct = DEFAULTS.notaryPct;
+let c1ComparisonModel = DEFAULTS.comparisonModelDefault;
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
 function getC1AutoTaxRate(r) {
@@ -1182,6 +1183,40 @@ function closeC1Popup() {
   }
 }
 
+// ---- Popup для выбора модели сравнения (Realistic vs Symmetric) ----
+let c1ModelPopupOutsideHandler = null;
+
+function openC1ModelPopup(e) {
+  if (e) e.stopPropagation();
+  const popup = document.getElementById('c1-model-popup');
+  if (!popup) return;
+  // Текст подсказки длинный с переносами строк — собираем innerHTML каждый раз
+  // на текущем языке (\n → <br>, двойные \n → новый абзац).
+  const body = popup.querySelector('.c1-model-popup-body');
+  if (body) {
+    const raw = t('c1_model_tip') || '';
+    body.innerHTML = raw
+      .split(/\n\n+/)
+      .map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>')
+      .join('');
+  }
+  popup.classList.add('visible');
+  setTimeout(() => {
+    c1ModelPopupOutsideHandler = ev => {
+      if (!popup.contains(ev.target)) closeC1ModelPopup();
+    };
+    document.addEventListener('click', c1ModelPopupOutsideHandler);
+  }, 0);
+}
+function closeC1ModelPopup() {
+  const popup = document.getElementById('c1-model-popup');
+  if (popup) popup.classList.remove('visible');
+  if (c1ModelPopupOutsideHandler) {
+    document.removeEventListener('click', c1ModelPopupOutsideHandler);
+    c1ModelPopupOutsideHandler = null;
+  }
+}
+
 let c2EquityPopupCloseTimer = null;
 let c2EquityPopupOutsideHandler = null;
 function openC2EquityPopup(e) {
@@ -1262,6 +1297,10 @@ function initCalc1() {
     document.getElementById('c1-inflation').value = DEFAULTS.inflation;
     document.getElementById('c1-tax').value       = DEFAULTS.defaultTaxFallbackSecondary;
   }
+  // Активная кнопка модели сравнения — по DEFAULTS.comparisonModelDefault.
+  document.querySelectorAll('#c1-model-btns .calc-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.model === c1ComparisonModel);
+  });
   // Default to Madrid
   if (!sel.value) {
     sel.value = 'madrid';
@@ -1326,8 +1365,12 @@ function resetCalc1() {
   // Reset button group states
   c1Horizon   = DEFAULTS.horizonYears;
   c1PriceMode = 'nominal';
+  c1ComparisonModel = DEFAULTS.comparisonModelDefault;
   document.querySelectorAll('#c1-horizon-btns .calc-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.textContent) === DEFAULTS.horizonYears);
+  });
+  document.querySelectorAll('#c1-model-btns .calc-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.model === c1ComparisonModel);
   });
   document.querySelectorAll('#c1-stress-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
   document.querySelectorAll('#c1-mode-btns    .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
@@ -1451,6 +1494,14 @@ function setHorizon1(years, btn) {
   updateC1ChartTitle();
 }
 
+// Переключение модели сравнения покупателя и арендатора (Realistic ↔ Symmetric).
+function setComparisonModel(model, btn) {
+  c1ComparisonModel = model;
+  document.querySelectorAll('#c1-model-btns .calc-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  calc1Update();
+}
+
 // Возвращает рост цен (%/год) в номинальном выражении для сценария.
 // Данные региона (r.cagr3/5/10) и fallback-константы хранятся как nominal.
 function getApprForScenario(regionId, scenario) {
@@ -1538,10 +1589,11 @@ function calc1Update() {
   // инфляцию, что эквивалентно реально-постоянным расходам.
   const annualMaintInitial = price * maint;
 
-  let propVal   = price;
-  let loanBal   = loan;
-  let portfolio = initialCash; // renter invests this initial lump sum
-  let rent      = rent0;
+  let propVal         = price;
+  let loanBal         = loan;
+  let renterPortfolio = initialCash; // арендатор инвестирует те же деньги, что покупатель внёс как down+tax
+  let buyerPortfolio  = 0;           // активен только в режиме 'symmetric' — когда у покупателя расходы ниже аренды
+  let rent            = rent0;
   let totalMortgagePaid = 0;
   let totalInterestPaid = 0;
   let totalMaintPaid    = 0;
@@ -1551,8 +1603,10 @@ function calc1Update() {
     // на (1+inflation)^y, чтобы показать капитал в покупательной способности.
     const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, y) : 1;
     labels.push(y === 0 ? t('c1_now') || 'Сейчас' : `${t('c1_year')||'Год'} ${y}`);
-    buyData.push(Math.round((propVal - loanBal) / inflFactor));
-    rentData.push(Math.round(portfolio / inflFactor));
+    // Капитал покупателя = недвижимость минус долг + накопленный buyerPortfolio
+    // (в режиме 'realistic' buyerPortfolio всегда 0, поэтому формула эквивалентна старой).
+    buyData.push(Math.round((propVal - loanBal + buyerPortfolio) / inflFactor));
+    rentData.push(Math.round(renterPortfolio / inflFactor));
 
     if (y < horizon) {
       for (let m = 0; m < 12; m++) {
@@ -1575,15 +1629,20 @@ function calc1Update() {
         totalMaintPaid += maintMonthly;
         const buyerTotal   = payment + maintMonthly;
 
-        // Renter: compound invest, then adjust portfolio by cash-flow difference vs buyer.
-        // Симметричное сравнение: разница (buyerTotal − rent) идёт в портфель арендатора,
-        // если положительна (расходы покупателя выше аренды → арендатор инвестирует разницу),
-        // или вычитается, если отрицательна (аренда дороже расходов покупателя → арендатор
-        // тратит из портфеля). Без этого арендатор «бесплатно живёт» в месяцы, когда
-        // аренда дороже, что искусственно завышает его итоговый портфель.
-        portfolio *= (1 + invRate / 12);
+        // Compound оба портфеля (в 'realistic' buyerPortfolio = 0 и остаётся 0).
+        renterPortfolio *= (1 + invRate / 12);
+        buyerPortfolio  *= (1 + invRate / 12);
         const diff = buyerTotal - rent;
-        portfolio += diff;
+        if (c1ComparisonModel === 'symmetric') {
+          // Двусторонний денежный поток: кто платит меньше — инвестирует разницу.
+          if (diff > 0) renterPortfolio += diff;     // покупателю дороже → арендатор копит
+          else          buyerPortfolio  += (-diff);  // аренда дороже → покупатель копит сэкономленное
+        } else {
+          // 'realistic' (NYT-стандарт): арендатор инвестирует только когда есть свободные деньги,
+          // никогда не снимает из портфеля. Покупатель не имеет инвестпортфеля.
+          if (diff > 0) renterPortfolio += diff;
+          // если diff <= 0 — арендатор доплачивает из текущего дохода, портфель работает дальше
+        }
         totalMortgagePaid += payment;
         rent *= (1 + rentGrowth / 12);
       }
@@ -1601,7 +1660,8 @@ function calc1Update() {
     const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
     const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
     const inflFactorH  = c1PriceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
-    buyData[horizon]   = Math.round((salePrice - loanBal - cgTax - sellingCosts) / inflFactorH);
+    // buyerPortfolio — это уже наличные, налог на CG к ним не применяется.
+    buyData[horizon]   = Math.round((salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactorH);
   }
   const sellNoteEl = document.getElementById('c1-sell-note');
   if (sellNoteEl) sellNoteEl.style.display = sellAtEnd ? '' : 'none';
@@ -1640,7 +1700,7 @@ function calc1Update() {
   document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
   updateC1ChartSub();
   updateC1SliderHints();
-  fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
+  fillC1Breakdown(finalPropVal, loanBal, renterPortfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // ---- Chart title ----
   updateC1ChartTitle();
