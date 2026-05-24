@@ -25,6 +25,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize map widget for default market page
   initMapWidget();
+
+  // Когда история догрузится — обновить Cycle-карточку (если Calc 1 уже открыт).
+  document.addEventListener('historyLoaded', () => {
+    if (document.getElementById('c1-cycle-card')) {
+      updateC1CycleCard(getCurrentC1Region());
+    }
+  });
+
+  // Веб-шрифты (DM Sans, Playfair) загружаются с Google Fonts async — первая
+  // отрисовка canvas происходит с системным fallback, что в Chrome на retina
+  // выглядит размыто. После готовности шрифтов перерисовываем все активные графики.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      [c1Chart, c1CycleChart, growthBarChartInst, trendChartInst].forEach(ch => {
+        if (ch && typeof ch.update === 'function') ch.update('none');
+      });
+    });
+  }
 });
 
 // ---- NAVIGATION ----
@@ -68,6 +86,7 @@ function pluralYears(n) {
 
 // ---- CALC 1 STATE ----
 let c1Chart = null;
+let c1CycleChart = null;
 let c1Horizon = DEFAULTS.horizonYears;
 let c1PriceMode = 'nominal';
 let c1IsCash = false;
@@ -879,6 +898,7 @@ function renderGrowthBarChart() {
       }]
     },
     options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
@@ -958,6 +978,7 @@ function drawTrendChart() {
       })
     },
     options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw > 0 ? '+' : ''}${ctx.raw.toFixed(1)}%` } } },
       scales: {
@@ -1700,6 +1721,7 @@ function calc1Update() {
   document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
   updateC1ChartSub();
   updateC1SliderHints();
+  updateC1CycleCard(getCurrentC1Region());
   fillC1Breakdown(finalPropVal, loanBal, renterPortfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // ---- Chart title ----
@@ -1726,7 +1748,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
       if (!c1ChartTitleText) return;
       const { ctx, chartArea } = chart;
       ctx.save();
-      ctx.font = '13px DM Sans, sans-serif';
+      ctx.font = '13px "DM Sans", sans-serif';
       ctx.fillStyle = '#8a8f9e';
       ctx.textAlign = 'left';
       ctx.fillText(c1ChartTitleText, chartArea.left + 8, chartArea.top - 10);
@@ -1766,6 +1788,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
       ]
     },
     options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: { top: 28 } },
@@ -1922,6 +1945,88 @@ function updateC1ChartLegend() {
 
 // Обновляет real-эквивалент под слайдером c1-inv: "≈ 5.0% реальных при инфляции 2%".
 // Вызывается из calc1Update при любом изменении inv или inflation.
+// Цвет фазы цикла — те же оттенки, что CSS-переменные проекта.
+const C1_CYCLE_COLORS = { above: '#5cb88a', below: '#e05c5c', neutral: '#c9a84c' };
+
+// Обновляет 4-ю карточку (Cycle Position) на основе region.yieldZScore / cyclePhase.
+// Если данные истории ещё не загружены (yieldMean undefined) — карточка скрыта.
+function updateC1CycleCard(region) {
+  const card = document.getElementById('c1-cycle-card');
+  if (!card) return;
+  if (!region || typeof region.yieldMean !== 'number') {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  const phase = region.cyclePhase;
+  const emoji = { above: '🟢', below: '🔴', neutral: '🟡' }[phase];
+  const statusKey = { above: 'c1_cycle_above', below: 'c1_cycle_below', neutral: 'c1_cycle_neutral' }[phase];
+
+  document.getElementById('c1-cycle-emoji').textContent = emoji;
+  const statusEl = document.getElementById('c1-cycle-status');
+  if (statusEl) {
+    statusEl.setAttribute('data-i18n', statusKey);
+    statusEl.textContent = t(statusKey);
+  }
+  document.getElementById('c1-cycle-zscore').textContent = region.yieldZScore.toFixed(2);
+  drawCycleSparkline(region);
+}
+
+// Sparkline 200×40: линия yield по месяцам, без осей/легенды/тултипа,
+// последняя точка крупнее, горизонтальная линия mean.
+function drawCycleSparkline(region) {
+  const canvas = document.getElementById('c1-cycle-sparkline');
+  if (!canvas || !region?.yieldHistory?.length) return;
+  if (c1CycleChart) { c1CycleChart.destroy(); c1CycleChart = null; }
+
+  const data = region.yieldHistory.map(p => p.yield);
+  const labels = region.yieldHistory.map(p => p.mes);
+  const color = C1_CYCLE_COLORS[region.cyclePhase] || C1_CYCLE_COLORS.neutral;
+  // Маркер только на последней точке.
+  const pointRadius = data.map((_, i) => i === data.length - 1 ? 4 : 0);
+  const pointBorderColor = data.map(() => color);
+
+  c1CycleChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        // Yield-линия региона
+        {
+          data, borderColor: color, backgroundColor: 'transparent',
+          borderWidth: 1.5, tension: 0.25, pointRadius, pointBackgroundColor: color,
+          pointBorderColor, fill: false,
+        },
+        // Горизонтальная линия среднего (одинаковое значение во всех точках)
+        {
+          data: data.map(() => region.yieldMean),
+          borderColor: 'rgba(150,150,150,0.5)', backgroundColor: 'transparent',
+          borderWidth: 1, borderDash: [3, 3], pointRadius: 0, fill: false,
+        },
+      ],
+    },
+    options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { display: false, grid: { display: false } },
+        y: { display: false, grid: { display: false } },
+      },
+      elements: { point: { hoverRadius: 0 } },
+    },
+  });
+}
+
+// Регион, текущий в выпадающем списке Калькулятора 1.
+function getCurrentC1Region() {
+  const id = document.getElementById('c1-region')?.value;
+  return id ? REGIONS.find(r => r.id === id) : null;
+}
+
 function updateC1SliderHints() {
   const hintEl = document.getElementById('c1-inv-hint');
   if (!hintEl) return;

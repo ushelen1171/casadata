@@ -47,6 +47,12 @@ window.historyReady = false;
         region.yieldFirstMonth = months[0];
         region.yieldLastMonth  = months[months.length - 1];
         region.yieldZScore     = std > 0 ? (region.yield - mean) / std : 0;
+        // Помесячный yield (только месяцы с обеими ценами) — для sparkline и Шага 2.
+        region.yieldHistory    = months.map((m, i) => ({ mes: m, yield: yields[i] }));
+        // Фаза цикла по z-score: порог ±0.5 — значимое (не шумовое) отклонение.
+        region.cyclePhase = region.yieldZScore > 0.5 ? 'above'
+                          : region.yieldZScore < -0.5 ? 'below'
+                          : 'neutral';
       }
 
       window.historyReady = true;
