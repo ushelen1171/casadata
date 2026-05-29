@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8228785f">
+<link rel="stylesheet" href="css/style.css?v=7e3ccee4">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -283,7 +283,7 @@
       <div class="calc-card-value" id="c1-roi">—</div>
       <div class="calc-card-sub" id="c1-roi-sub">среднегодовая за 20 лет</div>
     </div>
-    <div class="calc-card" id="c1-cycle-card" style="display:none;">
+    <div class="calc-card" id="c1-cycle-card" style="display:none;" onclick="openC1CyclePopup()" role="button" tabindex="0">
       <div class="calc-card-label" data-i18n="c1_cycle_label">ФАЗА ЦИКЛА</div>
       <div class="calc-card-value" style="font-size:16px;display:flex;align-items:center;gap:6px;">
         <span id="c1-cycle-emoji">🟡</span>
@@ -291,6 +291,40 @@
       </div>
       <div class="calc-card-sub">z = <span id="c1-cycle-zscore">0.00</span></div>
       <div class="c1-cycle-spark-wrap"><canvas id="c1-cycle-sparkline"></canvas></div>
+      <div class="cycle-period" id="c1-cycle-period"></div>
+    </div>
+  </div>
+
+  <!-- Cycle Position модальный popup (Шаг 2) -->
+  <div id="c1-cycle-popup" class="c1-large-popup" style="display:none;">
+    <div class="c1-large-popup-overlay" onclick="closeC1CyclePopup()"></div>
+    <div class="c1-large-popup-content">
+      <div class="c1-large-popup-header">
+        <span data-i18n="c1_cycle_popup_title">Фаза рыночного цикла</span>
+        <button class="c1-popup-close" onclick="closeC1CyclePopup()" aria-label="×">×</button>
+      </div>
+      <div class="c1-large-popup-body">
+        <div class="cycle-metrics">
+          <div class="cycle-metric-row"><span data-i18n="c1_cycle_current">Текущая доходность аренды</span>: <strong id="cy-current">—</strong></div>
+          <div class="cycle-metric-row"><span data-i18n="c1_cycle_mean">Историческое среднее</span>: <strong id="cy-mean">—</strong></div>
+          <div class="cycle-metric-row"><span data-i18n="c1_cycle_range">Диапазон за период</span>: <strong id="cy-range">—</strong></div>
+          <div class="cycle-metric-row"><span data-i18n="c1_cycle_period">Период наблюдений</span>: <strong id="cy-period">—</strong></div>
+        </div>
+
+        <div class="cycle-bigchart-wrap"><canvas id="cy-bigchart"></canvas></div>
+
+        <div id="cy-explanation" class="cycle-explanation"></div>
+
+        <div class="cycle-impact">
+          <span data-i18n="c1_cycle_impact_label">Оценка влияния возврата к среднему на итоговую разницу:</span>
+          <strong id="cy-impact-value">—</strong>
+        </div>
+
+        <div class="cycle-sources">
+          <span data-i18n="c1_cycle_sources_label">Источники данных:</span>
+          <span data-i18n="c1_cycle_sources_text">Banco de España (доходность аренды, квартально), Idealista (цены аренды, помесячно), INE (цены продажи, помесячно), 2007-2026</span>
+        </div>
+      </div>
     </div>
   </div>
   <div id="c1-sell-note" style="display:none;font-size:12px;color:var(--muted);margin:0 0 16px 2px;">
@@ -1196,11 +1230,11 @@
 <script src="js/itp-rates.js?v=28208980"></script>
 <script src="js/data.js?v=77610002"></script>
 <script src="js/data-history.js?v=ed115123"></script>
-<script src="js/i18n.js?v=588bf986"></script>
+<script src="js/i18n.js?v=bef7aca1"></script>
 <script src="js/rental-calc.js?v=c2dab6fe"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=f621ea9f"></script>
+<script src="js/app.js?v=d16911d9"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>

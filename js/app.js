@@ -1238,6 +1238,139 @@ function closeC1ModelPopup() {
   }
 }
 
+// ─── Cycle Position popup (модальный, кликабельная карточка) ────────────────
+let c1CycleImpact = 0;   // Текущая денежная оценка возврата к среднему (€).
+let c1CycleBigChart = null;
+
+function c1ComputeCycleImpact() {
+  const region = getCurrentC1Region();
+  if (!region || typeof region.yieldMean !== 'number') return 0;
+  // Доп. годовой темп аренды, нужный для возврата yield к среднему за horizon.
+  // yield = annualRent/price. mean/current = ratio; нужно `(1+drift)^N = ratio`.
+  const ratio = region.yieldMean / region.yield;
+  const drift = Math.pow(ratio, 1 / c1Horizon) - 1;
+  // Принудительно симулируем в symmetric: иначе для регионов с rent > buyerTotal
+  // (Cataluña, Murcia, CLM и т.п.) импакт в realistic тождественно 0 — drift
+  // не влияет, потому что diff<0 не двигает портфели. См. комментарий в c1SimulateFinalDiff.
+  const base   = c1SimulateFinalDiff(0,     'symmetric');
+  const withDr = c1SimulateFinalDiff(drift, 'symmetric');
+  return withDr - base;
+}
+
+function openC1CyclePopup() {
+  const region = getCurrentC1Region();
+  if (!region || typeof region.yieldMean !== 'number') return;
+
+  // Метрики
+  document.getElementById('cy-current').textContent = region.yield.toFixed(2) + '%';
+  document.getElementById('cy-mean').textContent    = region.yieldMean.toFixed(2) + '%';
+  document.getElementById('cy-range').textContent   =
+    region.yieldMin.toFixed(2) + '% — ' + region.yieldMax.toFixed(2) + '%';
+  document.getElementById('cy-period').textContent  =
+    `${c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth)} (${region.yieldCount} ${t('c1_cycle_months_short')||'мес.'})`;
+
+  // Денежная оценка
+  const impactEl = document.getElementById('cy-impact-value');
+  impactEl.textContent = c1FormatEur(c1CycleImpact);
+  impactEl.classList.remove('positive', 'negative');
+  if (c1CycleImpact > 0) impactEl.classList.add('positive');
+  else if (c1CycleImpact < 0) impactEl.classList.add('negative');
+
+  // Большой график + текст
+  drawCycleBigChart(region);
+  fillCycleExplanation(region);
+
+  const popup = document.getElementById('c1-cycle-popup');
+  if (popup) popup.style.display = 'flex';
+}
+
+function closeC1CyclePopup() {
+  const popup = document.getElementById('c1-cycle-popup');
+  if (popup) popup.style.display = 'none';
+  if (c1CycleBigChart) { c1CycleBigChart.destroy(); c1CycleBigChart = null; }
+}
+
+function drawCycleBigChart(region) {
+  const canvas = document.getElementById('cy-bigchart');
+  if (!canvas || !region?.yieldHistory?.length) return;
+  if (c1CycleBigChart) { c1CycleBigChart.destroy(); c1CycleBigChart = null; }
+
+  const labels = region.yieldHistory.map(p => p.mes);
+  const data   = region.yieldHistory.map(p => p.yield);
+  const color  = C1_CYCLE_COLORS[region.cyclePhase] || C1_CYCLE_COLORS.neutral;
+  // Точка-маркер «сейчас» — только на последней точке
+  const pointRadius = data.map((_, i) => i === data.length - 1 ? 5 : 0);
+
+  c1CycleBigChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t('c1_cycle_current') || 'Доходность аренды',
+          data, borderColor: color, backgroundColor: 'transparent',
+          borderWidth: 1.5, tension: 0.25, pointRadius, pointBackgroundColor: color,
+          pointBorderColor: color, fill: false,
+        },
+        {
+          label: (t('c1_cycle_mean') || 'Среднее') + ': ' + region.yieldMean.toFixed(2) + '%',
+          data: data.map(() => region.yieldMean),
+          borderColor: 'rgba(180,180,180,0.55)', backgroundColor: 'transparent',
+          borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false,
+        },
+      ],
+    },
+    options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#8a8f9e', font: { size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          enabled: true,
+          callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw.toFixed(2) + '%' },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8a8f9e', font: { size: 10 }, maxTicksLimit: 8, autoSkip: true },
+          grid:  { color: 'rgba(255,255,255,0.04)' },
+        },
+        y: {
+          ticks: { color: '#8a8f9e', font: { size: 10 }, callback: v => v.toFixed(1) + '%' },
+          grid:  { color: 'rgba(255,255,255,0.04)' },
+        },
+      },
+    },
+  });
+}
+
+function fillCycleExplanation(region) {
+  const phase = region.cyclePhase;
+  const explKey = {
+    above:   'c1_cycle_explanation_above',
+    below:   'c1_cycle_explanation_below',
+    neutral: 'c1_cycle_explanation_neutral',
+  }[phase];
+  const horizon = c1Horizon;
+  // Дрейф темпа аренды (%/год), нужный для возврата yield к среднему
+  const ratio = region.yieldMean / region.yield;
+  const drift = (Math.pow(ratio, 1 / horizon) - 1) * 100;
+
+  let text = t(explKey) || '';
+  const impactAbs = Math.abs(c1CycleImpact);
+  text = text
+    .replace(/{count}/g,   region.yieldCount)
+    .replace(/{horizon}/g, horizon)
+    .replace(/{drift}/g,   Math.abs(drift).toFixed(2))
+    .replace(/{impact}/g,  Math.round(impactAbs).toLocaleString('ru').replace(/,/g, ' ') + ' €')
+    .replace(/{impact_direction}/g, c1CycleImpact >= 0 ? (t('c1_cycle_more')||'больше') : (t('c1_cycle_less')||'меньше'));
+
+  const html = text.split(/\n\n+/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+  document.getElementById('cy-explanation').innerHTML = html;
+}
+
 let c2EquityPopupCloseTimer = null;
 let c2EquityPopupOutsideHandler = null;
 function openC2EquityPopup(e) {
@@ -1544,6 +1677,98 @@ function setStressTest1(scenario, btn) {
   calc1Update();
 }
 
+// ─── Cycle-impact: упрощённая симуляция без UI-updates ──────────────────────
+// Дублирует логику calc1Update (только цикл расчёта), но опционально добавляет
+// `rentGrowthBonus` к темпу роста аренды. Возвращает финальную разницу
+// buyFinal − rentFinal. Используется для оценки «что будет, если yield вернётся
+// к историческому среднему».
+// ВНИМАНИЕ — техдолг: дублирование с calc1Update. При правках формулы в calc1Update
+// эту функцию тоже нужно править. Лучшее решение — extract в shared helper,
+// отложено до появления автотестов.
+//
+// forceModel: если задан ('realistic'|'symmetric'), используется вместо c1ComparisonModel.
+// Полезно для оценки cycle-impact: в realistic для регионов с rent > buyerTotal
+// импакт всегда 0, потому что diff<0 не двигает портфели. Поэтому импакт всегда
+// считается в symmetric — это даёт меру чувствительности всей методологии,
+// независимо от выбранной пользователем модели сравнения.
+function c1SimulateFinalDiff(rentGrowthBonus = 0, forceModel = null) {
+  const model = forceModel || c1ComparisonModel;
+  const price      = +document.getElementById('c1-price').value;
+  const downPct    = +document.getElementById('c1-down').value / 100;
+  const annRate    = +document.getElementById('c1-rate').value / 100;
+  const termYears  = +document.getElementById('c1-term').value;
+  const taxPct     = +document.getElementById('c1-tax').value / 100;
+  const appr       = +document.getElementById('c1-appr').value / 100;
+  const maint      = +document.getElementById('c1-maint').value / 100;
+  const rent0      = +document.getElementById('c1-rent').value;
+  const rentGrowth = +document.getElementById('c1-rentg').value / 100 + rentGrowthBonus;
+  const invRate    = +document.getElementById('c1-inv').value / 100;
+  const inflation  = +document.getElementById('c1-inflation').value / 100;
+  const horizon    = c1Horizon;
+  const sellAtEnd  = document.getElementById('c1-sell-at-end')?.checked || false;
+
+  const downAmt = price * downPct;
+  const taxAmt  = price * taxPct;
+  const loan    = price * (1 - downPct);
+  const mRate   = annRate / 12;
+  const nPay    = termYears * 12;
+  const initialCash = downAmt + taxAmt;
+  const annualMaintInitial = price * maint;
+
+  let monthlyMortgage = 0;
+  if (annRate > 0 && loan > 0) {
+    monthlyMortgage = loan * (mRate * Math.pow(1+mRate,nPay)) / (Math.pow(1+mRate,nPay) - 1);
+  } else if (loan > 0) {
+    monthlyMortgage = loan / nPay;
+  }
+
+  let propVal = price, loanBal = loan;
+  let renterPortfolio = initialCash, buyerPortfolio = 0;
+  let rent = rent0;
+
+  for (let y = 0; y < horizon; y++) {
+    for (let m = 0; m < 12; m++) {
+      const mo = y * 12 + m;
+      propVal *= (1 + appr / 12);
+      let payment = 0;
+      if (mo < nPay && loanBal > 0) {
+        const interest  = loanBal * mRate;
+        const principal = Math.min(monthlyMortgage - interest, loanBal);
+        loanBal = Math.max(0, loanBal - principal);
+        payment = monthlyMortgage;
+      }
+      const yearsElapsed = mo / 12;
+      const maintMonthly = annualMaintInitial * Math.pow(1 + inflation, yearsElapsed) / 12;
+      const buyerTotal   = payment + maintMonthly;
+
+      renterPortfolio *= (1 + invRate / 12);
+      buyerPortfolio  *= (1 + invRate / 12);
+      const diff = buyerTotal - rent;
+      if (model === 'symmetric') {
+        if (diff > 0) renterPortfolio += diff;
+        else          buyerPortfolio  += (-diff);
+      } else {
+        if (diff > 0) renterPortfolio += diff;
+      }
+      rent *= (1 + rentGrowth / 12);
+    }
+  }
+
+  const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
+  let buyFinal;
+  if (sellAtEnd) {
+    const salePrice    = propVal;
+    const capitalGain  = Math.max(0, salePrice - price);
+    const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
+    const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
+    buyFinal = (salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactor;
+  } else {
+    buyFinal = (propVal - loanBal + buyerPortfolio) / inflFactor;
+  }
+  const rentFinal = renterPortfolio / inflFactor;
+  return Math.round(buyFinal - rentFinal);
+}
+
 function calc1Update() {
   const price      = +document.getElementById('c1-price').value;
   const downPct    = +document.getElementById('c1-down').value / 100;
@@ -1721,6 +1946,10 @@ function calc1Update() {
   document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
   updateC1ChartSub();
   updateC1SliderHints();
+  // Cycle-impact: насколько изменится финальная разница при возврате yield к среднему.
+  // Считается только если история региона уже загружена. Хранится в c1CycleImpact
+  // для popup'а; знак: «−» = покупка станет хуже, «+» = ещё выгоднее.
+  c1CycleImpact = c1ComputeCycleImpact();
   updateC1CycleCard(getCurrentC1Region());
   fillC1Breakdown(finalPropVal, loanBal, renterPortfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
@@ -1970,7 +2199,24 @@ function updateC1CycleCard(region) {
     statusEl.textContent = t(statusKey);
   }
   document.getElementById('c1-cycle-zscore').textContent = region.yieldZScore.toFixed(2);
+  const periodEl = document.getElementById('c1-cycle-period');
+  if (periodEl) periodEl.textContent = c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth);
   drawCycleSparkline(region);
+}
+
+// '2007-04' → '04.2007'
+function c1FormatYM(ym) {
+  if (!ym) return '';
+  const [y, m] = ym.split('-');
+  return `${m}.${y}`;
+}
+function c1FormatPeriod(from, to) {
+  return `${c1FormatYM(from)} — ${c1FormatYM(to)}`;
+}
+// Форматирование евро: "+1 234 567 €" или "−45 000 €"
+function c1FormatEur(value) {
+  const sign = value < 0 ? '−' : (value > 0 ? '+' : '');
+  return sign + Math.abs(Math.round(value)).toLocaleString('ru').replace(/,/g, ' ') + ' €';
 }
 
 // Sparkline 200×40: линия yield по месяцам, без осей/легенды/тултипа,

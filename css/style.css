@@ -718,6 +718,83 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   margin-top: 8px;
   overflow: hidden;
 }
+.cycle-period {
+  font-size: 11px;
+  opacity: 0.6;
+  text-align: center;
+  margin-top: 4px;
+  color: var(--muted);
+}
+#c1-cycle-card { cursor: pointer; transition: border-color 0.15s; }
+#c1-cycle-card:hover { border-color: var(--accent); }
+
+/* Cycle Position модальный popup — overlay + центрированный контент.
+   Шире чем .c1-popup, чтобы вместить график + 2-3 абзаца объяснения. */
+.c1-large-popup {
+  position: fixed; inset: 0; z-index: 2000;
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.c1-large-popup[style*="display: flex"], .c1-large-popup.visible { display: flex !important; }
+.c1-large-popup-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.65); cursor: pointer;
+}
+.c1-large-popup-content {
+  position: relative;
+  background: #16181c;
+  border: 1px solid #2a2d35;
+  border-radius: 10px;
+  width: 100%; max-width: 640px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.c1-large-popup-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #2a2d35;
+  font-size: 15px; font-weight: 500; color: var(--accent);
+}
+.c1-large-popup-body { padding: 16px 20px 20px; }
+.cycle-metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px;
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 16px;
+}
+.cycle-metric-row strong { color: var(--text, #e0e2e8); font-weight: 500; }
+.cycle-bigchart-wrap {
+  position: relative; width: 100%; height: 200px;
+  margin: 12px 0 16px;
+  overflow: hidden;
+}
+.cycle-explanation {
+  font-size: 13px; color: var(--muted); line-height: 1.7;
+  margin-bottom: 16px;
+}
+.cycle-explanation p { margin: 0 0 10px; }
+.cycle-explanation p:last-child { margin-bottom: 0; }
+.cycle-impact {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 14px;
+}
+.cycle-impact strong { font-size: 16px; font-weight: 500; }
+.cycle-impact strong.positive { color: var(--green); }
+.cycle-impact strong.negative { color: var(--red); }
+.cycle-sources {
+  font-size: 11px; color: var(--muted);
+  opacity: 0.75;
+  border-top: 1px solid #2a2d35;
+  padding-top: 12px;
+}
+.cycle-sources span:first-child { font-weight: 500; margin-right: 4px; }
+@media (max-width: 500px) {
+  .cycle-metrics { grid-template-columns: 1fr; }
+}
 .calc-chart-controls {
   display: flex; align-items: center; gap: 10px;
   flex-wrap: wrap; margin-bottom: 10px;
