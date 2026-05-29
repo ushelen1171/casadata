@@ -1677,35 +1677,58 @@ function setStressTest1(scenario, btn) {
   calc1Update();
 }
 
-// ─── Cycle-impact: упрощённая симуляция без UI-updates ──────────────────────
-// Дублирует логику calc1Update (только цикл расчёта), но опционально добавляет
-// `rentGrowthBonus` к темпу роста аренды. Возвращает финальную разницу
-// buyFinal − rentFinal. Используется для оценки «что будет, если yield вернётся
-// к историческому среднему».
-// ВНИМАНИЕ — техдолг: дублирование с calc1Update. При правках формулы в calc1Update
-// эту функцию тоже нужно править. Лучшее решение — extract в shared helper,
-// отложено до появления автотестов.
-//
-// forceModel: если задан ('realistic'|'symmetric'), используется вместо c1ComparisonModel.
-// Полезно для оценки cycle-impact: в realistic для регионов с rent > buyerTotal
-// импакт всегда 0, потому что diff<0 не двигает портфели. Поэтому импакт всегда
-// считается в symmetric — это даёт меру чувствительности всей методологии,
-// независимо от выбранной пользователем модели сравнения.
-function c1SimulateFinalDiff(rentGrowthBonus = 0, forceModel = null) {
-  const model = forceModel || c1ComparisonModel;
-  const price      = +document.getElementById('c1-price').value;
-  const downPct    = +document.getElementById('c1-down').value / 100;
-  const annRate    = +document.getElementById('c1-rate').value / 100;
-  const termYears  = +document.getElementById('c1-term').value;
-  const taxPct     = +document.getElementById('c1-tax').value / 100;
-  const appr       = +document.getElementById('c1-appr').value / 100;
-  const maint      = +document.getElementById('c1-maint').value / 100;
-  const rent0      = +document.getElementById('c1-rent').value;
-  const rentGrowth = +document.getElementById('c1-rentg').value / 100 + rentGrowthBonus;
-  const invRate    = +document.getElementById('c1-inv').value / 100;
-  const inflation  = +document.getElementById('c1-inflation').value / 100;
-  const horizon    = c1Horizon;
-  const sellAtEnd  = document.getElementById('c1-sell-at-end')?.checked || false;
+// ─── Calc 1 simulation helpers — единая точка истины ────────────────────────
+// collectC1Params читает DOM/state в плоский объект, c1RunSimulation выполняет
+// чистую симуляцию (без UI), c1SimulateFinalDiff — тонкая обёртка для
+// cycle-impact. calc1Update собирает params, вызывает c1RunSimulation, потом
+// делает только UI-updates.
+
+/**
+ * Собирает текущие параметры Калькулятора 1 из DOM + state в плоский объект.
+ * Все процентные значения — в долях (0.029, не 2.9). Можно передать override.
+ */
+function collectC1Params(override = {}) {
+  const p = {
+    price:           +document.getElementById('c1-price').value,
+    downPct:         +document.getElementById('c1-down').value / 100,
+    annRate:         +document.getElementById('c1-rate').value / 100,
+    termYears:       +document.getElementById('c1-term').value,
+    taxPct:          +document.getElementById('c1-tax').value / 100,
+    appr:            +document.getElementById('c1-appr').value / 100,
+    maint:           +document.getElementById('c1-maint').value / 100,
+    rent0:           +document.getElementById('c1-rent').value,
+    rentGrowth:      +document.getElementById('c1-rentg').value / 100,
+    invRate:         +document.getElementById('c1-inv').value / 100,
+    inflation:       +document.getElementById('c1-inflation').value / 100,
+    horizon:         c1Horizon,
+    priceMode:       c1PriceMode,
+    comparisonModel: c1ComparisonModel,
+    sellAtEnd:       document.getElementById('c1-sell-at-end')?.checked || false,
+    rentGrowthBonus: 0,
+  };
+  return Object.assign(p, override);
+}
+
+/**
+ * Чистая симуляция Калькулятора 1 — без UI-обновлений и без чтения DOM.
+ * Возвращает массивы для графика и финальные метрики.
+ *
+ * @param {Object} p — результат collectC1Params (или его override).
+ * @returns {Object} {
+ *   buyData, rentData, finalDiff, parityYear, roi,
+ *   monthlyMortgage, initialCash, downAmt, taxAmt,
+ *   propValFinal, loanBalFinal, renterPortfolioFinal,
+ *   totalInterestPaid, totalMaintPaid,
+ * }
+ */
+function c1RunSimulation(p) {
+  const {
+    price, downPct, annRate, termYears, taxPct, appr, maint,
+    rent0, invRate, inflation, horizon,
+    priceMode, comparisonModel, sellAtEnd,
+  } = p;
+  // rentGrowth + опциональный дрейф (cycle-impact).
+  const rentGrowth = p.rentGrowth + (p.rentGrowthBonus || 0);
 
   const downAmt = price * downPct;
   const taxAmt  = price * taxPct;
@@ -1722,144 +1745,27 @@ function c1SimulateFinalDiff(rentGrowthBonus = 0, forceModel = null) {
     monthlyMortgage = loan / nPay;
   }
 
+  const buyData = [], rentData = [];
   let propVal = price, loanBal = loan;
   let renterPortfolio = initialCash, buyerPortfolio = 0;
   let rent = rent0;
-
-  for (let y = 0; y < horizon; y++) {
-    for (let m = 0; m < 12; m++) {
-      const mo = y * 12 + m;
-      propVal *= (1 + appr / 12);
-      let payment = 0;
-      if (mo < nPay && loanBal > 0) {
-        const interest  = loanBal * mRate;
-        const principal = Math.min(monthlyMortgage - interest, loanBal);
-        loanBal = Math.max(0, loanBal - principal);
-        payment = monthlyMortgage;
-      }
-      const yearsElapsed = mo / 12;
-      const maintMonthly = annualMaintInitial * Math.pow(1 + inflation, yearsElapsed) / 12;
-      const buyerTotal   = payment + maintMonthly;
-
-      renterPortfolio *= (1 + invRate / 12);
-      buyerPortfolio  *= (1 + invRate / 12);
-      const diff = buyerTotal - rent;
-      if (model === 'symmetric') {
-        if (diff > 0) renterPortfolio += diff;
-        else          buyerPortfolio  += (-diff);
-      } else {
-        if (diff > 0) renterPortfolio += diff;
-      }
-      rent *= (1 + rentGrowth / 12);
-    }
-  }
-
-  const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
-  let buyFinal;
-  if (sellAtEnd) {
-    const salePrice    = propVal;
-    const capitalGain  = Math.max(0, salePrice - price);
-    const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
-    const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
-    buyFinal = (salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactor;
-  } else {
-    buyFinal = (propVal - loanBal + buyerPortfolio) / inflFactor;
-  }
-  const rentFinal = renterPortfolio / inflFactor;
-  return Math.round(buyFinal - rentFinal);
-}
-
-function calc1Update() {
-  const price      = +document.getElementById('c1-price').value;
-  const downPct    = +document.getElementById('c1-down').value / 100;
-  const annRate    = +document.getElementById('c1-rate').value / 100;
-  const termYears  = +document.getElementById('c1-term').value;
-  const taxPct     = +document.getElementById('c1-tax').value / 100;
-  const appr       = +document.getElementById('c1-appr').value / 100;
-  const maint      = +document.getElementById('c1-maint').value / 100;
-  const rent0      = +document.getElementById('c1-rent').value;
-  const rentGrowth = +document.getElementById('c1-rentg').value / 100;
-  const invRate    = +document.getElementById('c1-inv').value / 100;
-  const inflation  = +document.getElementById('c1-inflation').value / 100;
-  const horizon    = c1Horizon;
-
-  // ---- Display updates ----
-  const fmt = v => Math.round(v).toLocaleString('ru');
-
-  document.getElementById('c1v-price').textContent    = fmt(price) + ' €';
-  document.getElementById('c1v-down').textContent     = (downPct*100).toFixed(0) + '%';
-  document.getElementById('c1v-rate').textContent     = (annRate*100).toFixed(1) + '%';
-  document.getElementById('c1v-term').textContent     = termYears + ' лет';
-  document.getElementById('c1v-tax').textContent      = (taxPct*100).toFixed(1) + '%';
-  const itpDisplay = document.getElementById('c1-itp-display');
-  if (itpDisplay) itpDisplay.textContent = (taxPct*100).toFixed(1) + '% = ' + fmt(price * taxPct) + ' €';
-  const apprEl = document.getElementById('c1v-appr');
-  if (apprEl) apprEl.textContent = (appr*100).toFixed(1) + '%';
-  const rentgEl = document.getElementById('c1v-rentg');
-  if (rentgEl) rentgEl.textContent = (rentGrowth*100).toFixed(1) + '%';
-  const inflEl = document.getElementById('c1v-inflation');
-  if (inflEl) inflEl.textContent = (inflation*100).toFixed(1) + '%';
-  const yrSfx = t('c1_yr_suffix') || '/год';
-  document.getElementById('c1v-maint').textContent    = (maint*100).toFixed(1) + '%' + yrSfx + ' = ' + fmt(price * maint) + ' €' + yrSfx;
-  document.getElementById('c1v-rent').textContent     = fmt(rent0) + ' €';
-  document.getElementById('c1v-inv').textContent      = (invRate*100).toFixed(1) + '%';
-
-  const downAmt = price * downPct;
-  const taxAmt  = price * taxPct;
-  document.getElementById('c1v-down-amt').textContent  = '= ' + fmt(downAmt) + ' €';
-  document.getElementById('c1v-tax-amt').textContent   = '= ' + fmt(taxAmt) + ' €';
-
-  // Mortgage
-  const loan  = price * (1 - downPct);
-  const mRate = annRate / 12;
-  const nPay  = termYears * 12;
-  let monthlyMortgage = 0;
-  if (annRate > 0 && loan > 0) {
-    monthlyMortgage = loan * (mRate * Math.pow(1+mRate,nPay)) / (Math.pow(1+mRate,nPay) - 1);
-  } else if (loan > 0) {
-    monthlyMortgage = loan / nPay;
-  }
-  document.getElementById('c1v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' €/мес';
-
-  // ---- Simulation ----
-  // Initial investment: down + tax (money out of pocket on day 1)
-  const initialCash = downAmt + taxAmt;
-
-  const buyData  = [];
-  const rentData = [];
-  const labels   = [];
-
-  // Стартовая годовая сумма расходов на содержание. В симуляции (всегда номинальной)
-  // индексируется инфляцией каждый месяц — IBI/страховка/коммуналка растут с CPI,
-  // не с ценой жилья. В режиме 'real' конечный результат дефлируется на ту же
-  // инфляцию, что эквивалентно реально-постоянным расходам.
-  const annualMaintInitial = price * maint;
-
-  let propVal         = price;
-  let loanBal         = loan;
-  let renterPortfolio = initialCash; // арендатор инвестирует те же деньги, что покупатель внёс как down+tax
-  let buyerPortfolio  = 0;           // активен только в режиме 'symmetric' — когда у покупателя расходы ниже аренды
-  let rent            = rent0;
-  let totalMortgagePaid = 0;
-  let totalInterestPaid = 0;
-  let totalMaintPaid    = 0;
+  let totalInterestPaid = 0, totalMaintPaid = 0;
+  // Финальные неокруглённые значения — нужны для точного finalDiff (иначе
+  // разность двух округлённых даёт ±1 € дрейф в cycle-impact и breakdown).
+  let buyFinalRaw = 0, rentFinalRaw = 0;
 
   for (let y = 0; y <= horizon; y++) {
-    // Симуляция всегда идёт в номинале. В режиме 'real' значения дефлируются
-    // на (1+inflation)^y, чтобы показать капитал в покупательной способности.
-    const inflFactor = c1PriceMode === 'real' ? Math.pow(1 + inflation, y) : 1;
-    labels.push(y === 0 ? t('c1_now') || 'Сейчас' : `${t('c1_year')||'Год'} ${y}`);
-    // Капитал покупателя = недвижимость минус долг + накопленный buyerPortfolio
-    // (в режиме 'realistic' buyerPortfolio всегда 0, поэтому формула эквивалентна старой).
-    buyData.push(Math.round((propVal - loanBal + buyerPortfolio) / inflFactor));
-    rentData.push(Math.round(renterPortfolio / inflFactor));
+    const inflFactor = priceMode === 'real' ? Math.pow(1 + inflation, y) : 1;
+    const buyRaw  = (propVal - loanBal + buyerPortfolio) / inflFactor;
+    const rentRaw = renterPortfolio / inflFactor;
+    buyData.push(Math.round(buyRaw));
+    rentData.push(Math.round(rentRaw));
+    if (y === horizon) { buyFinalRaw = buyRaw; rentFinalRaw = rentRaw; }
 
     if (y < horizon) {
       for (let m = 0; m < 12; m++) {
         const mo = y * 12 + m;
-        // Property appreciates monthly
         propVal *= (1 + appr / 12);
-        // Mortgage
         let payment = 0;
         if (mo < nPay && loanBal > 0) {
           const interest  = loanBal * mRate;
@@ -1868,99 +1774,148 @@ function calc1Update() {
           loanBal = Math.max(0, loanBal - principal);
           payment = monthlyMortgage;
         }
-        // Maintenance monthly: всегда индексируется на инфляцию внутри симуляции.
-        // Для режима 'real' дефляция результата приводит расходы к константе.
         const yearsElapsed = mo / 12;
         const maintMonthly = annualMaintInitial * Math.pow(1 + inflation, yearsElapsed) / 12;
         totalMaintPaid += maintMonthly;
-        const buyerTotal   = payment + maintMonthly;
+        const buyerTotal = payment + maintMonthly;
 
-        // Compound оба портфеля (в 'realistic' buyerPortfolio = 0 и остаётся 0).
         renterPortfolio *= (1 + invRate / 12);
         buyerPortfolio  *= (1 + invRate / 12);
         const diff = buyerTotal - rent;
-        if (c1ComparisonModel === 'symmetric') {
-          // Двусторонний денежный поток: кто платит меньше — инвестирует разницу.
-          if (diff > 0) renterPortfolio += diff;     // покупателю дороже → арендатор копит
-          else          buyerPortfolio  += (-diff);  // аренда дороже → покупатель копит сэкономленное
-        } else {
-          // 'realistic' (NYT-стандарт): арендатор инвестирует только когда есть свободные деньги,
-          // никогда не снимает из портфеля. Покупатель не имеет инвестпортфеля.
+        if (comparisonModel === 'symmetric') {
           if (diff > 0) renterPortfolio += diff;
-          // если diff <= 0 — арендатор доплачивает из текущего дохода, портфель работает дальше
+          else          buyerPortfolio  += (-diff);
+        } else {
+          if (diff > 0) renterPortfolio += diff;
         }
-        totalMortgagePaid += payment;
         rent *= (1 + rentGrowth / 12);
       }
     }
   }
 
-  // Опция: «обналичить капитал в конце» — продажа квартиры в конце горизонта.
-  // Применяется только к финальной точке: налог на gain + издержки продажи.
-  // Промежуточные точки графика — это «бумажный» капитал, при удержании квартиры
-  // налог не платится, поэтому их не корректируем.
-  const sellAtEnd = document.getElementById('c1-sell-at-end')?.checked || false;
+  // sell-at-end: корректирует только финальную точку (промежуточные годы —
+  // «бумажный» капитал, при удержании квартиры налог не платится).
   if (sellAtEnd) {
     const salePrice    = propVal;
     const capitalGain  = Math.max(0, salePrice - price);
     const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
     const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
-    const inflFactorH  = c1PriceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
-    // buyerPortfolio — это уже наличные, налог на CG к ним не применяется.
-    buyData[horizon]   = Math.round((salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactorH);
+    const inflFactorH  = priceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
+    const buyRaw      = (salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactorH;
+    buyData[horizon]  = Math.round(buyRaw);
+    buyFinalRaw       = buyRaw;
   }
-  const sellNoteEl = document.getElementById('c1-sell-note');
-  if (sellNoteEl) sellNoteEl.style.display = sellAtEnd ? '' : 'none';
 
-  const buyFinal  = buyData[horizon];
-  const rentFinal = rentData[horizon];
-  const diff      = buyFinal - rentFinal;
-  const winner    = diff >= 0 ? 'buy' : 'rent';
+  // Две версии финальной разницы: UI берёт разность округлённых точек графика
+  // (исторически отображалось так), cycle-impact — round разности неокруглённых
+  // (точнее, без ±1 € дрейфа из двойного округления).
+  const finalDiff    = buyData[horizon] - rentData[horizon];
+  const finalDiffRaw = Math.round(buyFinalRaw - rentFinalRaw);
 
-  // Parity year — first year buying overtakes renting (renter starts higher, so we look for buy crossing above)
   let parityYear = null;
   for (let y = 1; y <= horizon; y++) {
     if (buyData[y] >= rentData[y]) { parityYear = y; break; }
   }
 
-  // ROI on down payment (annualised)
-  const roiTotal = (buyFinal - initialCash) / initialCash;
-  const roiAnn   = (Math.pow(1 + roiTotal, 1 / horizon) - 1) * 100;
+  const roiTotal = (buyData[horizon] - initialCash) / initialCash;
+  const roi      = (Math.pow(1 + roiTotal, 1 / horizon) - 1) * 100;
 
-  // ---- Gross / Net ROI for tooltip ----
-  const finalPropVal = propVal;
-  const grossROI = downAmt > 0 ? ((finalPropVal - price) / downAmt * 100) : 0;
-  const netROI   = downAmt > 0 ? ((finalPropVal - price - totalInterestPaid - totalMaintPaid) / downAmt * 100) : 0;
+  return {
+    buyData, rentData, finalDiff, finalDiffRaw, parityYear, roi,
+    monthlyMortgage, initialCash, downAmt, taxAmt,
+    propValFinal:         propVal,
+    loanBalFinal:         loanBal,
+    renterPortfolioFinal: renterPortfolio,
+    totalInterestPaid, totalMaintPaid,
+  };
+}
+
+/**
+ * Тонкая обёртка над c1RunSimulation для расчёта cycle-impact.
+ *
+ * forceModel='symmetric' (всегда, см. c1ComputeCycleImpact). В realistic для
+ * регионов с rent > buyerTotal импакт всегда 0 — diff<0 не двигает портфели.
+ * Symmetric даёт меру чувствительности методологии независимо от выбранной
+ * пользователем модели.
+ */
+function c1SimulateFinalDiff(rentGrowthBonus = 0, forceModel = null) {
+  const params = collectC1Params({ rentGrowthBonus });
+  if (forceModel) params.comparisonModel = forceModel;
+  // finalDiffRaw — точная (round разности неокруглённых). cycle-impact = withDr − base
+  // компенсирует, поэтому ±1 € дрейф здесь критичен.
+  return c1RunSimulation(params).finalDiffRaw;
+}
+
+function calc1Update() {
+  // 1. Собрать параметры одной командой; c1RunSimulation делает всю математику.
+  const params = collectC1Params();
+  const {
+    price, downPct, annRate, termYears, taxPct, appr, maint,
+    rent0, rentGrowth, invRate, inflation, horizon, sellAtEnd,
+  } = params;
+  const sim = c1RunSimulation(params);
+  const {
+    buyData, rentData, finalDiff, parityYear, roi,
+    monthlyMortgage, initialCash, downAmt, taxAmt,
+    propValFinal, loanBalFinal, renterPortfolioFinal,
+    totalInterestPaid, totalMaintPaid,
+  } = sim;
+  const winner = finalDiff >= 0 ? 'buy' : 'rent';
+
+  // 2. Слайдер-значения (текст под/рядом со слайдерами).
+  const fmt = v => Math.round(v).toLocaleString('ru');
+  document.getElementById('c1v-price').textContent = fmt(price) + ' €';
+  document.getElementById('c1v-down').textContent  = (downPct*100).toFixed(0) + '%';
+  document.getElementById('c1v-rate').textContent  = (annRate*100).toFixed(1) + '%';
+  document.getElementById('c1v-term').textContent  = termYears + ' лет';
+  document.getElementById('c1v-tax').textContent   = (taxPct*100).toFixed(1) + '%';
+  const itpDisplay = document.getElementById('c1-itp-display');
+  if (itpDisplay) itpDisplay.textContent = (taxPct*100).toFixed(1) + '% = ' + fmt(price * taxPct) + ' €';
+  const apprEl  = document.getElementById('c1v-appr');   if (apprEl)  apprEl.textContent  = (appr*100).toFixed(1) + '%';
+  const rentgEl = document.getElementById('c1v-rentg');  if (rentgEl) rentgEl.textContent = (rentGrowth*100).toFixed(1) + '%';
+  const inflEl  = document.getElementById('c1v-inflation'); if (inflEl) inflEl.textContent = (inflation*100).toFixed(1) + '%';
+  const yrSfx = t('c1_yr_suffix') || '/год';
+  document.getElementById('c1v-maint').textContent = (maint*100).toFixed(1) + '%' + yrSfx + ' = ' + fmt(price * maint) + ' €' + yrSfx;
+  document.getElementById('c1v-rent').textContent  = fmt(rent0) + ' €';
+  document.getElementById('c1v-inv').textContent   = (invRate*100).toFixed(1) + '%';
+  document.getElementById('c1v-down-amt').textContent = '= ' + fmt(downAmt) + ' €';
+  document.getElementById('c1v-tax-amt').textContent  = '= ' + fmt(taxAmt) + ' €';
+  document.getElementById('c1v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' €/мес';
+
+  // 3. Подпись «sell-at-end» — видна, когда флажок включён.
+  const sellNoteEl = document.getElementById('c1-sell-note');
+  if (sellNoteEl) sellNoteEl.style.display = sellAtEnd ? '' : 'none';
+
+  // 4. Подсказка-icon у ROI.
   const tipEl = document.getElementById('c1-roi-tip-icon');
   if (tipEl) {
     tipEl.setAttribute('data-tip', t('c1_roi_tip') || 'Среднегодовая доходность на вложенные деньги.');
     tipEl.title = '';
   }
 
-  // ---- Summary cards ----
+  // 5. Карточки WINNER / PARITY / ROI.
   const winLabel = winner === 'buy' ? (t('c1_buy')||'Покупка') : (t('c1_rent_word')||'Аренда');
   document.getElementById('c1-winner').textContent     = '🏆 ' + winLabel;
-  document.getElementById('c1-winner-sub').textContent = (t('c1_winner_sub_pre')||'выгоднее · разница') + ' +' + fmt(Math.abs(diff)) + ' €';
+  document.getElementById('c1-winner-sub').textContent = (t('c1_winner_sub_pre')||'выгоднее · разница') + ' +' + fmt(Math.abs(finalDiff)) + ' €';
   document.getElementById('c1-parity').textContent     = parityYear ? pluralYears(parityYear) : '>' + horizon;
-  document.getElementById('c1-roi').textContent     = roiAnn.toFixed(1) + '%';
-  document.getElementById('c1-roi-sub').textContent = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
+  document.getElementById('c1-roi').textContent        = roi.toFixed(1) + '%';
+  document.getElementById('c1-roi-sub').textContent    = (t('c1_roi_sub_new')||'среднегодовая за') + ' ' + pluralYears(horizon);
+
   updateC1ChartSub();
   updateC1SliderHints();
-  // Cycle-impact: насколько изменится финальная разница при возврате yield к среднему.
-  // Считается только если история региона уже загружена. Хранится в c1CycleImpact
-  // для popup'а; знак: «−» = покупка станет хуже, «+» = ещё выгоднее.
   c1CycleImpact = c1ComputeCycleImpact();
   updateC1CycleCard(getCurrentC1Region());
-  fillC1Breakdown(finalPropVal, loanBal, renterPortfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
+  fillC1Breakdown(propValFinal, loanBalFinal, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
-  // ---- Chart title ----
+  // 6. График: лейблы зависят от i18n, поэтому строим здесь.
+  const labels = [];
+  for (let y = 0; y <= horizon; y++) {
+    labels.push(y === 0 ? (t('c1_now') || 'Сейчас') : `${t('c1_year')||'Год'} ${y}`);
+  }
   updateC1ChartTitle();
-
-  // ---- Chart ----
   drawCalc1Chart(labels, buyData, rentData, parityYear, termYears);
 
-  // ---- Auto-summary text ----
-  buildCalc1Summary(winner, buyFinal, rentFinal, parityYear, roiAnn, horizon, downAmt, taxAmt, monthlyMortgage, rent0);
+  buildCalc1Summary(winner, buyData[horizon], rentData[horizon], parityYear, roi, horizon, downAmt, taxAmt, monthlyMortgage, rent0);
 }
 
 function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
