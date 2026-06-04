@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7e3ccee4">
+<link rel="stylesheet" href="css/style.css?v=0f211d66">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -316,9 +316,10 @@
         <div id="cy-explanation" class="cycle-explanation"></div>
 
         <div class="cycle-impact">
-          <span data-i18n="c1_cycle_impact_label">Оценка влияния возврата к среднему на итоговую разницу:</span>
+          <span id="cy-impact-label" data-i18n="c1_cycle_impact_label">Оценка влияния возврата к среднему на итоговую разницу:</span>
           <strong id="cy-impact-value">—</strong>
         </div>
+        <div class="cycle-setting-hint" id="cy-setting-hint"></div>
 
         <div class="cycle-sources">
           <span data-i18n="c1_cycle_sources_label">Источники данных:</span>
@@ -366,15 +367,6 @@
             <div class="c1-popup-title" data-i18n="c1_model_label">Модель сравнения</div>
             <div class="c1-popup-text c1-model-popup-body"></div>
           </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span class="calc-section-label" data-i18n="c1_stress_label">Сценарий:</span>
-          <div class="calc-btn-group" id="c1-stress-btns">
-            <button class="calc-btn"        onclick="setStressTest1('pess',this)"  data-i18n="c1_pess">Пессимист.</button>
-            <button class="calc-btn active" onclick="setStressTest1('base',this)"  data-i18n="c1_base">Базовый ★</button>
-            <button class="calc-btn"        onclick="setStressTest1('opt',this)"   data-i18n="c1_opt">Оптимист.</button>
-          </div>
-          <span class="info-icon" data-i18n-title="c1_stress_tip" title="">ⓘ</span>
         </div>
       </div>
     </div>
@@ -446,6 +438,14 @@
     </div>
     <div class="slider-row">
       <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c1_growth_label">Темп роста цен и аренды</span>
+        <span class="slider-value"><span id="c1v-growth">3.0</span>%</span>
+      </div>
+      <input type="range" id="c1-appr" min="0" max="8" step="0.1" value="3.0" oninput="onC1GrowthChange()">
+      <span class="slider-sub c1-slider-hint" id="c1-appr-hint"></span>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label-row">
         <span class="slider-label" data-i18n="c1_inv">Доходность инвестиций / год</span>
         <span class="slider-value" id="c1v-inv">7.0%</span>
       </div>
@@ -460,11 +460,10 @@
     <span data-i18n="c1_advanced">Расширенные настройки</span>
   </div>
   <div class="calc-advanced-content" id="c1-adv">
-    <!-- Hidden inputs: controlled by scenario buttons -->
-    <input type="hidden" id="c1-appr" value="3">
+    <!-- Hidden inputs: rentg синхронизируется с c1-appr через onC1GrowthChange().
+         inflation остаётся скрытым параметром (управляется DEFAULTS / Real-режим). -->
     <input type="hidden" id="c1-rentg" value="3">
     <input type="hidden" id="c1-inflation" value="2.5">
-    <span id="c1v-appr" style="display:none;"></span>
     <span id="c1v-rentg" style="display:none;"></span>
     <span id="c1v-inflation" style="display:none;"></span>
     <div class="slider-row c1-itp-block">
@@ -501,6 +500,18 @@
         <span data-i18n="c1_sell_at_end_label">Обналичить капитал в конце</span>
         <span class="info-icon" data-i18n-title="c1_sell_at_end_tip" title="">ⓘ</span>
       </label>
+    </div>
+    <div class="slider-row" style="position:relative;">
+      <label class="c1-primera-label">
+        <input type="checkbox" id="c1-mean-reversion" onchange="onC1MeanReversionChange()">
+        <span data-i18n="c1_mean_reversion_label">Возврат доходности к среднему за период</span>
+        <button class="c1-info-btn" onclick="openC1MeanReversionPopup(event)" aria-label="?">?</button>
+      </label>
+      <div class="c1-popup" id="c1-mean-reversion-popup">
+        <button class="c1-popup-close" onclick="closeC1MeanReversionPopup()">×</button>
+        <div class="c1-popup-title" data-i18n="c1_mean_reversion_label">Возврат доходности к среднему за период</div>
+        <div class="c1-popup-text c1-mean-reversion-popup-body"></div>
+      </div>
     </div>
   </div>
 
@@ -1226,15 +1237,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-<script src="js/defaults.js?v=424b6d8a"></script>
+<script src="js/defaults.js?v=6ba37fb5"></script>
 <script src="js/itp-rates.js?v=28208980"></script>
 <script src="js/data.js?v=77610002"></script>
 <script src="js/data-history.js?v=ed115123"></script>
-<script src="js/i18n.js?v=bef7aca1"></script>
+<script src="js/i18n.js?v=7dcf370a"></script>
 <script src="js/rental-calc.js?v=c2dab6fe"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=d3f9001e"></script>
+<script src="js/app.js?v=f52aab1a"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>

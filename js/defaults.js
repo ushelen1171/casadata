@@ -45,16 +45,16 @@ const DEFAULTS = {
   //   так же, как цены.
   rentGrowthDefault: 3.0,
 
-  // Стресс-сценарии: fallback значения роста цен, если в данных региона
-  // нет соответствующего поля (cagr3/cagr5/cagr10).
-  apprOptimistFallback: 5,    // setStressTest1: scenario === 'opt'  → fallback для r.cagr3
-  apprBaseFallback: 3,        // setStressTest1: scenario === 'base' → fallback для r.cagr5
-  apprPessimistFallback: 1,   // setStressTest1: scenario === 'pess' → fallback для r.cagr10
-
-  // Стресс-сценарии: фиксированные значения роста аренды (не из данных).
-  rentGrowthOptimist: 4,      // setStressTest1/2: оптимистичный
-  rentGrowthBase: 3,          // setStressTest1/2: базовый
-  rentGrowthPessimist: 1,     // setStressTest1/2: пессимистичный
+  // Стресс-сценарии Калькулятора 2 (Pessimist/Base/Optimist в rental-calc.js).
+  // Соответствующие кнопки в Calc 1 удалены — там теперь один общий слайдер
+  // темпа роста. Но getApprForScenario ещё используется setStressTest2 в
+  // Calc 2 — поэтому fallback-константы для appr оставлены.
+  apprOptimistFallback: 5,    // setStressTest2: scenario === 'opt'  → fallback для r.cagr3
+  apprBaseFallback: 3,        // setStressTest2: scenario === 'base' → fallback для r.cagr5
+  apprPessimistFallback: 1,   // setStressTest2: scenario === 'pess' → fallback для r.cagr10
+  rentGrowthOptimist: 4,      // setStressTest2: оптимистичный
+  rentGrowthBase: 3,          // setStressTest2: базовый
+  rentGrowthPessimist: 1,     // setStressTest2: пессимистичный
 
   // ──────────────────────────────────────────────────────────
   // Доходность альтернативных инвестиций (индексный фонд)

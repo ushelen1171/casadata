@@ -95,6 +95,7 @@ let c1PropertyType = 'secondary';
 let c1PrimeraVivienda = true;
 let c1NotaryPct = DEFAULTS.notaryPct;
 let c1ComparisonModel = DEFAULTS.comparisonModelDefault;
+let c1MeanReversionEnabled = false;
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
 function getC1AutoTaxRate(r) {
@@ -1238,6 +1239,50 @@ function closeC1ModelPopup() {
   }
 }
 
+// ─── Mean reversion: переключатель в Advanced + ⓘ-popup ─────────────────────
+let c1MeanReversionPopupOutsideHandler = null;
+
+function onC1MeanReversionChange() {
+  c1MeanReversionEnabled = document.getElementById('c1-mean-reversion').checked;
+  calc1Update();
+}
+
+function openC1MeanReversionPopup(e) {
+  if (e) e.stopPropagation();
+  const popup = document.getElementById('c1-mean-reversion-popup');
+  if (!popup) return;
+  const body = popup.querySelector('.c1-mean-reversion-popup-body');
+  if (body) {
+    const raw = t('c1_mean_reversion_tip') || '';
+    body.innerHTML = raw
+      .split(/\n\n+/)
+      .map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>')
+      .join('');
+  }
+  popup.classList.add('visible');
+  setTimeout(() => {
+    c1MeanReversionPopupOutsideHandler = ev => {
+      if (!popup.contains(ev.target)) closeC1MeanReversionPopup();
+    };
+    document.addEventListener('click', c1MeanReversionPopupOutsideHandler);
+  }, 0);
+}
+function closeC1MeanReversionPopup() {
+  const popup = document.getElementById('c1-mean-reversion-popup');
+  if (popup) popup.classList.remove('visible');
+  if (c1MeanReversionPopupOutsideHandler) {
+    document.removeEventListener('click', c1MeanReversionPopupOutsideHandler);
+    c1MeanReversionPopupOutsideHandler = null;
+  }
+}
+
+// Дрейф темпа аренды (доля, не проценты), нужный для возврата yield к среднему
+// за horizonYears лет. Возвращает 0 если данные истории недоступны.
+function computeMeanReversionDrift(region, horizonYears) {
+  if (!region || typeof region.yieldMean !== 'number' || !region.yield) return 0;
+  return Math.pow(region.yieldMean / region.yield, 1 / horizonYears) - 1;
+}
+
 // ─── Cycle Position popup (модальный, кликабельная карточка) ────────────────
 let c1CycleImpact = 0;   // Текущая денежная оценка возврата к среднему (€).
 let c1CycleBigChart = null;
@@ -1249,11 +1294,15 @@ function c1ComputeCycleImpact() {
   // yield = annualRent/price. mean/current = ratio; нужно `(1+drift)^N = ratio`.
   const ratio = region.yieldMean / region.yield;
   const drift = Math.pow(ratio, 1 / c1Horizon) - 1;
-  // Принудительно симулируем в symmetric: иначе для регионов с rent > buyerTotal
-  // (Cataluña, Murcia, CLM и т.п.) импакт в realistic тождественно 0 — drift
-  // не влияет, потому что diff<0 не двигает портфели. См. комментарий в c1SimulateFinalDiff.
-  const base   = c1SimulateFinalDiff(0,     'symmetric');
-  const withDr = c1SimulateFinalDiff(drift, 'symmetric');
+  // Когда переключатель ВКЛЮЧЁН — основная симуляция уже считает с drift в
+  // выбранной пользователем модели. Импакт = реальная delta в той же модели,
+  // чтобы число в popup совпало с тем, что видно в карточках/графике.
+  // Когда ВЫКЛЮЧЕН — символическая «sensitivity», считается в symmetric
+  // (в realistic для регионов с rent > buyerTotal импакт тождественно 0,
+  // не давая полезной информации о фазе цикла).
+  const model = c1MeanReversionEnabled ? c1ComparisonModel : 'symmetric';
+  const base   = c1SimulateFinalDiff(0,     model);
+  const withDr = c1SimulateFinalDiff(drift, model);
   return withDr - base;
 }
 
@@ -1269,12 +1318,8 @@ function openC1CyclePopup() {
   document.getElementById('cy-period').textContent  =
     `${c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth)} (${region.yieldCount} ${t('c1_cycle_months_short')||'мес.'})`;
 
-  // Денежная оценка
-  const impactEl = document.getElementById('cy-impact-value');
-  impactEl.textContent = c1FormatEur(c1CycleImpact);
-  impactEl.classList.remove('positive', 'negative');
-  if (c1CycleImpact > 0) impactEl.classList.add('positive');
-  else if (c1CycleImpact < 0) impactEl.classList.add('negative');
+  // Импакт-строка зависит от состояния mean-reversion-переключателя.
+  updateCycleImpactRow();
 
   // Большой график + текст
   drawCycleBigChart(region);
@@ -1348,10 +1393,12 @@ function drawCycleBigChart(region) {
 
 function fillCycleExplanation(region) {
   const phase = region.cyclePhase;
+  // При ВКЛЮЧЁННОМ переключателе показываем "..._enabled" версии.
+  const suffix = c1MeanReversionEnabled ? '_enabled' : '';
   const explKey = {
-    above:   'c1_cycle_explanation_above',
-    below:   'c1_cycle_explanation_below',
-    neutral: 'c1_cycle_explanation_neutral',
+    above:   'c1_cycle_explanation_above'   + suffix,
+    below:   'c1_cycle_explanation_below'   + suffix,
+    neutral: 'c1_cycle_explanation_neutral' + suffix,
   }[phase];
   const horizon = c1Horizon;
   // Дрейф темпа аренды (%/год), нужный для возврата yield к среднему
@@ -1369,6 +1416,49 @@ function fillCycleExplanation(region) {
 
   const html = text.split(/\n\n+/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
   document.getElementById('cy-explanation').innerHTML = html;
+}
+
+// Обновляет импакт-строку и подсказку под ней. Зависит от состояния
+// mean-reversion-переключателя:
+//   OFF: «Estimated effect of mean reversion: +35 679 €» + hint «Enable mean reversion: …»
+//   ON, |impact| ≥ 1000:  «Mean reversion applied. Buying became more favorable by» / 35 679 €
+//   ON, |impact| < 1000:  «Mean reversion applied. Effect on result less than 1000 €.» (без значения)
+function updateCycleImpactRow() {
+  const labelEl  = document.getElementById('cy-impact-label');
+  const impactEl = document.getElementById('cy-impact-value');
+  const hintEl   = document.getElementById('cy-setting-hint');
+  if (!labelEl || !impactEl) return;
+
+  // Расчёт значения для отображения. Знак отделён в подпись, в самой
+  // строке всегда абсолютное значение.
+  const impactAbs = Math.abs(c1CycleImpact);
+  const absStr = Math.round(impactAbs).toLocaleString('ru').replace(/,/g, ' ') + ' €';
+
+  impactEl.classList.remove('positive', 'negative');
+
+  if (c1MeanReversionEnabled) {
+    if (impactAbs < 1000) {
+      // Минимальный эффект: весь текст в label, value пустое.
+      labelEl.textContent  = t('c1_cycle_impact_label_enabled_minimal') || 'Возврат к среднему учтён. Эффект на результат менее 1000 €.';
+      impactEl.textContent = '';
+    } else if (c1CycleImpact > 0) {
+      labelEl.textContent  = t('c1_cycle_impact_label_enabled_positive') || 'Возврат к среднему учтён. Покупка стала относительно выгоднее на';
+      impactEl.textContent = absStr;
+      impactEl.classList.add('positive');
+    } else {
+      labelEl.textContent  = t('c1_cycle_impact_label_enabled_negative') || 'Возврат к среднему учтён. Аренда стала относительно выгоднее на';
+      impactEl.textContent = absStr;
+      impactEl.classList.add('negative');
+    }
+    if (hintEl) hintEl.textContent = t('c1_cycle_setting_hint_on') || '';
+  } else {
+    // OFF — старый текст с знаковым c1FormatEur (+/−).
+    labelEl.textContent  = t('c1_cycle_impact_label') || 'Оценка влияния возврата к среднему на итоговую разницу:';
+    impactEl.textContent = c1FormatEur(c1CycleImpact);
+    if (c1CycleImpact > 0) impactEl.classList.add('positive');
+    else if (c1CycleImpact < 0) impactEl.classList.add('negative');
+    if (hintEl) hintEl.textContent = t('c1_cycle_setting_hint_off') || '';
+  }
 }
 
 let c2EquityPopupCloseTimer = null;
@@ -1484,8 +1574,7 @@ function onCalc1RegionChange() {
   document.getElementById('c1-price').value = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c1-rent').value  = Math.round(r.rent * sqm / 50) * 50;
   // Темпы роста (c1-appr, c1-rentg) при смене региона НЕ перезаписываются —
-  // используются дефолты из DEFAULTS или ручной ввод пользователя. Региональные
-  // CAGR подставляются только через кнопки стресс-теста (setStressTest1).
+  // используются дефолты из DEFAULTS или ручной ввод пользователя.
   // Reset manual tax override on region change
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
@@ -1526,9 +1615,13 @@ function resetCalc1() {
   document.querySelectorAll('#c1-model-btns .calc-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.model === c1ComparisonModel);
   });
-  document.querySelectorAll('#c1-stress-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
   document.querySelectorAll('#c1-mode-btns    .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
   document.querySelectorAll('#c1-preset-btns  .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+  // Сброс mean reversion: и переменная, и чекбокс.
+  c1MeanReversionEnabled = false;
+  const mrEl = document.getElementById('c1-mean-reversion');
+  if (mrEl) mrEl.checked = false;
 
   // Re-apply region-based values (price, rent, tax) and recalculate
   onCalc1RegionChange();
@@ -1656,8 +1749,8 @@ function setComparisonModel(model, btn) {
   calc1Update();
 }
 
-// Возвращает рост цен (%/год) в номинальном выражении для сценария.
-// Данные региона (r.cagr3/5/10) и fallback-константы хранятся как nominal.
+// Возвращает рост цен (%/год, номинал) для стресс-сценария.
+// Используется setStressTest2 в Calc 2. В Calc 1 кнопки сценариев удалены.
 function getApprForScenario(regionId, scenario) {
   const r = REGIONS.find(x => x.id === regionId);
   if (scenario === 'opt')  return r?.cagr3  ?? DEFAULTS.apprOptimistFallback;
@@ -1666,14 +1759,14 @@ function getApprForScenario(regionId, scenario) {
   return DEFAULTS.apprDefault;
 }
 
-function setStressTest1(scenario, btn) {
-  document.querySelectorAll('#c1-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const regionId = document.getElementById('c1-region').value;
-  document.getElementById('c1-appr').value = getApprForScenario(regionId, scenario);
-  if (scenario === 'opt')  document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthOptimist;
-  else if (scenario === 'base') document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthBase;
-  else if (scenario === 'pess') document.getElementById('c1-rentg').value = DEFAULTS.rentGrowthPessimist;
+// Обработчик единого слайдера темпа роста (c1-appr). Синхронизирует скрытый
+// c1-rentg с тем же значением — c1RunSimulation читает их как разные параметры,
+// дизайн оставляет возможность независимого управления в будущем.
+function onC1GrowthChange() {
+  const v = parseFloat(document.getElementById('c1-appr').value);
+  if (!Number.isFinite(v)) return;
+  document.getElementById('c1v-growth').textContent = v.toFixed(1);
+  document.getElementById('c1-rentg').value = v;
   calc1Update();
 }
 
@@ -1706,6 +1799,12 @@ function collectC1Params(override = {}) {
     sellAtEnd:       document.getElementById('c1-sell-at-end')?.checked || false,
     rentGrowthBonus: 0,
   };
+  // Mean reversion: автоматически добавляем дрейф темпа аренды для возврата
+  // yield к среднему за горизонт. Применяется к текущему выбранному режиму
+  // (realistic/symmetric) без принудительных переключений модели.
+  if (c1MeanReversionEnabled) {
+    p.rentGrowthBonus = computeMeanReversionDrift(getCurrentC1Region(), p.horizon);
+  }
   return Object.assign(p, override);
 }
 
@@ -2229,17 +2328,26 @@ function getCurrentC1Region() {
 }
 
 function updateC1SliderHints() {
-  const hintEl = document.getElementById('c1-inv-hint');
-  if (!hintEl) return;
-  const nominal = parseFloat(document.getElementById('c1-inv')?.value);
   const inflation = parseFloat(document.getElementById('c1-inflation')?.value);
-  if (!Number.isFinite(nominal) || !Number.isFinite(inflation)) {
-    hintEl.textContent = '';
-    return;
-  }
-  const real = (nominal - inflation).toFixed(1);
   const tpl = t('c1_slider_real_hint') || '≈ {real}% реальных при инфляции {infl}%';
-  hintEl.textContent = tpl.replace('{real}', real).replace('{infl}', inflation.toFixed(1));
+  // Универсальный апдейтер для нескольких слайдеров: real-эквивалент = nominal − inflation.
+  const updateHint = (sliderId, hintId) => {
+    const hintEl = document.getElementById(hintId);
+    if (!hintEl) return;
+    const nominal = parseFloat(document.getElementById(sliderId)?.value);
+    if (!Number.isFinite(nominal) || !Number.isFinite(inflation)) {
+      hintEl.textContent = '';
+      return;
+    }
+    const real = (nominal - inflation).toFixed(1);
+    hintEl.textContent = tpl.replace('{real}', real).replace('{infl}', inflation.toFixed(1));
+  };
+  updateHint('c1-inv',  'c1-inv-hint');
+  updateHint('c1-appr', 'c1-appr-hint');
+  // Подпись над слайдером роста — отображение текущего значения.
+  const growthValEl = document.getElementById('c1v-growth');
+  const apprVal = parseFloat(document.getElementById('c1-appr')?.value);
+  if (growthValEl && Number.isFinite(apprVal)) growthValEl.textContent = apprVal.toFixed(1);
 }
 
 function updateC1ChartSub() {

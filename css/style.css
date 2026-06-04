@@ -785,6 +785,11 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 .cycle-impact strong { font-size: 16px; font-weight: 500; }
 .cycle-impact strong.positive { color: var(--green); }
 .cycle-impact strong.negative { color: var(--red); }
+.cycle-setting-hint {
+  font-size: 11px; color: var(--muted); opacity: 0.7;
+  margin: -8px 0 14px;
+  line-height: 1.5;
+}
 .cycle-sources {
   font-size: 11px; color: var(--muted);
   opacity: 0.75;
