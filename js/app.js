@@ -1318,11 +1318,29 @@ function openC1CyclePopup() {
   document.getElementById('cy-period').textContent  =
     `${c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth)} (${region.yieldCount} ${t('c1_cycle_months_short')||'мес.'})`;
 
+  const cyDiv = document.getElementById('cy-divergence');
+  if (cyDiv) {
+    const row = cyDiv.closest('.cycle-metric-row');
+    if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
+      if (row) row.style.display = 'none';
+    } else {
+      if (row) row.style.display = '';
+      const sign = region.divergence12m >= 0 ? '+' : '';
+      const pSign = region.priceGrowth12m >= 0 ? '+' : '';
+      const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
+      cyDiv.textContent =
+        `${sign}${region.divergence12m.toFixed(1)} ${t('c1_pp_short')} ` +
+        `(${t('c1_price_short')} ${pSign}${region.priceGrowth12m.toFixed(1)}% / ` +
+        `${t('c1_rent_short')} ${rSign}${region.rentGrowth12m.toFixed(1)}%)`;
+    }
+  }
+
   // Импакт-строка зависит от состояния mean-reversion-переключателя.
   updateCycleImpactRow();
 
   // Большой график + текст
   drawCycleBigChart(region);
+  fillCyclePhaseBlock(region);
   fillCycleExplanation(region);
 
   const popup = document.getElementById('c1-cycle-popup');
@@ -1424,10 +1442,20 @@ function fillCycleExplanation(region) {
 //   ON, |impact| ≥ 1000:  «Mean reversion applied. Buying became more favorable by» / 35 679 €
 //   ON, |impact| < 1000:  «Mean reversion applied. Effect on result less than 1000 €.» (без значения)
 function updateCycleImpactRow() {
-  const labelEl  = document.getElementById('cy-impact-label');
-  const impactEl = document.getElementById('cy-impact-value');
-  const hintEl   = document.getElementById('cy-setting-hint');
+  const labelEl   = document.getElementById('cy-impact-label');
+  const impactEl  = document.getElementById('cy-impact-value');
+  const hintEl    = document.getElementById('cy-setting-hint');
+  const modelEl   = document.getElementById('cy-impact-model-note');
   if (!labelEl || !impactEl) return;
+
+  // Какая модель используется в расчёте импакта (см. c1ComputeCycleImpact):
+  // OFF — всегда symmetric; ON — выбранная пользователем модель.
+  const impactModel = c1MeanReversionEnabled ? c1ComparisonModel : 'symmetric';
+  if (modelEl) {
+    modelEl.textContent = impactModel === 'realistic'
+      ? (t('c1_cycle_impact_for_realistic') || 'Оценка для реалистичной модели')
+      : (t('c1_cycle_impact_for_symmetric') || 'Оценка для симметричной модели');
+  }
 
   // Расчёт значения для отображения. Знак отделён в подпись, в самой
   // строке всегда абсолютное значение.
@@ -2255,7 +2283,48 @@ function updateC1CycleCard(region) {
   document.getElementById('c1-cycle-zscore').textContent = region.yieldZScore.toFixed(2);
   const periodEl = document.getElementById('c1-cycle-period');
   if (periodEl) periodEl.textContent = c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth);
+
+  const divEl = document.getElementById('c1-cycle-divergence');
+  if (divEl) {
+    if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
+      divEl.style.display = 'none';
+    } else {
+      divEl.style.display = '';
+      const arrow = { up: '↑', flat: '→', down: '↓' }[region.priceDirection];
+      const labelKey = {
+        prices_outpace: 'c1_divergence_prices_outpace',
+        rents_outpace:  'c1_divergence_rents_outpace',
+        synchronous:    'c1_divergence_synchronous',
+      }[region.divergenceClass];
+      const sign = region.divergence12m >= 0 ? '+' : '';
+      divEl.textContent =
+        `${sign}${region.divergence12m.toFixed(1)} ${t('c1_pp_short')} ${arrow} · ${t(labelKey)}`;
+    }
+  }
+
   drawCycleSparkline(region);
+}
+
+function fillCyclePhaseBlock(region) {
+  const block = document.getElementById('cy-phase-block');
+  if (!block) return;
+  if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
+    block.style.display = 'none';
+    return;
+  }
+  block.style.display = '';
+
+  const explKey = {
+    prices_outpace: 'c1_phase_prices_outpace',
+    rents_outpace:  'c1_phase_rents_outpace',
+    synchronous:    'c1_phase_synchronous',
+  }[region.divergenceClass];
+
+  const sign = region.divergence12m >= 0 ? '+' : '';
+  const text = (t(explKey) || '')
+    .replace('{div}', `${sign}${region.divergence12m.toFixed(1)}`);
+
+  block.innerHTML = text.split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
 }
 
 // '2007-04' → '04.2007'
