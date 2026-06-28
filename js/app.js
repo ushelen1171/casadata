@@ -1325,23 +1325,26 @@ function openC1CyclePopup() {
       if (row) row.style.display = 'none';
     } else {
       if (row) row.style.display = '';
-      const sign = region.divergence12m >= 0 ? '+' : '';
+      const sign  = region.divergence12m >= 0 ? '+' : '';
       const pSign = region.priceGrowth12m >= 0 ? '+' : '';
       const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
-      cyDiv.textContent =
+      const arrow    = { up: '↑', flat: '→', down: '↓' }[region.priceDirection];
+      const arrowCls = { up: 'cy-arrow-up', flat: 'cy-arrow-flat', down: 'cy-arrow-down' }[region.priceDirection];
+      cyDiv.innerHTML =
         `${sign}${region.divergence12m.toFixed(1)} ${t('c1_pp_short')} ` +
+        `<span class="${arrowCls}">${arrow}</span> ` +
         `(${t('c1_price_short')} ${pSign}${region.priceGrowth12m.toFixed(1)}% / ` +
         `${t('c1_rent_short')} ${rSign}${region.rentGrowth12m.toFixed(1)}%)`;
     }
   }
 
-  // Импакт-строка зависит от состояния mean-reversion-переключателя.
-  updateCycleImpactRow();
+  // Mean-reversion полотно и импакт-строка скрыты на Шаге A (перенос
+  // в Advanced settings — Шаг B). Расчёт c1CycleImpact продолжает идти
+  // в calc1Update, не показывается в popup.
 
-  // Большой график + текст
+  // Большой график + единый блок «Где рынок сейчас»
   drawCycleBigChart(region);
   fillCyclePhaseBlock(region);
-  fillCycleExplanation(region);
 
   const popup = document.getElementById('c1-cycle-popup');
   if (popup) popup.style.display = 'flex';
@@ -2271,40 +2274,62 @@ function updateC1CycleCard(region) {
   card.style.display = '';
 
   const phase = region.cyclePhase;
+  const phaseColor = C1_CYCLE_COLORS[phase] || C1_CYCLE_COLORS.neutral;
   const emoji = { above: '🟢', below: '🔴', neutral: '🟡' }[phase];
-  const statusKey = { above: 'c1_cycle_above', below: 'c1_cycle_below', neutral: 'c1_cycle_neutral' }[phase];
+  const statusKey = { above: 'c1_cycle_status_above', below: 'c1_cycle_status_below', neutral: 'c1_cycle_status_neutral' }[phase];
 
   document.getElementById('c1-cycle-emoji').textContent = emoji;
-  const statusEl = document.getElementById('c1-cycle-status');
+  const statusEl = document.getElementById('c1-cycle-status-text');
   if (statusEl) {
     statusEl.setAttribute('data-i18n', statusKey);
     statusEl.textContent = t(statusKey);
+    statusEl.style.color = phaseColor;
   }
-  document.getElementById('c1-cycle-zscore').textContent = region.yieldZScore.toFixed(2);
+
+  // Значение z со знаком (+1.76 / −0.51), желтый, подпись на той же строке
+  const z = region.yieldZScore;
+  const zSign = z > 0 ? '+' : z < 0 ? '−' : '';
+  document.getElementById('c1-cycle-zscore').textContent = zSign + Math.abs(z).toFixed(2);
+
+  // Стрелка тренда цены: ↑/→/↓, цвет нейтральный (var(--muted) из CSS)
+  const trendEl = document.getElementById('c1-cycle-price-trend');
+  if (trendEl) {
+    if (!region.priceDirection) {
+      trendEl.textContent = '';
+    } else {
+      trendEl.textContent = { up: '↑', flat: '→', down: '↓' }[region.priceDirection];
+    }
+  }
+
   const periodEl = document.getElementById('c1-cycle-period');
   if (periodEl) periodEl.textContent = c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth);
 
+  // Divergence-фраза под графиком: abs-число, без минуса в тексте
   const divEl = document.getElementById('c1-cycle-divergence');
+  const divider = document.querySelector('#c1-cycle-card .c1-cycle-divider');
   if (divEl) {
     if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
       divEl.style.display = 'none';
+      if (divider) divider.style.display = 'none';
     } else {
       divEl.style.display = '';
-      const arrow = { up: '↑', flat: '→', down: '↓' }[region.priceDirection];
-      const labelKey = {
-        prices_outpace: 'c1_divergence_prices_outpace',
-        rents_outpace:  'c1_divergence_rents_outpace',
-        synchronous:    'c1_divergence_synchronous',
+      if (divider) divider.style.display = '';
+      const phraseKey = {
+        prices_outpace: 'c1_cycle_div_prices',
+        rents_outpace:  'c1_cycle_div_rents',
+        synchronous:    'c1_cycle_div_sync',
       }[region.divergenceClass];
-      const sign = region.divergence12m >= 0 ? '+' : '';
-      divEl.textContent =
-        `${sign}${region.divergence12m.toFixed(1)} ${t('c1_pp_short')} ${arrow} · ${t(labelKey)}`;
+      const abs = Math.abs(region.divergence12m).toFixed(1);
+      const valHtml = `<span class="c1-cycle-div-num">${abs} ${t('c1_pp_short')}</span>`;
+      divEl.innerHTML = (t(phraseKey) || '').replace('{x}', valHtml);
     }
   }
 
   drawCycleSparkline(region);
 }
 
+// Единый блок «Где рынок сейчас»: заголовок + 3 абзаца
+// (уровень от cyclePhase / z, движение от divergenceClass, общая оговорка).
 function fillCyclePhaseBlock(region) {
   const block = document.getElementById('cy-phase-block');
   if (!block) return;
@@ -2314,17 +2339,25 @@ function fillCyclePhaseBlock(region) {
   }
   block.style.display = '';
 
-  const explKey = {
-    prices_outpace: 'c1_phase_prices_outpace',
-    rents_outpace:  'c1_phase_rents_outpace',
-    synchronous:    'c1_phase_synchronous',
+  const levelKey = {
+    above:   'c1_market_level_above',
+    neutral: 'c1_market_level_neutral',
+    below:   'c1_market_level_below',
+  }[region.cyclePhase];
+
+  const moveKey = {
+    prices_outpace: 'c1_market_move_prices',
+    rents_outpace:  'c1_market_move_rents',
+    synchronous:    'c1_market_move_sync',
   }[region.divergenceClass];
 
-  const sign = region.divergence12m >= 0 ? '+' : '';
-  const text = (t(explKey) || '')
-    .replace('{div}', `${sign}${region.divergence12m.toFixed(1)}`);
+  const signedDiv = (region.divergence12m >= 0 ? '+' : '') + region.divergence12m.toFixed(1);
+  const title = t('c1_market_now_title');
+  const p1    = t(levelKey);
+  const p2    = t(moveKey).replace('{div}', signedDiv);
+  const p3    = t('c1_market_caveat');
 
-  block.innerHTML = text.split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
+  block.innerHTML = [title, p1, p2, p3].map(p => `<p>${p}</p>`).join('');
 }
 
 // '2007-04' → '04.2007'

@@ -715,18 +715,72 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   position: relative;
   width: 100%;
   height: 40px;
-  margin-top: 8px;
+  margin-top: 4px;
   overflow: hidden;
 }
 .cycle-period {
   font-size: 11px;
   opacity: 0.6;
   text-align: center;
-  margin-top: 4px;
+  margin-top: 1px;
   color: var(--muted);
 }
 #c1-cycle-card { cursor: pointer; transition: border-color 0.15s; }
 #c1-cycle-card:hover { border-color: var(--accent); }
+
+.c1-cycle-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.c1-cycle-trend-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+.c1-cycle-status {
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.c1-cycle-zline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+}
+.c1-cycle-zvalue {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-family: var(--font-display);
+  line-height: 1.1;
+}
+.c1-cycle-zcaption {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.75;
+}
+.c1-cycle-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 6px 0 4px;
+}
+.c1-cycle-divergence-phrase {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.c1-cycle-div-num {
+  color: var(--accent);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Cycle Position модальный popup — overlay + центрированный контент.
    Шире чем .c1-popup, чтобы вместить график + 2-3 абзаца объяснения. */
@@ -801,6 +855,9 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 .cycle-impact strong { font-size: 16px; font-weight: 500; }
 .cycle-impact strong.positive { color: var(--green); }
 .cycle-impact strong.negative { color: var(--red); }
+.cy-arrow-up   { color: var(--green); font-weight: 500; }
+.cy-arrow-down { color: var(--red);   font-weight: 500; }
+.cy-arrow-flat { color: var(--accent); font-weight: 500; }
 .cycle-impact-model-note {
   font-size: 11px; color: var(--muted); opacity: 0.7;
   font-style: italic;

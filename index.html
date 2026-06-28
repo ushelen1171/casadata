@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=23c06725">
+<link rel="stylesheet" href="css/style.css?v=aada32ed">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -284,15 +284,22 @@
       <div class="calc-card-sub" id="c1-roi-sub">среднегодовая за 20 лет</div>
     </div>
     <div class="calc-card" id="c1-cycle-card" style="display:none;" onclick="openC1CyclePopup()" role="button" tabindex="0">
-      <div class="calc-card-label" data-i18n="c1_cycle_label">ФАЗА ЦИКЛА</div>
-      <div class="calc-card-value" style="font-size:16px;display:flex;align-items:center;gap:6px;">
-        <span id="c1-cycle-emoji">🟡</span>
-        <span id="c1-cycle-status" data-i18n="c1_cycle_neutral">Нейтрально</span>
+      <div class="c1-cycle-header">
+        <span class="calc-card-label" data-i18n="c1_cycle_label">ФАЗА ЦИКЛА</span>
+        <span class="c1-cycle-trend-arrow" id="c1-cycle-price-trend"></span>
       </div>
-      <div class="calc-card-sub">z = <span id="c1-cycle-zscore">0.00</span></div>
-      <div class="calc-card-sub" id="c1-cycle-divergence"></div>
+      <div class="c1-cycle-status">
+        <span id="c1-cycle-emoji">🟡</span>
+        <span id="c1-cycle-status-text"></span>
+      </div>
+      <div class="c1-cycle-zline">
+        <span class="c1-cycle-zvalue" id="c1-cycle-zscore">0.00</span>
+        <span class="c1-cycle-zcaption" data-i18n="c1_cycle_z_caption">(цена покупки / аренда)</span>
+      </div>
       <div class="c1-cycle-spark-wrap"><canvas id="c1-cycle-sparkline"></canvas></div>
       <div class="cycle-period" id="c1-cycle-period"></div>
+      <hr class="c1-cycle-divider">
+      <div class="c1-cycle-divergence-phrase" id="c1-cycle-divergence"></div>
     </div>
   </div>
 
@@ -317,14 +324,15 @@
 
         <div id="cy-phase-block" class="cycle-phase-block"></div>
 
-        <div id="cy-explanation" class="cycle-explanation"></div>
+        <!-- Mean-reversion блоки скрыты на Шаге A. На Шаге B переедут в Advanced settings. -->
+        <div id="cy-explanation" class="cycle-explanation" style="display:none;"></div>
 
-        <div class="cycle-impact">
+        <div class="cycle-impact" style="display:none;">
           <span id="cy-impact-label" data-i18n="c1_cycle_impact_label">Оценка влияния возврата к среднему на итоговую разницу:</span>
           <strong id="cy-impact-value">—</strong>
         </div>
-        <div class="cycle-impact-model-note" id="cy-impact-model-note"></div>
-        <div class="cycle-setting-hint" id="cy-setting-hint"></div>
+        <div class="cycle-impact-model-note" id="cy-impact-model-note" style="display:none;"></div>
+        <div class="cycle-setting-hint" id="cy-setting-hint" style="display:none;"></div>
 
         <div class="cycle-sources">
           <span data-i18n="c1_cycle_sources_label">Источники данных:</span>
@@ -1246,11 +1254,11 @@
 <script src="js/itp-rates.js?v=28208980"></script>
 <script src="js/data.js?v=77610002"></script>
 <script src="js/data-history.js?v=d75e69bf"></script>
-<script src="js/i18n.js?v=8226ea01"></script>
+<script src="js/i18n.js?v=de973382"></script>
 <script src="js/rental-calc.js?v=c2dab6fe"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=fbe7bbe9"></script>
+<script src="js/app.js?v=13c78370"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>
