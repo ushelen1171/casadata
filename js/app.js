@@ -1412,84 +1412,28 @@ function drawCycleBigChart(region) {
   });
 }
 
-function fillCycleExplanation(region) {
-  const phase = region.cyclePhase;
-  // При ВКЛЮЧЁННОМ переключателе показываем "..._enabled" версии.
-  const suffix = c1MeanReversionEnabled ? '_enabled' : '';
-  const explKey = {
-    above:   'c1_cycle_explanation_above'   + suffix,
-    below:   'c1_cycle_explanation_below'   + suffix,
-    neutral: 'c1_cycle_explanation_neutral' + suffix,
-  }[phase];
-  const horizon = c1Horizon;
-  // Дрейф темпа аренды (%/год), нужный для возврата yield к среднему
-  const ratio = region.yieldMean / region.yield;
-  const drift = (Math.pow(ratio, 1 / horizon) - 1) * 100;
-
-  let text = t(explKey) || '';
-  const impactAbs = Math.abs(c1CycleImpact);
-  text = text
-    .replace(/{count}/g,   region.yieldCount)
-    .replace(/{horizon}/g, horizon)
-    .replace(/{drift}/g,   Math.abs(drift).toFixed(2))
-    .replace(/{impact}/g,  Math.round(impactAbs).toLocaleString('ru').replace(/,/g, ' ') + ' €')
-    .replace(/{impact_direction}/g, c1CycleImpact >= 0 ? (t('c1_cycle_more')||'больше') : (t('c1_cycle_less')||'меньше'));
-
-  const html = text.split(/\n\n+/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
-  document.getElementById('cy-explanation').innerHTML = html;
-}
-
-// Обновляет импакт-строку и подсказку под ней. Зависит от состояния
-// mean-reversion-переключателя:
-//   OFF: «Estimated effect of mean reversion: +35 679 €» + hint «Enable mean reversion: …»
-//   ON, |impact| ≥ 1000:  «Mean reversion applied. Buying became more favorable by» / 35 679 €
-//   ON, |impact| < 1000:  «Mean reversion applied. Effect on result less than 1000 €.» (без значения)
-function updateCycleImpactRow() {
-  const labelEl   = document.getElementById('cy-impact-label');
-  const impactEl  = document.getElementById('cy-impact-value');
-  const hintEl    = document.getElementById('cy-setting-hint');
-  const modelEl   = document.getElementById('cy-impact-model-note');
-  if (!labelEl || !impactEl) return;
-
-  // Какая модель используется в расчёте импакта (см. c1ComputeCycleImpact):
-  // OFF — всегда symmetric; ON — выбранная пользователем модель.
-  const impactModel = c1MeanReversionEnabled ? c1ComparisonModel : 'symmetric';
-  if (modelEl) {
-    modelEl.textContent = impactModel === 'realistic'
-      ? (t('c1_cycle_impact_for_realistic') || 'Оценка для реалистичной модели')
-      : (t('c1_cycle_impact_for_symmetric') || 'Оценка для симметричной модели');
+// Строка денежной оценки mean reversion под чекбоксом в Advanced.
+// OFF — скрыта; ON — показывает c1CycleImpact:
+//   impact > 0: импакт увеличивает разницу buyer−renter → «в пользу покупки»
+//   impact < 0: импакт уменьшает разницу → «в пользу аренды»
+//   |impact| < 1000: «Разница менее 1000 €»
+function updateMeanReversionAdvancedRow() {
+  const row = document.getElementById('c1-mean-rev-impact');
+  if (!row) return;
+  if (!c1MeanReversionEnabled) {
+    row.style.display = 'none';
+    return;
   }
-
-  // Расчёт значения для отображения. Знак отделён в подпись, в самой
-  // строке всегда абсолютное значение.
+  row.style.display = '';
   const impactAbs = Math.abs(c1CycleImpact);
-  const absStr = Math.round(impactAbs).toLocaleString('ru').replace(/,/g, ' ') + ' €';
-
-  impactEl.classList.remove('positive', 'negative');
-
-  if (c1MeanReversionEnabled) {
-    if (impactAbs < 1000) {
-      // Минимальный эффект: весь текст в label, value пустое.
-      labelEl.textContent  = t('c1_cycle_impact_label_enabled_minimal') || 'Возврат к среднему учтён. Эффект на результат менее 1000 €.';
-      impactEl.textContent = '';
-    } else if (c1CycleImpact > 0) {
-      labelEl.textContent  = t('c1_cycle_impact_label_enabled_positive') || 'Возврат к среднему учтён. Покупка стала относительно выгоднее на';
-      impactEl.textContent = absStr;
-      impactEl.classList.add('positive');
-    } else {
-      labelEl.textContent  = t('c1_cycle_impact_label_enabled_negative') || 'Возврат к среднему учтён. Аренда стала относительно выгоднее на';
-      impactEl.textContent = absStr;
-      impactEl.classList.add('negative');
-    }
-    if (hintEl) hintEl.textContent = t('c1_cycle_setting_hint_on') || '';
-  } else {
-    // OFF — старый текст с знаковым c1FormatEur (+/−).
-    labelEl.textContent  = t('c1_cycle_impact_label') || 'Оценка влияния возврата к среднему на итоговую разницу:';
-    impactEl.textContent = c1FormatEur(c1CycleImpact);
-    if (c1CycleImpact > 0) impactEl.classList.add('positive');
-    else if (c1CycleImpact < 0) impactEl.classList.add('negative');
-    if (hintEl) hintEl.textContent = t('c1_cycle_setting_hint_off') || '';
+  if (impactAbs < 1000) {
+    row.textContent = t('c1_mean_rev_minimal') || 'Разница менее 1000 €';
+    return;
   }
+  const absStr = '+' + Math.round(impactAbs).toLocaleString('ru').replace(/,/g, ' ') + ' €';
+  const key = c1CycleImpact > 0 ? 'c1_mean_rev_favors_buy' : 'c1_mean_rev_favors_rent';
+  const tpl = t(key) || (c1CycleImpact > 0 ? '{X} в пользу покупки' : '{X} в пользу аренды');
+  row.innerHTML = tpl.replace('{X}', `<strong>${absStr}</strong>`);
 }
 
 let c2EquityPopupCloseTimer = null;
@@ -2034,6 +1978,7 @@ function calc1Update() {
   updateC1ChartSub();
   updateC1SliderHints();
   c1CycleImpact = c1ComputeCycleImpact();
+  updateMeanReversionAdvancedRow();
   updateC1CycleCard(getCurrentC1Region());
   fillC1Breakdown(propValFinal, loanBalFinal, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 

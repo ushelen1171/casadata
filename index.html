@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=aada32ed">
+<link rel="stylesheet" href="css/style.css?v=f106b758">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -324,15 +324,7 @@
 
         <div id="cy-phase-block" class="cycle-phase-block"></div>
 
-        <!-- Mean-reversion блоки скрыты на Шаге A. На Шаге B переедут в Advanced settings. -->
-        <div id="cy-explanation" class="cycle-explanation" style="display:none;"></div>
-
-        <div class="cycle-impact" style="display:none;">
-          <span id="cy-impact-label" data-i18n="c1_cycle_impact_label">Оценка влияния возврата к среднему на итоговую разницу:</span>
-          <strong id="cy-impact-value">—</strong>
-        </div>
-        <div class="cycle-impact-model-note" id="cy-impact-model-note" style="display:none;"></div>
-        <div class="cycle-setting-hint" id="cy-setting-hint" style="display:none;"></div>
+        <div class="cycle-bridge" data-i18n="c1_cycle_bridge_advanced">Как учесть возможный возврат к среднему в расчёте — включите его в расширенных настройках.</div>
 
         <div class="cycle-sources">
           <span data-i18n="c1_cycle_sources_label">Источники данных:</span>
@@ -520,6 +512,7 @@
         <span data-i18n="c1_mean_reversion_label">Возврат доходности к среднему за период</span>
         <button class="c1-info-btn" onclick="openC1MeanReversionPopup(event)" aria-label="?">?</button>
       </label>
+      <div class="c1-mean-rev-impact" id="c1-mean-rev-impact" style="display:none;"></div>
       <div class="c1-popup" id="c1-mean-reversion-popup">
         <button class="c1-popup-close" onclick="closeC1MeanReversionPopup()">×</button>
         <div class="c1-popup-title" data-i18n="c1_mean_reversion_label">Возврат доходности к среднему за период</div>
@@ -1254,11 +1247,11 @@
 <script src="js/itp-rates.js?v=28208980"></script>
 <script src="js/data.js?v=77610002"></script>
 <script src="js/data-history.js?v=d75e69bf"></script>
-<script src="js/i18n.js?v=de973382"></script>
+<script src="js/i18n.js?v=3c78bc3f"></script>
 <script src="js/rental-calc.js?v=c2dab6fe"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=13c78370"></script>
+<script src="js/app.js?v=a5e90f95"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>
