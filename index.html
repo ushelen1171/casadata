@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=f106b758">
+<link rel="stylesheet" href="css/style.css?v=9d8c3008">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -308,18 +308,13 @@
     <div class="c1-large-popup-overlay" onclick="closeC1CyclePopup()"></div>
     <div class="c1-large-popup-content">
       <div class="c1-large-popup-header">
-        <span data-i18n="c1_cycle_popup_title">Фаза рыночного цикла</span>
+        <span class="c1-popup-header-title">
+          <span data-i18n="c1_cycle_popup_title">Фаза рыночного цикла</span>
+          <span class="c1-cycle-trend-arrow" id="cy-popup-trend"></span>
+        </span>
         <button class="c1-popup-close" onclick="closeC1CyclePopup()" aria-label="×">×</button>
       </div>
       <div class="c1-large-popup-body">
-        <div class="cycle-metrics">
-          <div class="cycle-metric-row"><span data-i18n="c1_cycle_current">Текущая доходность аренды</span>: <strong id="cy-current">—</strong></div>
-          <div class="cycle-metric-row"><span data-i18n="c1_cycle_mean">Историческое среднее</span>: <strong id="cy-mean">—</strong></div>
-          <div class="cycle-metric-row"><span data-i18n="c1_cycle_range">Диапазон за период</span>: <strong id="cy-range">—</strong></div>
-          <div class="cycle-metric-row"><span data-i18n="c1_cycle_period">Период наблюдений</span>: <strong id="cy-period">—</strong></div>
-          <div class="cycle-metric-row"><span data-i18n="c1_cycle_divergence_label">Расхождение цен и аренды (12 мес)</span>: <strong id="cy-divergence">—</strong></div>
-        </div>
-
         <div class="cycle-bigchart-wrap"><canvas id="cy-bigchart"></canvas></div>
 
         <div id="cy-phase-block" class="cycle-phase-block"></div>
@@ -1247,11 +1242,11 @@
 <script src="js/itp-rates.js?v=28208980"></script>
 <script src="js/data.js?v=77610002"></script>
 <script src="js/data-history.js?v=d75e69bf"></script>
-<script src="js/i18n.js?v=3c78bc3f"></script>
+<script src="js/i18n.js?v=ce687a0d"></script>
 <script src="js/rental-calc.js?v=c2dab6fe"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=a5e90f95"></script>
+<script src="js/app.js?v=f4a3ba6e"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>

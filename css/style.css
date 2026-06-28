@@ -810,12 +810,54 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   font-size: 15px; font-weight: 500; color: var(--accent);
 }
 .c1-large-popup-body { padding: 16px 20px 20px; }
-.cycle-metrics {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px;
-  font-size: 13px; color: var(--muted);
+.c1-popup-header-title {
+  display: flex; align-items: center; gap: 8px;
+}
+.cycle-grid-group {
   margin-bottom: 16px;
 }
-.cycle-metric-row strong { color: var(--text, #e0e2e8); font-weight: 500; }
+.cycle-grid-group:last-of-type { margin-bottom: 0; }
+.cycle-grid-title {
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.cycle-grid-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+.cycle-grid-row:last-of-type { border-bottom: none; }
+.cycle-grid-label { color: var(--muted); }
+.cycle-grid-value {
+  color: var(--text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.cycle-grid-value strong { color: var(--accent); font-weight: 500; }
+.cycle-grid-sub {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
+  margin-top: 2px;
+  text-align: right;
+}
+.cycle-grid-conclusion {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.cycle-grid-conclusion .cycle-grid-title { margin-bottom: 10px; }
+.cycle-grid-conclusion p { margin: 0 0 10px; }
+.cycle-grid-conclusion p:last-child { margin-bottom: 0; }
 .cycle-bigchart-wrap {
   position: relative; width: 100%; height: 200px;
   margin: 12px 0 16px;
@@ -828,7 +870,6 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
 .cycle-explanation p { margin: 0 0 10px; }
 .cycle-explanation p:last-child { margin-bottom: 0; }
 .cycle-phase-block {
-  font-size: 13px; color: var(--muted); line-height: 1.7;
   margin-bottom: 16px;
   padding-top: 14px;
   border-top: 0.5px solid var(--border);
@@ -849,16 +890,6 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   color: var(--accent);
   font-weight: 500;
 }
-.cycle-phase-block p { margin: 0 0 10px; }
-.cycle-phase-block p:first-child {
-  font-size: 11px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-.cycle-phase-block p:last-child { margin-bottom: 0; }
 .cycle-impact {
   display: flex; justify-content: space-between; align-items: baseline;
   gap: 12px; flex-wrap: wrap;

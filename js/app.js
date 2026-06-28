@@ -1310,39 +1310,16 @@ function openC1CyclePopup() {
   const region = getCurrentC1Region();
   if (!region || typeof region.yieldMean !== 'number') return;
 
-  // Метрики
-  document.getElementById('cy-current').textContent = region.yield.toFixed(2) + '%';
-  document.getElementById('cy-mean').textContent    = region.yieldMean.toFixed(2) + '%';
-  document.getElementById('cy-range').textContent   =
-    region.yieldMin.toFixed(2) + '% — ' + region.yieldMax.toFixed(2) + '%';
-  document.getElementById('cy-period').textContent  =
-    `${c1FormatPeriod(region.yieldFirstMonth, region.yieldLastMonth)} (${region.yieldCount} ${t('c1_cycle_months_short')||'мес.'})`;
-
-  const cyDiv = document.getElementById('cy-divergence');
-  if (cyDiv) {
-    const row = cyDiv.closest('.cycle-metric-row');
-    if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
-      if (row) row.style.display = 'none';
-    } else {
-      if (row) row.style.display = '';
-      const sign  = region.divergence12m >= 0 ? '+' : '';
-      const pSign = region.priceGrowth12m >= 0 ? '+' : '';
-      const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
-      const arrow    = { up: '↑', flat: '→', down: '↓' }[region.priceDirection];
-      const arrowCls = { up: 'cy-arrow-up', flat: 'cy-arrow-flat', down: 'cy-arrow-down' }[region.priceDirection];
-      cyDiv.innerHTML =
-        `${sign}${region.divergence12m.toFixed(1)} ${t('c1_pp_short')} ` +
-        `<span class="${arrowCls}">${arrow}</span> ` +
-        `(${t('c1_price_short')} ${pSign}${region.priceGrowth12m.toFixed(1)}% / ` +
-        `${t('c1_rent_short')} ${rSign}${region.rentGrowth12m.toFixed(1)}%)`;
-    }
+  // Стрелка тренда цены у заголовка popup — та же логика что на свёрнутой
+  // карточке: символ из priceDirection, цвет нейтральный (CSS .c1-cycle-trend-arrow).
+  const trendEl = document.getElementById('cy-popup-trend');
+  if (trendEl) {
+    trendEl.textContent = region.priceDirection
+      ? { up: '↑', flat: '→', down: '↓' }[region.priceDirection]
+      : '';
   }
 
-  // Mean-reversion полотно и импакт-строка скрыты на Шаге A (перенос
-  // в Advanced settings — Шаг B). Расчёт c1CycleImpact продолжает идти
-  // в calc1Update, не показывается в popup.
-
-  // Большой график + единый блок «Где рынок сейчас»
+  // Большой график + сетка «Где рынок сейчас» (Уровень / Изменение / Вывод)
   drawCycleBigChart(region);
   fillCyclePhaseBlock(region);
 
@@ -2275,34 +2252,95 @@ function updateC1CycleCard(region) {
 
 // Единый блок «Где рынок сейчас»: заголовок + 3 абзаца
 // (уровень от cyclePhase / z, движение от divergenceClass, общая оговорка).
+// Сетка popup Cycle Position: Уровень + Изменение за год + Вывод.
+// Уровень показывается всегда (нужен только yieldMean). Изменение и часть
+// вывода про движение скрываются, если divergence12m === null.
 function fillCyclePhaseBlock(region) {
   const block = document.getElementById('cy-phase-block');
   if (!block) return;
-  if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
-    block.style.display = 'none';
-    return;
-  }
   block.style.display = '';
 
+  const hasMovement = region.divergence12m !== null && typeof region.divergence12m === 'number';
+
+  // ── Группа 1: Уровень ────────────────────────────────────────────
+  const z = region.yieldZScore;
+  const zSign = z > 0 ? '+' : z < 0 ? '−' : '';
+  const zStr  = zSign + Math.abs(z).toFixed(2);
+  const zLabel = t('c1_grid_z_' + region.cyclePhase) || '';
+  const norm   = t('c1_grid_norm') || 'норма';
+
+  const levelHTML = `
+    <div class="cycle-grid-group">
+      <div class="cycle-grid-title">${t('c1_grid_level_title')}</div>
+      <div class="cycle-grid-row">
+        <span class="cycle-grid-label">${t('c1_grid_price_to_rent')}</span>
+        <span class="cycle-grid-value">${region.yield.toFixed(2)}% · ${norm} ${region.yieldMean.toFixed(2)}%</span>
+      </div>
+      <div class="cycle-grid-row">
+        <span class="cycle-grid-label">${t('c1_grid_deviation')}</span>
+        <span class="cycle-grid-value">z = <strong>${zStr}</strong> · ${zLabel}</span>
+      </div>
+      <div class="cycle-grid-sub">${t('c1_grid_z_range')}</div>
+    </div>`;
+
+  // ── Группа 2: Изменение за год ───────────────────────────────────
+  let changeHTML = '';
+  if (hasMovement) {
+    const pSign = region.priceGrowth12m >= 0 ? '+' : '';
+    const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
+    const abs   = Math.abs(region.divergence12m).toFixed(1);
+    const gapKey = {
+      prices_outpace: 'c1_grid_gap_prices',
+      rents_outpace:  'c1_grid_gap_rents',
+      synchronous:    'c1_grid_gap_sync',
+    }[region.divergenceClass];
+    const gapText = (t(gapKey) || '').replace('{X}', abs);
+
+    changeHTML = `
+    <div class="cycle-grid-group">
+      <div class="cycle-grid-title">${t('c1_grid_change_title')}</div>
+      <div class="cycle-grid-row">
+        <span class="cycle-grid-label">${t('c1_grid_price_change')}</span>
+        <span class="cycle-grid-value">${pSign}${region.priceGrowth12m.toFixed(1)}%</span>
+      </div>
+      <div class="cycle-grid-row">
+        <span class="cycle-grid-label">${t('c1_grid_rent_change')}</span>
+        <span class="cycle-grid-value">${rSign}${region.rentGrowth12m.toFixed(1)}%</span>
+      </div>
+      <div class="cycle-grid-row">
+        <span class="cycle-grid-label">${t('c1_grid_gap')}</span>
+        <span class="cycle-grid-value">${gapText}</span>
+      </div>
+    </div>`;
+  }
+
+  // ── Вывод: сборный текст из существующих c1_market_* ─────────────
   const levelKey = {
     above:   'c1_market_level_above',
     neutral: 'c1_market_level_neutral',
     below:   'c1_market_level_below',
   }[region.cyclePhase];
+  const p1 = t(levelKey);
+  let p2 = '';
+  if (hasMovement) {
+    const moveKey = {
+      prices_outpace: 'c1_market_move_prices',
+      rents_outpace:  'c1_market_move_rents',
+      synchronous:    'c1_market_move_sync',
+    }[region.divergenceClass];
+    const signedDiv = (region.divergence12m >= 0 ? '+' : '') + region.divergence12m.toFixed(1);
+    p2 = t(moveKey).replace('{div}', signedDiv);
+  }
+  const p3 = t('c1_market_caveat');
+  const concParas = [p1, p2, p3].filter(Boolean).map(p => `<p>${p}</p>`).join('');
 
-  const moveKey = {
-    prices_outpace: 'c1_market_move_prices',
-    rents_outpace:  'c1_market_move_rents',
-    synchronous:    'c1_market_move_sync',
-  }[region.divergenceClass];
+  const conclusionHTML = `
+    <div class="cycle-grid-conclusion">
+      <div class="cycle-grid-title">${t('c1_grid_conclusion_title')}</div>
+      ${concParas}
+    </div>`;
 
-  const signedDiv = (region.divergence12m >= 0 ? '+' : '') + region.divergence12m.toFixed(1);
-  const title = t('c1_market_now_title');
-  const p1    = t(levelKey);
-  const p2    = t(moveKey).replace('{div}', signedDiv);
-  const p3    = t('c1_market_caveat');
-
-  block.innerHTML = [title, p1, p2, p3].map(p => `<p>${p}</p>`).join('');
+  block.innerHTML = levelHTML + changeHTML + conclusionHTML;
 }
 
 // '2007-04' → '04.2007'
