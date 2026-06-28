@@ -2274,13 +2274,17 @@ function fillCyclePhaseBlock(region) {
       <div class="cycle-grid-title">${t('c1_grid_level_title')}</div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_price_to_rent')}</span>
-        <span class="cycle-grid-value">${region.yield.toFixed(2)}% · ${norm} ${region.yieldMean.toFixed(2)}%</span>
+        <span class="cycle-grid-value">${region.yield.toFixed(2)}%</span>
+        <span class="cycle-grid-explain">${norm} ${region.yieldMean.toFixed(2)}%</span>
       </div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_deviation')}</span>
-        <span class="cycle-grid-value">z = <strong>${zStr}</strong> · ${zLabel}</span>
+        <span class="cycle-grid-value">z = <strong>${zStr}</strong></span>
+        <span class="cycle-grid-explain">
+          ${zLabel}
+          <span class="cycle-grid-sub-inline">${t('c1_grid_z_range')}</span>
+        </span>
       </div>
-      <div class="cycle-grid-sub">${t('c1_grid_z_range')}</div>
     </div>`;
 
   // ── Группа 2: Изменение за год ───────────────────────────────────
@@ -2289,12 +2293,15 @@ function fillCyclePhaseBlock(region) {
     const pSign = region.priceGrowth12m >= 0 ? '+' : '';
     const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
     const abs   = Math.abs(region.divergence12m).toFixed(1);
-    const gapKey = {
-      prices_outpace: 'c1_grid_gap_prices',
-      rents_outpace:  'c1_grid_gap_rents',
-      synchronous:    'c1_grid_gap_sync',
-    }[region.divergenceClass];
-    const gapText = (t(gapKey) || '').replace('{X}', abs);
+    let gapValue, gapExplain;
+    if (region.divergenceClass === 'synchronous') {
+      gapValue   = '';
+      gapExplain = t('c1_grid_gap_sync') || 'вровень';
+    } else {
+      gapValue   = `<strong>${abs}</strong> ${t('c1_pp_short')}`;
+      gapExplain = t(region.divergenceClass === 'prices_outpace'
+        ? 'c1_grid_gap_prices' : 'c1_grid_gap_rents');
+    }
 
     changeHTML = `
     <div class="cycle-grid-group">
@@ -2302,14 +2309,17 @@ function fillCyclePhaseBlock(region) {
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_price_change')}</span>
         <span class="cycle-grid-value">${pSign}${region.priceGrowth12m.toFixed(1)}%</span>
+        <span class="cycle-grid-explain"></span>
       </div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_rent_change')}</span>
         <span class="cycle-grid-value">${rSign}${region.rentGrowth12m.toFixed(1)}%</span>
+        <span class="cycle-grid-explain"></span>
       </div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_gap')}</span>
-        <span class="cycle-grid-value">${gapText}</span>
+        <span class="cycle-grid-value">${gapValue}</span>
+        <span class="cycle-grid-explain">${gapExplain}</span>
       </div>
     </div>`;
   }
