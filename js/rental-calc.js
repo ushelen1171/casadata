@@ -687,16 +687,17 @@ function drawCalc2Chart(labels, equityLive, equityRent, equityAirbnb, equityInde
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: true },
+      interaction: { mode: 'index', intersect: false, axis: 'x' },
       plugins: {
         legend: { display: false },
         tooltip: {
-          position: 'aboveCursor',
+          xAlign: 'center',
           yAlign: 'bottom',
-          backgroundColor: 'rgba(22,24,28,0.95)',
+          caretPadding: 10,
+          backgroundColor: 'rgba(22,24,28,0.75)',
           callbacks: {
             label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ru')} €`,
-            labelColor: ctx => ({ borderColor: ctx.dataset.borderColor, backgroundColor: 'rgba(22,24,28,0.95)', borderWidth: 2 }),
+            labelColor: ctx => ({ borderColor: ctx.dataset.borderColor, backgroundColor: 'rgba(22,24,28,0.75)', borderWidth: 2 }),
           }
         }
       },
@@ -839,18 +840,22 @@ function drawC2CashflowChart(strategy) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: true },
+      interaction: { mode: 'index', intersect: false, axis: 'x' },
       plugins: {
         legend: { display: true, position: 'top', align: 'center', labels: { color: '#8a8f9e', boxWidth: 12, font: { size: 11 } } },
         tooltip: {
-          backgroundColor: 'rgba(22,24,28,0.95)',
+          xAlign: 'center',
+          yAlign: 'bottom',
+          caretPadding: 10,
+          backgroundColor: 'rgba(22,24,28,0.75)',
           callbacks: {
+            title: items => `${t('c1_year') || 'Год'} ${Math.floor(items[0].dataIndex / 12) + 1}`,
             label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ru')} €`,
             labelColor: ctx => {
               const color = ctx.datasetIndex === 0
                 ? (ctx.raw >= 0 ? 'rgba(92,184,138,0.9)' : 'rgba(224,92,92,0.9)')
                 : (ctx.dataset.borderColor || '#c9a84c');
-              return { borderColor: color, backgroundColor: 'rgba(22,24,28,0.95)', borderWidth: 2 };
+              return { borderColor: color, backgroundColor: 'rgba(22,24,28,0.75)', borderWidth: 2 };
             },
           }
         },

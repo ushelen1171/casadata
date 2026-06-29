@@ -1997,6 +1997,10 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
           fill: false,
           tension: 0.35,
           pointRadius: 2,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#4a90d9',
+          pointHoverBorderWidth: 2,
           borderWidth: 2.5,
         },
         {
@@ -2009,6 +2013,10 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
           fill: false,
           tension: 0.35,
           pointRadius: 2,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#5cb88a',
+          pointHoverBorderWidth: 2,
           borderWidth: 2.5,
         },
       ]
@@ -2018,31 +2026,23 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: { top: 28 } },
-      interaction: { mode: 'index', intersect: true },
+      interaction: { mode: 'index', intersect: false, axis: 'x' },
       plugins: {
         legend: { display: false },
         tooltip: {
-          enabled: false,
-          external: function(context) {
-            const tooltipEl = document.getElementById('c1-tooltip');
-            if (!tooltipEl) return;
-            const { tooltip } = context;
-            const canvas = context.chart.canvas;
-            const pinned = canvas._c1PinnedTip;
-            if (tooltip.opacity === 0 || !tooltip.dataPoints?.length) {
-              if (!pinned) tooltipEl.style.display = 'none';
-              return;
-            }
-            let html = '';
-            if (tooltip.title?.length) {
-              html += `<div class="c1-tt-title">${tooltip.title[0]}</div>`;
-            }
-            tooltip.dataPoints.forEach((dp, i) => {
-              const color = tooltip.labelColors[i]?.backgroundColor || '#8a8f9e';
-              html += `<div class="c1-tt-row"><span class="c1-tt-dot" style="background:${color}"></span><span>${dp.dataset.label}: ${Math.round(dp.raw).toLocaleString('ru')} €</span></div>`;
-            });
-            tooltipEl.innerHTML = html;
-            tooltipEl.style.display = 'block';
+          enabled: true,
+          xAlign: 'center',
+          yAlign: 'bottom',
+          caretPadding: 10,
+          backgroundColor: 'rgba(22,24,28,0.72)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#8a8f9e',
+          bodyColor: '#fff',
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ru')} €`,
+            labelColor: ctx => ({ borderColor: ctx.dataset.borderColor, backgroundColor: ctx.dataset.borderColor, borderWidth: 0 }),
           }
         },
         annotation: (() => {
@@ -2096,60 +2096,6 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
     },
     plugins: [c1TitlePlugin]
   });
-
-  // Tooltip position follows mouse / pinned on click — attach once per canvas element
-  if (!canvas._c1Listeners) {
-    canvas._c1Listeners = true;
-    canvas._c1PinnedTip = false;
-
-    function posC1Tip(clientX, clientY) {
-      const tooltipEl = document.getElementById('c1-tooltip');
-      if (!tooltipEl) return;
-      const rect = canvas.getBoundingClientRect();
-      let x = clientX - rect.left + 16;
-      let y = clientY - rect.top  - 80;
-      x = Math.min(x, rect.width  - tooltipEl.offsetWidth  - 4);
-      y = Math.max(y, 4);
-      tooltipEl.style.left = x + 'px';
-      tooltipEl.style.top  = y + 'px';
-    }
-
-    canvas.addEventListener('mousemove', e => {
-      if (canvas._c1PinnedTip) return;
-      posC1Tip(e.clientX, e.clientY);
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-      if (canvas._c1PinnedTip) return;
-      const tooltipEl = document.getElementById('c1-tooltip');
-      if (tooltipEl) tooltipEl.style.display = 'none';
-    });
-
-    // Click/tap: pin tooltip so it stays visible; second click unpins
-    canvas.addEventListener('click', e => {
-      const tooltipEl = document.getElementById('c1-tooltip');
-      if (!tooltipEl) return;
-      if (tooltipEl.style.display === 'block') {
-        canvas._c1PinnedTip = !canvas._c1PinnedTip;
-      }
-      if (!canvas._c1PinnedTip) posC1Tip(e.clientX, e.clientY);
-    });
-
-    // Touch: position tooltip at touch point
-    canvas.addEventListener('touchstart', e => {
-      const touch = e.touches[0];
-      posC1Tip(touch.clientX, touch.clientY);
-    }, { passive: true });
-
-    // Click outside canvas → unpin
-    document.addEventListener('click', e => {
-      if (!canvas._c1PinnedTip) return;
-      if (e.target === canvas) return;
-      canvas._c1PinnedTip = false;
-      const tooltipEl = document.getElementById('c1-tooltip');
-      if (tooltipEl) tooltipEl.style.display = 'none';
-    });
-  }
 
   updateC1ChartLegend();
 }
