@@ -131,8 +131,8 @@ function onCalc2RegionChange() {
   document.getElementById('c2-price').value     = Math.round(r.price * sqm / 5000) * 5000;
   document.getElementById('c2-long-rent').value = Math.round(r.rent * sqm / 50) * 50;
   document.getElementById('c2-night').value = Math.round(r.rent * sqm / 30 * DEFAULTS.airbnbNightMultiplier / 5) * 5;
-  if (r.cagr10     != null) document.getElementById('c2-appr').value  = r.cagr10;
-  if (r.rentCagr10 != null) document.getElementById('c2-rentg').value = r.rentCagr10;
+  // Темп роста цены и аренды НЕ подставляется по региону — остаётся то, что
+  // задал пользователь (или дефолт 3% из initRentalCalc).
   const taxStatus = document.getElementById('c2-tax-status')?.value || 'eu';
   const itpRate   = getItpRateByStatus(r, taxStatus);
   const tax = c2PropertyType === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
@@ -235,17 +235,6 @@ function closeC2ReinvestPopupDelayed() {
 }
 function cancelCloseC2ReinvestPopup() {
   if (c2ReinvestPopupCloseTimer) { clearTimeout(c2ReinvestPopupCloseTimer); c2ReinvestPopupCloseTimer = null; }
-}
-
-function setStressTest2(scenario, btn) {
-  document.querySelectorAll('#c2-stress-btns .calc-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const regionId = document.getElementById('c2-region').value;
-  document.getElementById('c2-appr').value = getApprForScenario(regionId, scenario);
-  if (scenario === 'opt')  document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthOptimist;
-  else if (scenario === 'base') document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthBase;
-  else if (scenario === 'pess') document.getElementById('c2-rentg').value = DEFAULTS.rentGrowthPessimist;
-  calcRental();
 }
 
 function updateC2ChartSub() {

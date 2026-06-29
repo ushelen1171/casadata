@@ -1701,16 +1701,6 @@ function setComparisonModel(model, btn) {
   calc1Update();
 }
 
-// Возвращает рост цен (%/год, номинал) для стресс-сценария.
-// Используется setStressTest2 в Calc 2. В Calc 1 кнопки сценариев удалены.
-function getApprForScenario(regionId, scenario) {
-  const r = REGIONS.find(x => x.id === regionId);
-  if (scenario === 'opt')  return r?.cagr3  ?? DEFAULTS.apprOptimistFallback;
-  if (scenario === 'base') return r?.cagr5  ?? DEFAULTS.apprBaseFallback;
-  if (scenario === 'pess') return r?.cagr10 ?? DEFAULTS.apprPessimistFallback;
-  return DEFAULTS.apprDefault;
-}
-
 // Обработчик единого слайдера темпа роста (c1-appr). Синхронизирует скрытый
 // c1-rentg с тем же значением — c1RunSimulation читает их как разные параметры,
 // дизайн оставляет возможность независимого управления в будущем.
