@@ -581,38 +581,6 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   line-height: 1.5;
 }
 
-/* ---- CALC1 TOOLTIP ---- */
-.c1-tooltip {
-  position: absolute;
-  background: rgba(22,24,28,0.72);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--text);
-  pointer-events: none;
-  z-index: 10;
-  min-width: 180px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-}
-.c1-tt-title {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-.c1-tt-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 3px;
-}
-.c1-tt-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
 /* ---- CALC LAYOUT ---- */
 .calc-two-col {
   display: grid;
