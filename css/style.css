@@ -624,6 +624,43 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   border-radius: 2px;
   flex-shrink: 0;
 }
+/* Flow chart custom legend — grouped by role (buyer / renter) */
+.c1-flow-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  justify-content: center;
+  font-size: 11px;
+  color: #8a8f9e;
+  padding: 0 12px 6px;
+}
+.c1-flow-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.c1-flow-role-label {
+  color: var(--text);
+  font-weight: 500;
+  opacity: 0.85;
+}
+.c1-flow-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.c1-flow-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.c1-flow-swatch--line {
+  width: 18px;
+  height: 2.5px;
+  border-radius: 2px;
+}
 .calc-top-bar {
   display: flex; align-items: center; gap: 12px;
   flex-wrap: wrap; margin-bottom: 16px;
@@ -932,6 +969,7 @@ footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 20px;
+  align-items: start;
 }
 .slider-row {
   display: flex; flex-direction: column; gap: 2px;

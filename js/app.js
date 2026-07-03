@@ -86,6 +86,36 @@ function pluralYears(n) {
 
 // ---- CALC 1 STATE ----
 let c1Chart = null;
+let c1FlowChart = null;
+
+// Общий стиль осей для графиков Калк 1 — единый шрифт и цвет тиков/сетки
+// на основном графике капитала и графике потоков.
+const C1_AXIS_TICK = { color: '#8a8f9e', font: { size: 13 } };
+const C1_AXIS_GRID = { color: 'rgba(255,255,255,0.04)' };
+
+// Единый источник ролевых цветов Калк 1. Базовые тона читаются из CSS
+// (:root --blue / --green). Fallback — техническая страховка на случай
+// сбоя загрузки CSS. При смене дизайна правится ОДНО место — CSS.
+// buyerLight = осветлённый (не прозрачный) buyer для сегмента «burn»:
+// прозрачность на тёмном фоне даёт мутный цвет, осветление тона —
+// чистый голубой, чётко отличимый от насыщенного buyer.
+function c1RoleColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const buyer  = cs.getPropertyValue('--blue').trim()  || '#4a90d9';
+  const renter = cs.getPropertyValue('--green').trim() || '#5cb88a';
+  const lighten = (hex, f) => {
+    const h = hex.replace('#','');
+    const r = parseInt(h.substr(0,2),16);
+    const g = parseInt(h.substr(2,2),16);
+    const b = parseInt(h.substr(4,2),16);
+    return `rgb(${Math.round(r+(255-r)*f)},${Math.round(g+(255-g)*f)},${Math.round(b+(255-b)*f)})`;
+  };
+  return {
+    buyer,
+    renter,
+    buyerLight: lighten(buyer, 0.55),
+  };
+}
 let c1CycleChart = null;
 let c1Horizon = DEFAULTS.horizonYears;
 let c1PriceMode = 'nominal';
@@ -1787,6 +1817,10 @@ function c1RunSimulation(p) {
   }
 
   const buyData = [], rentData = [];
+  // Годовые денежные потоки для второго графика. Индекс 0 = «Сейчас» (нулевой
+  // старт), индексы 1..horizon = сумма 12 месяцев за соответствующий год.
+  // Длина всех трёх массивов совпадает с buyData/rentData (horizon + 1).
+  const yBuyerBurn = [0], yBuyerPrincipal = [0], yRenterRent = [0];
   let propVal = price, loanBal = loan;
   let renterPortfolio = initialCash, buyerPortfolio = 0;
   let rent = rent0;
@@ -1804,14 +1838,16 @@ function c1RunSimulation(p) {
     if (y === horizon) { buyFinalRaw = buyRaw; rentFinalRaw = rentRaw; }
 
     if (y < horizon) {
+      let burnAcc = 0, principalAcc = 0, rentAcc = 0;
       for (let m = 0; m < 12; m++) {
         const mo = y * 12 + m;
         propVal *= (1 + appr / 12);
         let payment = 0;
+        let interest = 0, principal = 0;
         if (mo < nPay && loanBal > 0) {
-          const interest  = loanBal * mRate;
+          interest  = loanBal * mRate;
           totalInterestPaid += interest;
-          const principal = Math.min(monthlyMortgage - interest, loanBal);
+          principal = Math.min(monthlyMortgage - interest, loanBal);
           loanBal = Math.max(0, loanBal - principal);
           payment = monthlyMortgage;
         }
@@ -1819,6 +1855,12 @@ function c1RunSimulation(p) {
         const maintMonthly = annualMaintInitial * Math.pow(1 + inflation, yearsElapsed) / 12;
         totalMaintPaid += maintMonthly;
         const buyerTotal = payment + maintMonthly;
+
+        // Аккумулятор годовых потоков — используем rent на этом месяце
+        // (до её роста в конце итерации).
+        burnAcc      += interest + maintMonthly;
+        principalAcc += principal;
+        rentAcc      += rent;
 
         renterPortfolio *= (1 + invRate / 12);
         buyerPortfolio  *= (1 + invRate / 12);
@@ -1831,6 +1873,14 @@ function c1RunSimulation(p) {
         }
         rent *= (1 + rentGrowth / 12);
       }
+      // Пуш годовых сумм за завершённый год (индекс y+1 в массиве, так как
+      // индекс 0 — leading 0 для «Сейчас», согласовано с buyData/rentData).
+      // Real: делим на inflFactor конца года (y+1) — совпадает со снимком
+      // капитала на следующей итерации по y.
+      const yrEndInfl = priceMode === 'real' ? Math.pow(1 + inflation, y + 1) : 1;
+      yBuyerBurn.push(burnAcc           / yrEndInfl);
+      yBuyerPrincipal.push(principalAcc / yrEndInfl);
+      yRenterRent.push(rentAcc          / yrEndInfl);
     }
   }
 
@@ -1868,6 +1918,7 @@ function c1RunSimulation(p) {
     loanBalFinal:         loanBal,
     renterPortfolioFinal: renterPortfolio,
     totalInterestPaid, totalMaintPaid,
+    yBuyerBurn, yBuyerPrincipal, yRenterRent,
   };
 }
 
@@ -1900,6 +1951,7 @@ function calc1Update() {
     monthlyMortgage, initialCash, downAmt, taxAmt,
     propValFinal, loanBalFinal, renterPortfolioFinal,
     totalInterestPaid, totalMaintPaid,
+    yBuyerBurn, yBuyerPrincipal, yRenterRent,
   } = sim;
   const winner = finalDiff >= 0 ? 'buy' : 'rent';
 
@@ -1956,6 +2008,7 @@ function calc1Update() {
   }
   updateC1ChartTitle();
   drawCalc1Chart(labels, buyData, rentData, parityYear, termYears);
+  drawCalc1FlowChart(labels, yBuyerBurn, yBuyerPrincipal, yRenterRent, termYears);
 
   buildCalc1Summary(winner, buyData[horizon], rentData[horizon], parityYear, roi, horizon, downAmt, taxAmt, monthlyMortgage, rent0);
 }
@@ -1982,6 +2035,7 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
     }
   };
 
+  const roles = c1RoleColors();
   c1Chart = new Chart(canvas, {
     type: 'line',
     data: {
@@ -1990,32 +2044,32 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
         {
           label: t('c1_buyer') || 'Капитал покупателя',
           data: buyData,
-          borderColor: '#4a90d9',
+          borderColor: roles.buyer,
           backgroundColor: 'transparent',
-          pointBackgroundColor: '#4a90d9',
-          pointBorderColor: '#4a90d9',
+          pointBackgroundColor: roles.buyer,
+          pointBorderColor: roles.buyer,
           fill: false,
           tension: 0.35,
           pointRadius: 2,
           pointHoverRadius: 4,
           pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: '#4a90d9',
+          pointHoverBorderColor: roles.buyer,
           pointHoverBorderWidth: 2,
           borderWidth: 2.5,
         },
         {
           label: t('c1_renter') || 'Портфель арендатора',
           data: rentData,
-          borderColor: '#5cb88a',
+          borderColor: roles.renter,
           backgroundColor: 'transparent',
-          pointBackgroundColor: '#5cb88a',
-          pointBorderColor: '#5cb88a',
+          pointBackgroundColor: roles.renter,
+          pointBorderColor: roles.renter,
           fill: false,
           tension: 0.35,
           pointRadius: 2,
           pointHoverRadius: 4,
           pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: '#5cb88a',
+          pointHoverBorderColor: roles.renter,
           pointHoverBorderWidth: 2,
           borderWidth: 2.5,
         },
@@ -2081,16 +2135,16 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
       scales: {
         x: {
           title: { display: true, text: t('c1_chart_x_axis') || 'Срок владения, лет', color: '#8a8f9e', font: { size: 12 } },
-          ticks: { color: '#8a8f9e', font: { size: 13 }, maxTicksLimit: 8 },
-          grid:  { color: 'rgba(255,255,255,0.04)' }
+          ticks: { ...C1_AXIS_TICK, maxTicksLimit: 8 },
+          grid:  C1_AXIS_GRID,
         },
         y: {
           title: { display: true, text: t('c1_chart_y_axis') || 'Чистый капитал, €', color: '#8a8f9e', font: { size: 12 } },
           ticks: {
-            color: '#8a8f9e', font: { size: 13 },
+            ...C1_AXIS_TICK,
             callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M €' : v >= 1000 ? (v/1000).toFixed(0)+'k €' : v+'€'
           },
-          grid: { color: 'rgba(255,255,255,0.04)' }
+          grid: C1_AXIS_GRID,
         }
       }
     },
@@ -2100,12 +2154,152 @@ function drawCalc1Chart(labels, buyData, rentData, parityYear, termYears) {
   updateC1ChartLegend();
 }
 
+// Второй график Калк 1: годовые денежные потоки. Столбец покупателя —
+// stacked (проценты+содержание + погашение тела). Столбец арендатора —
+// одиночный (аренда за год). Одна пара столбцов на год, side-by-side.
+function drawCalc1FlowChart(labels, yBurn, yPrincipal, yRent, termYears) {
+  const canvas = document.getElementById('calcFlowChart');
+  if (!canvas) return;
+  if (c1FlowChart) { c1FlowChart.destroy(); c1FlowChart = null; }
+
+  const roles = c1RoleColors();
+  const burnColor      = roles.buyerLight;  // сгорает у покупателя — светлый buyer
+  const principalColor = roles.buyer;       // остаётся у покупателя — solid buyer
+  const rentColor      = roles.renter;      // аренда — solid renter
+
+  // Срезаем leading-ноль (индекс 0 = «Сейчас», нулевые расходы). График
+  // потоков начинается с Года 1, аренда не падает в 0 на старте.
+  const flowLabels  = labels.slice(1);
+  const flowBurn    = yBurn.slice(1).map(v => Math.round(v));
+  const flowPrinc   = yPrincipal.slice(1).map(v => Math.round(v));
+  const flowRent    = yRent.slice(1).map(v => Math.round(v));
+
+  const annotations = {};
+  if (termYears && termYears < flowLabels.length) {
+    // termYears — это индекс в исходном labels (labels[termYears] = "Год N").
+    // После slice(1) индекс сдвигается на 1: xMin = termYears - 1.
+    annotations.mortgagePaid = {
+      type: 'line',
+      xMin: termYears - 1, xMax: termYears - 1,
+      borderColor: 'rgba(201,168,76,0.35)',
+      borderWidth: 1, borderDash: [4, 4],
+    };
+  }
+
+  const roleBuyer  = t('c1_flow_role_buyer')  || 'Покупатель';
+  const roleRenter = t('c1_flow_role_renter') || 'Арендатор';
+
+  c1FlowChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: flowLabels,
+      datasets: [
+        {
+          label: `${roleBuyer} · ${t('c1_flow_burn') || 'проценты + содержание'}`,
+          data: flowBurn,
+          backgroundColor: burnColor,
+          borderWidth: 0,
+          stack: 'buyer',
+          barPercentage: 0.9,
+          categoryPercentage: 0.95,
+        },
+        {
+          label: `${roleBuyer} · ${t('c1_flow_principal') || 'погашение кредита'}`,
+          data: flowPrinc,
+          backgroundColor: principalColor,
+          borderWidth: 0,
+          stack: 'buyer',
+          barPercentage: 0.9,
+          categoryPercentage: 0.95,
+        },
+        {
+          label: `${roleRenter} · ${t('c1_flow_rent') || 'аренда'}`,
+          data: flowRent,
+          backgroundColor: rentColor,
+          borderWidth: 0,
+          stack: 'renter',
+          barPercentage: 0.9,
+          categoryPercentage: 0.95,
+        },
+      ]
+    },
+    options: {
+      devicePixelRatio: window.devicePixelRatio || 2,
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false, axis: 'x' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          xAlign: 'center',
+          yAlign: 'bottom',
+          caretPadding: 10,
+          backgroundColor: 'rgba(22,24,28,0.72)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#8a8f9e',
+          bodyColor: '#fff',
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('ru')} €`,
+            labelColor: ctx => ({ borderColor: ctx.dataset.backgroundColor, backgroundColor: ctx.dataset.backgroundColor, borderWidth: 0 }),
+          },
+        },
+        annotation: Object.keys(annotations).length ? { annotations } : {},
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: { ...C1_AXIS_TICK, maxTicksLimit: 8, autoSkip: true },
+          grid: C1_AXIS_GRID,
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: {
+            ...C1_AXIS_TICK,
+            callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k €' : v + '€',
+          },
+          grid: C1_AXIS_GRID,
+        },
+      },
+    },
+  });
+
+  updateC1FlowLegend();
+}
+
+// Кастомная HTML-легенда для графика потоков, сгруппированная по ролям:
+// Покупатель — 2 сегмента (погашение + %+содержание), Арендатор — 1 (аренда).
+// Цвета маркеров совпадают с датасетами графика пиксельно (через c1RoleColors()).
+function updateC1FlowLegend() {
+  const el = document.getElementById('c1-flow-legend');
+  if (!el) return;
+  const c = c1RoleColors();
+  const roleBuyer  = t('c1_flow_role_buyer')  || 'Покупатель';
+  const roleRenter = t('c1_flow_role_renter') || 'Арендатор';
+  const lblBurn   = t('c1_flow_burn')      || 'проценты + содержание';
+  const lblPrinc  = t('c1_flow_principal') || 'погашение кредита';
+  const lblRent   = t('c1_flow_rent')      || 'аренда';
+  el.innerHTML =
+    `<span class="c1-flow-role">` +
+      `<span class="c1-flow-role-label">${roleBuyer}:</span>` +
+      `<span class="c1-flow-item"><span class="c1-flow-swatch" style="background:${c.buyer}"></span>${lblPrinc}</span>` +
+      `<span class="c1-flow-item"><span class="c1-flow-swatch" style="background:${c.buyerLight}"></span>${lblBurn}</span>` +
+    `</span>` +
+    `<span class="c1-flow-role">` +
+      `<span class="c1-flow-role-label">${roleRenter}:</span>` +
+      `<span class="c1-flow-item"><span class="c1-flow-swatch" style="background:${c.renter}"></span>${lblRent}</span>` +
+    `</span>`;
+}
+
 function updateC1ChartLegend() {
   const el = document.getElementById('c1-chart-legend');
   if (!el) return;
+  const roles = c1RoleColors();
   const datasets = [
-    { color: '#4a90d9', key: 'c1_buyer',  fallback: 'Капитал покупателя' },
-    { color: '#5cb88a', key: 'c1_renter', fallback: 'Портфель арендатора' },
+    { color: roles.buyer,  key: 'c1_buyer',  fallback: 'Капитал покупателя' },
+    { color: roles.renter, key: 'c1_renter', fallback: 'Портфель арендатора' },
   ];
   el.innerHTML = datasets.map(d =>
     `<span class="c1-chart-legend-item">` +
@@ -2260,25 +2454,17 @@ function fillCyclePhaseBlock(region) {
     </div>`;
   }
 
-  // ── Вывод: сборный текст из существующих c1_market_* ─────────────
-  const levelKey = {
-    above:   'c1_market_level_above',
-    neutral: 'c1_market_level_neutral',
-    below:   'c1_market_level_below',
+  // ── Вывод: исторический исход по уровню (cyclePhase) + оговорка ─
+  // p1 (level-факт) и divergence-факт больше не нужны — уровень покрыт
+  // сеткой «Отклонение · zLabel», divergence — строкой «Разрыв».
+  const outcomeKey = {
+    above:   'c1_market_outcome_above',
+    neutral: 'c1_market_outcome_neutral',
+    below:   'c1_market_outcome_below',
   }[region.cyclePhase];
-  const p1 = t(levelKey);
-  let p2 = '';
-  if (hasMovement) {
-    const moveKey = {
-      prices_outpace: 'c1_market_move_prices',
-      rents_outpace:  'c1_market_move_rents',
-      synchronous:    'c1_market_move_sync',
-    }[region.divergenceClass];
-    const signedDiv = (region.divergence12m >= 0 ? '+' : '') + region.divergence12m.toFixed(1);
-    p2 = t(moveKey).replace('{div}', signedDiv);
-  }
-  const p3 = t('c1_market_caveat');
-  const concParas = [p1, p2, p3].filter(Boolean).map(p => `<p>${p}</p>`).join('');
+  const p1 = t(outcomeKey);
+  const p2 = t('c1_market_caveat');
+  const concParas = [p1, p2].filter(Boolean).map(p => `<p>${p}</p>`).join('');
 
   const conclusionHTML = `
     <div class="cycle-grid-conclusion">
