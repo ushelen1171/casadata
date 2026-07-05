@@ -15,7 +15,7 @@ const RAW_JSON    = path.join(ROOT, 'data', 'idealista_raw.json');
 // без их загрузки в vm-контекст REGIONS не сформируется.
 const DEFAULTS_JS = path.join(ROOT, 'js', 'defaults.js');
 const ITP_RATES_JS = path.join(ROOT, 'js', 'itp-rates.js');
-const CURRENT_YM  = '2026-04'; // дата последнего отчёта Idealista
+const CURRENT_YM  = '2026-06'; // дата последнего отчёта Idealista
 
 // ── Маппинг id (data.js) → slug (idealista_raw.json) ─────────────────────────
 const ID_TO_SLUG = {
