@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-05-08T01:30:00Z",
+  "collected_at": "2026-07-05T14:56:52Z",
   "source": "idealista.com sala-de-prensa",
   "methodology_note": "Desde marzo de 2023 mejoramos nuestra metodología — data points before/after may not be perfectly comparable.",
   "regions": {
@@ -8,11 +8,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/cataluna/",
         "summary": {
-          "current_eur_m2": 2890,
-          "variation_mom_pct": 2.2,
-          "variation_qoq_pct": 4.1,
-          "variation_yoy_pct": 14.1,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 2959,
+          "variation_mom_pct": 1.2,
+          "variation_qoq_pct": 4.7,
+          "variation_yoy_pct": 14.0,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -68,6 +68,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 2959,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 4.7,
+            "variacion_anual_pct": 14.0
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 2923,
+            "variacion_mensual_pct": 1.1,
+            "variacion_trimestral_pct": 5.0,
+            "variacion_anual_pct": 14.2
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 2890,
             "variacion_mensual_pct": 2.2,
@@ -78,7 +92,7 @@
             "mes": "2026-03",
             "precio_m2": 2827,
             "variacion_mensual_pct": 1.6,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 13.4
           },
           {
@@ -120,7 +134,7 @@
             "mes": "2025-09",
             "precio_m2": 2647,
             "variacion_mensual_pct": -0.7,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 8.8
           },
           {
@@ -1780,11 +1794,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/cataluna/",
         "summary": {
-          "current_eur_m2": 17.1,
-          "variation_mom_pct": -3.4,
-          "variation_qoq_pct": -8.6,
-          "variation_yoy_pct": -8.6,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 17.6,
+          "variation_mom_pct": 2.2,
+          "variation_qoq_pct": -0.2,
+          "variation_yoy_pct": -8.2,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -1840,6 +1854,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 17.6,
+            "variacion_mensual_pct": 2.2,
+            "variacion_trimestral_pct": -0.2,
+            "variacion_anual_pct": -8.2
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 17.2,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": -5.4,
+            "variacion_anual_pct": -9.5
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 17.1,
             "variacion_mensual_pct": -3.4,
@@ -1872,7 +1900,7 @@
             "precio_m2": 18.6,
             "variacion_mensual_pct": -0.7,
             "variacion_trimestral_pct": -2.8,
-            "variacion_anual_pct": 3
+            "variacion_anual_pct": 3.0
           },
           {
             "mes": "2025-11",
@@ -3555,11 +3583,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/madrid-comunidad/",
         "summary": {
-          "current_eur_m2": 4707,
-          "variation_mom_pct": 0.4,
-          "variation_qoq_pct": 2.7,
-          "variation_yoy_pct": 13.5,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 4786,
+          "variation_mom_pct": 1.0,
+          "variation_qoq_pct": 2.1,
+          "variation_yoy_pct": 11.6,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -3585,6 +3613,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 4786,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 2.1,
+            "variacion_anual_pct": 11.6
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 4739,
+            "variacion_mensual_pct": 0.7,
+            "variacion_trimestral_pct": 2.1,
+            "variacion_anual_pct": 11.9
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 4707,
             "variacion_mensual_pct": 0.4,
@@ -3594,7 +3636,7 @@
           {
             "mes": "2026-03",
             "precio_m2": 4688,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 2.7,
             "variacion_anual_pct": 16.8
           },
@@ -3617,14 +3659,14 @@
             "precio_m2": 4562,
             "variacion_mensual_pct": 1.6,
             "variacion_trimestral_pct": 5.1,
-            "variacion_anual_pct": 21
+            "variacion_anual_pct": 21.0
           },
           {
             "mes": "2025-11",
             "precio_m2": 4491,
             "variacion_mensual_pct": 2.2,
             "variacion_trimestral_pct": 2.4,
-            "variacion_anual_pct": 21
+            "variacion_anual_pct": 21.0
           },
           {
             "mes": "2025-10",
@@ -5297,11 +5339,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/madrid-comunidad/",
         "summary": {
-          "current_eur_m2": 21.2,
-          "variation_mom_pct": -0.1,
-          "variation_qoq_pct": 0.6,
-          "variation_yoy_pct": 9,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 21.7,
+          "variation_mom_pct": 1.7,
+          "variation_qoq_pct": 2.0,
+          "variation_yoy_pct": 7.8,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -5327,11 +5369,25 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 21.7,
+            "variacion_mensual_pct": 1.7,
+            "variacion_trimestral_pct": 2.0,
+            "variacion_anual_pct": 7.8
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 21.4,
+            "variacion_mensual_pct": 0.5,
+            "variacion_trimestral_pct": 0.2,
+            "variacion_anual_pct": 7.7
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 21.2,
             "variacion_mensual_pct": -0.1,
             "variacion_trimestral_pct": 0.6,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2026-03",
@@ -5351,7 +5407,7 @@
             "mes": "2026-01",
             "precio_m2": 21.1,
             "variacion_mensual_pct": 1.6,
-            "variacion_trimestral_pct": 0,
+            "variacion_trimestral_pct": 0.0,
             "variacion_anual_pct": 10.5
           },
           {
@@ -5371,8 +5427,8 @@
           {
             "mes": "2025-10",
             "precio_m2": 21.1,
-            "variacion_mensual_pct": 1,
-            "variacion_trimestral_pct": 4,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 4.0,
             "variacion_anual_pct": 12.7
           },
           {
@@ -7042,11 +7098,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/comunitat-valenciana/",
         "summary": {
-          "current_eur_m2": 2489,
-          "variation_mom_pct": 1.3,
-          "variation_qoq_pct": 2.8,
-          "variation_yoy_pct": 15.4,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 2552,
+          "variation_mom_pct": 0.8,
+          "variation_qoq_pct": 3.9,
+          "variation_yoy_pct": 13.3,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -7092,6 +7148,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 2552,
+            "variacion_mensual_pct": 0.8,
+            "variacion_trimestral_pct": 3.9,
+            "variacion_anual_pct": 13.3
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 2532,
+            "variacion_mensual_pct": 1.7,
+            "variacion_trimestral_pct": 4.3,
+            "variacion_anual_pct": 14.7
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 2489,
             "variacion_mensual_pct": 1.3,
@@ -7103,13 +7173,13 @@
             "precio_m2": 2456,
             "variacion_mensual_pct": 1.2,
             "variacion_trimestral_pct": 1.6,
-            "variacion_anual_pct": 16
+            "variacion_anual_pct": 16.0
           },
           {
             "mes": "2026-02",
             "precio_m2": 2427,
             "variacion_mensual_pct": 0.2,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 16.7
           },
           {
@@ -7129,7 +7199,7 @@
           {
             "mes": "2025-11",
             "precio_m2": 2380,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 3.9,
             "variacion_anual_pct": 17.3
           },
@@ -7144,7 +7214,7 @@
             "mes": "2025-09",
             "precio_m2": 2321,
             "variacion_mensual_pct": 1.3,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 16.9
           },
           {
@@ -7159,7 +7229,7 @@
             "precio_m2": 2271,
             "variacion_mensual_pct": 0.8,
             "variacion_trimestral_pct": 5.3,
-            "variacion_anual_pct": 18
+            "variacion_anual_pct": 18.0
           },
           {
             "mes": "2025-06",
@@ -8804,11 +8874,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/comunitat-valenciana/",
         "summary": {
-          "current_eur_m2": 12.9,
-          "variation_mom_pct": 0.1,
-          "variation_qoq_pct": 1.8,
-          "variation_yoy_pct": 8.1,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 13.2,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 2.1,
+          "variation_yoy_pct": 7.4,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -8854,6 +8924,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 13.2,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 2.1,
+            "variacion_anual_pct": 7.4
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 13.0,
+            "variacion_mensual_pct": 0.6,
+            "variacion_trimestral_pct": 1.0,
+            "variacion_anual_pct": 7.1
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 12.9,
             "variacion_mensual_pct": 0.1,
@@ -8878,7 +8962,7 @@
             "mes": "2026-01",
             "precio_m2": 12.7,
             "variacion_mensual_pct": 1.9,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 11.1
           },
           {
@@ -8906,7 +8990,7 @@
             "mes": "2025-09",
             "precio_m2": 12.4,
             "variacion_mensual_pct": -0.5,
-            "variacion_trimestral_pct": 1,
+            "variacion_trimestral_pct": 1.0,
             "variacion_anual_pct": 9.8
           },
           {
@@ -10569,11 +10653,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/andalucia/",
         "summary": {
-          "current_eur_m2": 2852,
+          "current_eur_m2": 2936,
           "variation_mom_pct": 0.6,
-          "variation_qoq_pct": 2.4,
-          "variation_yoy_pct": 17.6,
-          "last_updated_month": "2026-04"
+          "variation_qoq_pct": 3.6,
+          "variation_yoy_pct": 16.6,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -10669,6 +10753,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 2936,
+            "variacion_mensual_pct": 0.6,
+            "variacion_trimestral_pct": 3.6,
+            "variacion_anual_pct": 16.6
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 2919,
+            "variacion_mensual_pct": 2.4,
+            "variacion_trimestral_pct": 3.6,
+            "variacion_anual_pct": 18.3
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 2852,
             "variacion_mensual_pct": 0.6,
@@ -10686,7 +10784,7 @@
             "mes": "2026-02",
             "precio_m2": 2817,
             "variacion_mensual_pct": 1.2,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 20.2
           },
           {
@@ -12382,10 +12480,10 @@
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/andalucia/",
         "summary": {
           "current_eur_m2": 13.5,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "variation_mom_pct": 0.2,
+          "variation_qoq_pct": 1.0,
+          "variation_yoy_pct": 6.0,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -12481,6 +12579,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 13.5,
+            "variacion_mensual_pct": 0.2,
+            "variacion_trimestral_pct": 1.0,
+            "variacion_anual_pct": 6.0
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 13.5,
+            "variacion_mensual_pct": -0.1,
+            "variacion_trimestral_pct": 1.1,
+            "variacion_anual_pct": 6.7
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 13.5,
             "variacion_mensual_pct": 0.9,
@@ -12511,7 +12623,7 @@
           {
             "mes": "2025-12",
             "precio_m2": 13,
-            "variacion_mensual_pct": 2,
+            "variacion_mensual_pct": 2.0,
             "variacion_trimestral_pct": 4.9,
             "variacion_anual_pct": 9.9
           },
@@ -12533,20 +12645,20 @@
             "mes": "2025-09",
             "precio_m2": 12.4,
             "variacion_mensual_pct": -1.1,
-            "variacion_trimestral_pct": -3,
+            "variacion_trimestral_pct": -3.0,
             "variacion_anual_pct": 12.1
           },
           {
             "mes": "2025-08",
             "precio_m2": 12.5,
             "variacion_mensual_pct": -0.9,
-            "variacion_trimestral_pct": -1,
-            "variacion_anual_pct": 12
+            "variacion_trimestral_pct": -1.0,
+            "variacion_anual_pct": 12.0
           },
           {
             "mes": "2025-07",
             "precio_m2": 12.6,
-            "variacion_mensual_pct": -1,
+            "variacion_mensual_pct": -1.0,
             "variacion_trimestral_pct": 1.2,
             "variacion_anual_pct": 10.9
           },
@@ -14196,11 +14308,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/euskadi/",
         "summary": {
-          "current_eur_m2": 3534,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 3611,
+          "variation_mom_pct": 1.8,
+          "variation_qoq_pct": 3.6,
+          "variation_yoy_pct": 11.9,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -14246,6 +14358,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 3611,
+            "variacion_mensual_pct": 1.8,
+            "variacion_trimestral_pct": 3.6,
+            "variacion_anual_pct": 11.9
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 3546,
+            "variacion_mensual_pct": 0.4,
+            "variacion_trimestral_pct": 2.0,
+            "variacion_anual_pct": 11.5
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 3534,
             "variacion_mensual_pct": 1.4,
@@ -14263,7 +14389,7 @@
             "mes": "2026-02",
             "precio_m2": 3476,
             "variacion_mensual_pct": 0.5,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 12.4
           },
           {
@@ -14271,7 +14397,7 @@
             "precio_m2": 3460,
             "variacion_mensual_pct": 1.1,
             "variacion_trimestral_pct": 3.1,
-            "variacion_anual_pct": 13
+            "variacion_anual_pct": 13.0
           },
           {
             "mes": "2025-12",
@@ -14306,7 +14432,7 @@
             "precio_m2": 3287,
             "variacion_mensual_pct": 0.7,
             "variacion_trimestral_pct": 3.4,
-            "variacion_anual_pct": 11
+            "variacion_anual_pct": 11.0
           },
           {
             "mes": "2025-07",
@@ -15958,11 +16084,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/euskadi/",
         "summary": {
-          "current_eur_m2": 15.1,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 14.9,
+          "variation_mom_pct": -0.3,
+          "variation_qoq_pct": -1.9,
+          "variation_yoy_pct": 0.2,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -16008,10 +16134,24 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 14.9,
+            "variacion_mensual_pct": -0.3,
+            "variacion_trimestral_pct": -1.9,
+            "variacion_anual_pct": 0.2
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 14.9,
+            "variacion_mensual_pct": -0.9,
+            "variacion_trimestral_pct": -1.5,
+            "variacion_anual_pct": 1.1
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 15.1,
             "variacion_mensual_pct": -0.8,
-            "variacion_trimestral_pct": -1,
+            "variacion_trimestral_pct": -1.0,
             "variacion_anual_pct": 3.9
           },
           {
@@ -16031,7 +16171,7 @@
           {
             "mes": "2026-01",
             "precio_m2": 15.2,
-            "variacion_mensual_pct": 2,
+            "variacion_mensual_pct": 2.0,
             "variacion_trimestral_pct": 2.2,
             "variacion_anual_pct": 5.9
           },
@@ -16039,7 +16179,7 @@
             "mes": "2025-12",
             "precio_m2": 14.9,
             "variacion_mensual_pct": 0.8,
-            "variacion_trimestral_pct": 0,
+            "variacion_trimestral_pct": 0.0,
             "variacion_anual_pct": 3.8
           },
           {
@@ -17723,11 +17863,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/galicia/",
         "summary": {
-          "current_eur_m2": 1549,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1587,
+          "variation_mom_pct": 1.0,
+          "variation_qoq_pct": 3.8,
+          "variation_yoy_pct": 10.0,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -17783,6 +17923,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1587,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 3.8,
+            "variacion_anual_pct": 10.0
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1571,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 3.8,
+            "variacion_anual_pct": 9.5
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1549,
             "variacion_mensual_pct": 1.3,
@@ -17792,7 +17946,7 @@
           {
             "mes": "2026-03",
             "precio_m2": 1529,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 1.4,
             "variacion_anual_pct": 7.6
           },
@@ -17849,7 +18003,7 @@
             "mes": "2025-07",
             "precio_m2": 1452,
             "variacion_mensual_pct": 0.7,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 3.4
           },
           {
@@ -19495,11 +19649,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/galicia/",
         "summary": {
-          "current_eur_m2": 9.7,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 9.9,
+          "variation_mom_pct": 0.7,
+          "variation_qoq_pct": 2.7,
+          "variation_yoy_pct": 2.8,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -19555,6 +19709,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 9.9,
+            "variacion_mensual_pct": 0.7,
+            "variacion_trimestral_pct": 2.7,
+            "variacion_anual_pct": 2.8
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 9.8,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 2.5,
+            "variacion_anual_pct": 4.4
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 9.7,
             "variacion_mensual_pct": 0.9,
@@ -19594,12 +19762,12 @@
             "precio_m2": 9.1,
             "variacion_mensual_pct": -0.2,
             "variacion_trimestral_pct": -4.3,
-            "variacion_anual_pct": 4
+            "variacion_anual_pct": 4.0
           },
           {
             "mes": "2025-10",
             "precio_m2": 9.1,
-            "variacion_mensual_pct": -2,
+            "variacion_mensual_pct": -2.0,
             "variacion_trimestral_pct": -5.6,
             "variacion_anual_pct": 5.3
           },
@@ -21270,11 +21438,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/castilla-y-leon/",
         "summary": {
-          "current_eur_m2": 1323,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1359,
+          "variation_mom_pct": 1.7,
+          "variation_qoq_pct": 4.0,
+          "variation_yoy_pct": 10.9,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -21380,6 +21548,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1359,
+            "variacion_mensual_pct": 1.7,
+            "variacion_trimestral_pct": 4.0,
+            "variacion_anual_pct": 10.9
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1336,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 2.9,
+            "variacion_anual_pct": 9.9
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1323,
             "variacion_mensual_pct": 1.2,
@@ -21426,7 +21608,7 @@
             "precio_m2": 1259,
             "variacion_mensual_pct": 0.8,
             "variacion_trimestral_pct": 2.1,
-            "variacion_anual_pct": 5
+            "variacion_anual_pct": 5.0
           },
           {
             "mes": "2025-09",
@@ -21447,7 +21629,7 @@
             "precio_m2": 1233,
             "variacion_mensual_pct": 0.6,
             "variacion_trimestral_pct": 1.6,
-            "variacion_anual_pct": 3
+            "variacion_anual_pct": 3.0
           },
           {
             "mes": "2025-06",
@@ -23092,11 +23274,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/castilla-y-leon/",
         "summary": {
-          "current_eur_m2": 9.5,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 9.7,
+          "variation_mom_pct": 1.6,
+          "variation_qoq_pct": 2.4,
+          "variation_yoy_pct": 7.4,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -23202,6 +23384,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 9.7,
+            "variacion_mensual_pct": 1.6,
+            "variacion_trimestral_pct": 2.4,
+            "variacion_anual_pct": 7.4
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 9.6,
+            "variacion_mensual_pct": 0.4,
+            "variacion_trimestral_pct": 2.5,
+            "variacion_anual_pct": 6.8
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 9.5,
             "variacion_mensual_pct": 0.4,
@@ -23213,7 +23409,7 @@
             "precio_m2": 9.5,
             "variacion_mensual_pct": 1.7,
             "variacion_trimestral_pct": 2.2,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2026-02",
@@ -23232,7 +23428,7 @@
           {
             "mes": "2025-12",
             "precio_m2": 9.3,
-            "variacion_mensual_pct": 2,
+            "variacion_mensual_pct": 2.0,
             "variacion_trimestral_pct": 4.3,
             "variacion_anual_pct": 9.5
           },
@@ -23253,7 +23449,7 @@
           {
             "mes": "2025-09",
             "precio_m2": 8.9,
-            "variacion_mensual_pct": -1,
+            "variacion_mensual_pct": -1.0,
             "variacion_trimestral_pct": -1.6,
             "variacion_anual_pct": 8.9
           },
@@ -23267,7 +23463,7 @@
           {
             "mes": "2025-07",
             "precio_m2": 9.1,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 2.3,
             "variacion_anual_pct": 10.1
           },
@@ -24917,11 +25113,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/castilla-la-mancha/",
         "summary": {
-          "current_eur_m2": 1091,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1113,
+          "variation_mom_pct": 0.7,
+          "variation_qoq_pct": 4.2,
+          "variation_yoy_pct": 14.7,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -24987,6 +25183,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1113,
+            "variacion_mensual_pct": 0.7,
+            "variacion_trimestral_pct": 4.2,
+            "variacion_anual_pct": 14.7
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1106,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 4.8,
+            "variacion_anual_pct": 15.1
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1091,
             "variacion_mensual_pct": 2.1,
@@ -25033,12 +25243,12 @@
             "precio_m2": 1003,
             "variacion_mensual_pct": 1.6,
             "variacion_trimestral_pct": 2.1,
-            "variacion_anual_pct": 7
+            "variacion_anual_pct": 7.0
           },
           {
             "mes": "2025-09",
             "precio_m2": 987,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 1.7,
             "variacion_anual_pct": 5.4
           },
@@ -26699,11 +26909,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/castilla-la-mancha/",
         "summary": {
-          "current_eur_m2": 8.6,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 8.7,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 1.7,
+          "variation_yoy_pct": 10.3,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -26769,10 +26979,24 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 8.7,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 1.7,
+            "variacion_anual_pct": 10.3
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 8.6,
+            "variacion_mensual_pct": 0.1,
+            "variacion_trimestral_pct": 1.7,
+            "variacion_anual_pct": 10.7
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 8.6,
             "variacion_mensual_pct": 0.2,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 11.6
           },
           {
@@ -26821,7 +27045,7 @@
             "mes": "2025-09",
             "precio_m2": 8,
             "variacion_mensual_pct": -0.6,
-            "variacion_trimestral_pct": 1,
+            "variacion_trimestral_pct": 1.0,
             "variacion_anual_pct": 13.3
           },
           {
@@ -26835,7 +27059,7 @@
             "mes": "2025-07",
             "precio_m2": 8,
             "variacion_mensual_pct": 1.2,
-            "variacion_trimestral_pct": 4,
+            "variacion_trimestral_pct": 4.0,
             "variacion_anual_pct": 13.5
           },
           {
@@ -28484,11 +28708,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/canarias/",
         "summary": {
-          "current_eur_m2": 3283,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 3297,
+          "variation_mom_pct": 0.5,
+          "variation_qoq_pct": 0.8,
+          "variation_yoy_pct": 7.4,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -28524,6 +28748,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 3297,
+            "variacion_mensual_pct": 0.5,
+            "variacion_trimestral_pct": 0.8,
+            "variacion_anual_pct": 7.4
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 3281,
+            "variacion_mensual_pct": -0.1,
+            "variacion_trimestral_pct": 1.5,
+            "variacion_anual_pct": 8.0
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 3283,
             "variacion_mensual_pct": 0.4,
@@ -28540,7 +28778,7 @@
           {
             "mes": "2026-02",
             "precio_m2": 3231,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 3.5,
             "variacion_anual_pct": 10.6
           },
@@ -28548,7 +28786,7 @@
             "mes": "2026-01",
             "precio_m2": 3200,
             "variacion_mensual_pct": 1.6,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 11.7
           },
           {
@@ -28563,7 +28801,7 @@
             "precio_m2": 3123,
             "variacion_mensual_pct": 0.6,
             "variacion_trimestral_pct": 1.4,
-            "variacion_anual_pct": 12
+            "variacion_anual_pct": 12.0
           },
           {
             "mes": "2025-10",
@@ -30236,11 +30474,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/canarias/",
         "summary": {
-          "current_eur_m2": 15.7,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 15.9,
+          "variation_mom_pct": 1.1,
+          "variation_qoq_pct": 1.7,
+          "variation_yoy_pct": 4.7,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -30276,6 +30514,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 15.9,
+            "variacion_mensual_pct": 1.1,
+            "variacion_trimestral_pct": 1.7,
+            "variacion_anual_pct": 4.7
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 15.7,
+            "variacion_mensual_pct": 0.0,
+            "variacion_trimestral_pct": 1.9,
+            "variacion_anual_pct": 5.5
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 15.7,
             "variacion_mensual_pct": 0.6,
@@ -30299,7 +30551,7 @@
           {
             "mes": "2026-01",
             "precio_m2": 15.3,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 1.2,
             "variacion_anual_pct": 7.8
           },
@@ -30335,7 +30587,7 @@
             "mes": "2025-08",
             "precio_m2": 15,
             "variacion_mensual_pct": -0.1,
-            "variacion_trimestral_pct": 1,
+            "variacion_trimestral_pct": 1.0,
             "variacion_anual_pct": 7.4
           },
           {
@@ -31991,11 +32243,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/baleares/",
         "summary": {
-          "current_eur_m2": 5252,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 5337,
+          "variation_mom_pct": 1.0,
+          "variation_qoq_pct": 1.9,
+          "variation_yoy_pct": 6.8,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -32020,6 +32272,20 @@
           }
         ],
         "monthly_history": [
+          {
+            "mes": "2026-06",
+            "precio_m2": 5337,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 1.9,
+            "variacion_anual_pct": 6.8
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 5285,
+            "variacion_mensual_pct": 0.6,
+            "variacion_trimestral_pct": 1.1,
+            "variacion_anual_pct": 7.8
+          },
           {
             "mes": "2026-04",
             "precio_m2": 5252,
@@ -32058,7 +32324,7 @@
           {
             "mes": "2025-11",
             "precio_m2": 5114,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 0.9,
             "variacion_anual_pct": 9.1
           },
@@ -32088,7 +32354,7 @@
             "precio_m2": 5025,
             "variacion_mensual_pct": 0.6,
             "variacion_trimestral_pct": 3.9,
-            "variacion_anual_pct": 13
+            "variacion_anual_pct": 13.0
           },
           {
             "mes": "2025-06",
@@ -33733,11 +33999,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/baleares/",
         "summary": {
-          "current_eur_m2": 19.8,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 20.2,
+          "variation_mom_pct": 0.3,
+          "variation_qoq_pct": 2.5,
+          "variation_yoy_pct": -0.1,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -33763,24 +34029,38 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 20.2,
+            "variacion_mensual_pct": 0.3,
+            "variacion_trimestral_pct": 2.5,
+            "variacion_anual_pct": -0.1
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 20.1,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 3.3,
+            "variacion_anual_pct": 2.2
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 19.8,
             "variacion_mensual_pct": 0.8,
             "variacion_trimestral_pct": 3.6,
-            "variacion_anual_pct": 4
+            "variacion_anual_pct": 4.0
           },
           {
             "mes": "2026-03",
             "precio_m2": 19.7,
-            "variacion_mensual_pct": 1,
-            "variacion_trimestral_pct": 3,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 6.3
           },
           {
             "mes": "2026-02",
             "precio_m2": 19.5,
             "variacion_mensual_pct": 1.7,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 7.9
           },
           {
@@ -33809,7 +34089,7 @@
             "precio_m2": 19.1,
             "variacion_mensual_pct": -0.5,
             "variacion_trimestral_pct": -3.1,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2025-09",
@@ -35478,11 +35758,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/aragon/",
         "summary": {
-          "current_eur_m2": 1668,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1711,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 4.3,
+          "variation_yoy_pct": 14.6,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -35528,6 +35808,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1711,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 4.3,
+            "variacion_anual_pct": 14.6
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1687,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 4.3,
+            "variacion_anual_pct": 14.8
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1668,
             "variacion_mensual_pct": 1.7,
@@ -35544,7 +35838,7 @@
           {
             "mes": "2026-02",
             "precio_m2": 1618,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 1.1,
             "variacion_anual_pct": 13.4
           },
@@ -35567,7 +35861,7 @@
             "precio_m2": 1601,
             "variacion_mensual_pct": 3.6,
             "variacion_trimestral_pct": 5.9,
-            "variacion_anual_pct": 8
+            "variacion_anual_pct": 8.0
           },
           {
             "mes": "2025-10",
@@ -35594,7 +35888,7 @@
             "mes": "2025-07",
             "precio_m2": 1502,
             "variacion_mensual_pct": 0.5,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 3.4
           },
           {
@@ -37240,11 +37534,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/aragon/",
         "summary": {
-          "current_eur_m2": 10.8,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 11.1,
+          "variation_mom_pct": 0.8,
+          "variation_qoq_pct": 3.8,
+          "variation_yoy_pct": 10.0,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -37290,6 +37584,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 11.1,
+            "variacion_mensual_pct": 0.8,
+            "variacion_trimestral_pct": 3.8,
+            "variacion_anual_pct": 10.0
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 11.0,
+            "variacion_mensual_pct": 1.5,
+            "variacion_trimestral_pct": 4.0,
+            "variacion_anual_pct": 9.0
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 10.8,
             "variacion_mensual_pct": 1.5,
@@ -37299,14 +37607,14 @@
           {
             "mes": "2026-03",
             "precio_m2": 10.7,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 2.6,
             "variacion_anual_pct": 8.1
           },
           {
             "mes": "2026-02",
             "precio_m2": 10.5,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 3.6,
             "variacion_anual_pct": 7.9
           },
@@ -37327,8 +37635,8 @@
           {
             "mes": "2025-11",
             "precio_m2": 10.2,
-            "variacion_mensual_pct": 1,
-            "variacion_trimestral_pct": 0,
+            "variacion_mensual_pct": 1.0,
+            "variacion_trimestral_pct": 0.0,
             "variacion_anual_pct": 8.5
           },
           {
@@ -37356,7 +37664,7 @@
             "mes": "2025-07",
             "precio_m2": 10.1,
             "variacion_mensual_pct": 0.8,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 8.9
           },
           {
@@ -39005,11 +39313,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/asturias/",
         "summary": {
-          "current_eur_m2": 1779,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1802,
+          "variation_mom_pct": 0.1,
+          "variation_qoq_pct": 3.2,
+          "variation_yoy_pct": 14.5,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -39035,6 +39343,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1802,
+            "variacion_mensual_pct": 0.1,
+            "variacion_trimestral_pct": 3.2,
+            "variacion_anual_pct": 14.5
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1800,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 4.2,
+            "variacion_anual_pct": 17.1
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1779,
             "variacion_mensual_pct": 1.9,
@@ -39046,7 +39368,7 @@
             "precio_m2": 1746,
             "variacion_mensual_pct": 1.1,
             "variacion_trimestral_pct": 2.4,
-            "variacion_anual_pct": 17
+            "variacion_anual_pct": 17.0
           },
           {
             "mes": "2026-02",
@@ -39067,7 +39389,7 @@
             "precio_m2": 1706,
             "variacion_mensual_pct": 0.4,
             "variacion_trimestral_pct": 4.3,
-            "variacion_anual_pct": 16
+            "variacion_anual_pct": 16.0
           },
           {
             "mes": "2025-11",
@@ -39095,7 +39417,7 @@
             "precio_m2": 1612,
             "variacion_mensual_pct": 1.6,
             "variacion_trimestral_pct": 4.8,
-            "variacion_anual_pct": 14
+            "variacion_anual_pct": 14.0
           },
           {
             "mes": "2025-07",
@@ -40747,11 +41069,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/asturias/",
         "summary": {
-          "current_eur_m2": 10.5,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 10.8,
+          "variation_mom_pct": 1.7,
+          "variation_qoq_pct": 3.1,
+          "variation_yoy_pct": 10.3,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -40777,6 +41099,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 10.8,
+            "variacion_mensual_pct": 1.7,
+            "variacion_trimestral_pct": 3.1,
+            "variacion_anual_pct": 10.3
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 10.7,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 3.0,
+            "variacion_anual_pct": 9.3
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 10.5,
             "variacion_mensual_pct": 0.2,
@@ -40795,7 +41131,7 @@
             "precio_m2": 10.4,
             "variacion_mensual_pct": 0.6,
             "variacion_trimestral_pct": 3.1,
-            "variacion_anual_pct": 8
+            "variacion_anual_pct": 8.0
           },
           {
             "mes": "2026-01",
@@ -40821,7 +41157,7 @@
           {
             "mes": "2025-10",
             "precio_m2": 9.9,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": -0.7,
             "variacion_anual_pct": 7.4
           },
@@ -40835,9 +41171,9 @@
           {
             "mes": "2025-08",
             "precio_m2": 10,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 2.1,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2025-07",
@@ -42492,11 +42828,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/murcia-region/",
         "summary": {
-          "current_eur_m2": 1747,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1816,
+          "variation_mom_pct": 0.0,
+          "variation_qoq_pct": 5.7,
+          "variation_yoy_pct": 21.1,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -42522,11 +42858,25 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1816,
+            "variacion_mensual_pct": 0.0,
+            "variacion_trimestral_pct": 5.7,
+            "variacion_anual_pct": 21.1
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1816,
+            "variacion_mensual_pct": 4.0,
+            "variacion_trimestral_pct": 8.0,
+            "variacion_anual_pct": 24.6
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1747,
             "variacion_mensual_pct": 1.7,
-            "variacion_trimestral_pct": 3,
-            "variacion_anual_pct": 23
+            "variacion_trimestral_pct": 3.0,
+            "variacion_anual_pct": 23.0
           },
           {
             "mes": "2026-03",
@@ -42539,7 +42889,7 @@
             "mes": "2026-02",
             "precio_m2": 1682,
             "variacion_mensual_pct": -0.8,
-            "variacion_trimestral_pct": 1,
+            "variacion_trimestral_pct": 1.0,
             "variacion_anual_pct": 23.3
           },
           {
@@ -42581,14 +42931,14 @@
             "mes": "2025-08",
             "precio_m2": 1515,
             "variacion_mensual_pct": 0.7,
-            "variacion_trimestral_pct": 4,
+            "variacion_trimestral_pct": 4.0,
             "variacion_anual_pct": 17.6
           },
           {
             "mes": "2025-07",
             "precio_m2": 1505,
             "variacion_mensual_pct": 0.3,
-            "variacion_trimestral_pct": 6,
+            "variacion_trimestral_pct": 6.0,
             "variacion_anual_pct": 19.3
           },
           {
@@ -44234,11 +44584,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/murcia-region/",
         "summary": {
-          "current_eur_m2": 9.2,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 9.5,
+          "variation_mom_pct": 2.0,
+          "variation_qoq_pct": 3.5,
+          "variation_yoy_pct": 3.5,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -44264,6 +44614,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 9.5,
+            "variacion_mensual_pct": 2.0,
+            "variacion_trimestral_pct": 3.5,
+            "variacion_anual_pct": 3.5
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 9.3,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 2.4,
+            "variacion_anual_pct": 5.4
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 9.2,
             "variacion_mensual_pct": 0.3,
@@ -44274,7 +44638,7 @@
             "mes": "2026-03",
             "precio_m2": 9.1,
             "variacion_mensual_pct": 0.9,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 8.5
           },
           {
@@ -44282,7 +44646,7 @@
             "precio_m2": 9.1,
             "variacion_mensual_pct": 0.6,
             "variacion_trimestral_pct": 2.7,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2026-01",
@@ -44302,7 +44666,7 @@
             "mes": "2025-11",
             "precio_m2": 8.8,
             "variacion_mensual_pct": 0.3,
-            "variacion_trimestral_pct": -3,
+            "variacion_trimestral_pct": -3.0,
             "variacion_anual_pct": 9.3
           },
           {
@@ -44330,7 +44694,7 @@
             "mes": "2025-07",
             "precio_m2": 9.2,
             "variacion_mensual_pct": 0.6,
-            "variacion_trimestral_pct": 7,
+            "variacion_trimestral_pct": 7.0,
             "variacion_anual_pct": 7.1
           },
           {
@@ -45979,11 +46343,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/navarra/",
         "summary": {
-          "current_eur_m2": 1932,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "current_eur_m2": 1968,
+          "variation_mom_pct": 2.3,
+          "variation_qoq_pct": 2.0,
+          "variation_yoy_pct": 13.0,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -46009,6 +46373,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1968,
+            "variacion_mensual_pct": 2.3,
+            "variacion_trimestral_pct": 2.0,
+            "variacion_anual_pct": 13.0
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1924,
+            "variacion_mensual_pct": -0.4,
+            "variacion_trimestral_pct": 1.5,
+            "variacion_anual_pct": 9.8
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1932,
             "variacion_mensual_pct": 0.2,
@@ -46027,13 +46405,13 @@
             "precio_m2": 1896,
             "variacion_mensual_pct": 1.6,
             "variacion_trimestral_pct": 3.1,
-            "variacion_anual_pct": 12
+            "variacion_anual_pct": 12.0
           },
           {
             "mes": "2026-01",
             "precio_m2": 1867,
             "variacion_mensual_pct": 1.6,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 9.6
           },
           {
@@ -46062,20 +46440,20 @@
             "precio_m2": 1779,
             "variacion_mensual_pct": -0.5,
             "variacion_trimestral_pct": 2.2,
-            "variacion_anual_pct": 3
+            "variacion_anual_pct": 3.0
           },
           {
             "mes": "2025-08",
             "precio_m2": 1787,
             "variacion_mensual_pct": 1.3,
-            "variacion_trimestral_pct": 2,
-            "variacion_anual_pct": 3
+            "variacion_trimestral_pct": 2.0,
+            "variacion_anual_pct": 3.0
           },
           {
             "mes": "2025-07",
             "precio_m2": 1764,
             "variacion_mensual_pct": 1.3,
-            "variacion_trimestral_pct": 1,
+            "variacion_trimestral_pct": 1.0,
             "variacion_anual_pct": 1.4
           },
           {
@@ -47722,10 +48100,10 @@
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/navarra/",
         "summary": {
           "current_eur_m2": 10.6,
-          "variation_mom_pct": null,
-          "variation_qoq_pct": null,
-          "variation_yoy_pct": null,
-          "last_updated_month": null
+          "variation_mom_pct": -0.1,
+          "variation_qoq_pct": -1.2,
+          "variation_yoy_pct": 0.8,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -47751,6 +48129,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 10.6,
+            "variacion_mensual_pct": -0.1,
+            "variacion_trimestral_pct": -1.2,
+            "variacion_anual_pct": 0.8
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 10.6,
+            "variacion_mensual_pct": -0.3,
+            "variacion_trimestral_pct": -3.2,
+            "variacion_anual_pct": 1.4
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 10.6,
             "variacion_mensual_pct": -0.9,
@@ -47760,7 +48152,7 @@
           {
             "mes": "2026-03",
             "precio_m2": 10.7,
-            "variacion_mensual_pct": -2,
+            "variacion_mensual_pct": -2.0,
             "variacion_trimestral_pct": -3.1,
             "variacion_anual_pct": 1.7
           },
@@ -47774,7 +48166,7 @@
           {
             "mes": "2026-01",
             "precio_m2": 11.2,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 5.7,
             "variacion_anual_pct": 6.2
           },
@@ -47788,7 +48180,7 @@
           {
             "mes": "2025-11",
             "precio_m2": 10.7,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": -0.7,
             "variacion_anual_pct": 4.1
           },
@@ -47797,7 +48189,7 @@
             "precio_m2": 10.6,
             "variacion_mensual_pct": -1.5,
             "variacion_trimestral_pct": -0.7,
-            "variacion_anual_pct": 3
+            "variacion_anual_pct": 3.0
           },
           {
             "mes": "2025-09",
@@ -47809,7 +48201,7 @@
           {
             "mes": "2025-08",
             "precio_m2": 10.8,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 2.9,
             "variacion_anual_pct": 6.1
           },
@@ -49466,11 +49858,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/extremadura/",
         "summary": {
-          "current_eur_m2": 1071,
-          "variation_mom_pct": 1.8,
-          "variation_qoq_pct": 1.8,
-          "variation_yoy_pct": 1.8,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 1083,
+          "variation_mom_pct": 0.5,
+          "variation_qoq_pct": 2.9,
+          "variation_yoy_pct": 9.9,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -49500,10 +49892,24 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1083,
+            "variacion_mensual_pct": 0.5,
+            "variacion_trimestral_pct": 2.9,
+            "variacion_anual_pct": 9.9
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1077,
+            "variacion_mensual_pct": 0.5,
+            "variacion_trimestral_pct": 3.3,
+            "variacion_anual_pct": 9.6
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1071,
             "variacion_mensual_pct": 1.8,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 10.1
           },
           {
@@ -49532,7 +49938,7 @@
             "precio_m2": 1035,
             "variacion_mensual_pct": 1.2,
             "variacion_trimestral_pct": 4.7,
-            "variacion_anual_pct": 5
+            "variacion_anual_pct": 5.0
           },
           {
             "mes": "2025-11",
@@ -49551,7 +49957,7 @@
           {
             "mes": "2025-09",
             "precio_m2": 989,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 0.4,
             "variacion_anual_pct": 1.7
           },
@@ -51212,11 +51618,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/extremadura/",
         "summary": {
-          "current_eur_m2": 7.5,
-          "variation_mom_pct": 0.4,
-          "variation_qoq_pct": 0.4,
-          "variation_yoy_pct": 0.4,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 7.7,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 2.4,
+          "variation_yoy_pct": 5.8,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -51246,6 +51652,20 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 7.7,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 2.4,
+            "variacion_anual_pct": 5.8
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 7.6,
+            "variacion_mensual_pct": 0.6,
+            "variacion_trimestral_pct": 2.5,
+            "variacion_anual_pct": 7.4
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 7.5,
             "variacion_mensual_pct": 0.4,
@@ -51262,7 +51682,7 @@
           {
             "mes": "2026-02",
             "precio_m2": 7.4,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 2.3,
             "variacion_anual_pct": 8.3
           },
@@ -51292,7 +51712,7 @@
             "precio_m2": 7.2,
             "variacion_mensual_pct": -0.9,
             "variacion_trimestral_pct": -1.1,
-            "variacion_anual_pct": 4
+            "variacion_anual_pct": 4.0
           },
           {
             "mes": "2025-09",
@@ -51305,7 +51725,7 @@
             "mes": "2025-08",
             "precio_m2": 7.3,
             "variacion_mensual_pct": 0.5,
-            "variacion_trimestral_pct": 4,
+            "variacion_trimestral_pct": 4.0,
             "variacion_anual_pct": -0.1
           },
           {
@@ -52961,11 +53381,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/cantabria/",
         "summary": {
-          "current_eur_m2": 2154,
-          "variation_mom_pct": 2.6,
-          "variation_qoq_pct": 2.6,
-          "variation_yoy_pct": 2.6,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 2220,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 5.8,
+          "variation_yoy_pct": 18.4,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -52986,6 +53406,20 @@
           }
         ],
         "monthly_history": [
+          {
+            "mes": "2026-06",
+            "precio_m2": 2220,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 5.8,
+            "variacion_anual_pct": 18.4
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 2190,
+            "variacion_mensual_pct": 1.7,
+            "variacion_trimestral_pct": 6.3,
+            "variacion_anual_pct": 19.0
+          },
           {
             "mes": "2026-04",
             "precio_m2": 2154,
@@ -53018,13 +53452,13 @@
             "mes": "2025-12",
             "precio_m2": 2070,
             "variacion_mensual_pct": 0.3,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 18.6
           },
           {
             "mes": "2025-11",
             "precio_m2": 2065,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 5.4,
             "variacion_anual_pct": 18.8
           },
@@ -53032,7 +53466,7 @@
             "mes": "2025-10",
             "precio_m2": 2045,
             "variacion_mensual_pct": 1.8,
-            "variacion_trimestral_pct": 6,
+            "variacion_trimestral_pct": 6.0,
             "variacion_anual_pct": 19.1
           },
           {
@@ -53054,7 +53488,7 @@
             "precio_m2": 1929,
             "variacion_mensual_pct": 2.8,
             "variacion_trimestral_pct": 6.8,
-            "variacion_anual_pct": 17
+            "variacion_anual_pct": 17.0
           },
           {
             "mes": "2025-06",
@@ -54699,11 +55133,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/cantabria/",
         "summary": {
-          "current_eur_m2": 11.5,
-          "variation_mom_pct": 1.3,
-          "variation_qoq_pct": 1.3,
-          "variation_yoy_pct": 1.3,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 11.8,
+          "variation_mom_pct": 2.6,
+          "variation_qoq_pct": 3.8,
+          "variation_yoy_pct": -2.6,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -54725,10 +55159,24 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 11.8,
+            "variacion_mensual_pct": 2.6,
+            "variacion_trimestral_pct": 3.8,
+            "variacion_anual_pct": -2.6
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 11.5,
+            "variacion_mensual_pct": 0.0,
+            "variacion_trimestral_pct": 3.6,
+            "variacion_anual_pct": -3.3
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 11.5,
             "variacion_mensual_pct": 1.3,
-            "variacion_trimestral_pct": 3,
+            "variacion_trimestral_pct": 3.0,
             "variacion_anual_pct": 0.6
           },
           {
@@ -54756,7 +55204,7 @@
             "mes": "2025-12",
             "precio_m2": 10.9,
             "variacion_mensual_pct": 0.8,
-            "variacion_trimestral_pct": -5,
+            "variacion_trimestral_pct": -5.0,
             "variacion_anual_pct": 5.5
           },
           {
@@ -54764,7 +55212,7 @@
             "precio_m2": 10.8,
             "variacion_mensual_pct": -2.3,
             "variacion_trimestral_pct": -10.7,
-            "variacion_anual_pct": 4
+            "variacion_anual_pct": 4.0
           },
           {
             "mes": "2025-10",
@@ -56440,11 +56888,11 @@
       "venta": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/venta/la-rioja/",
         "summary": {
-          "current_eur_m2": 1470,
-          "variation_mom_pct": 1.1,
-          "variation_qoq_pct": 1.1,
-          "variation_yoy_pct": 1.1,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 1509,
+          "variation_mom_pct": 1.4,
+          "variation_qoq_pct": 3.7,
+          "variation_yoy_pct": 9.4,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -56466,11 +56914,25 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 1509,
+            "variacion_mensual_pct": 1.4,
+            "variacion_trimestral_pct": 3.7,
+            "variacion_anual_pct": 9.4
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 1487,
+            "variacion_mensual_pct": 1.2,
+            "variacion_trimestral_pct": 2.8,
+            "variacion_anual_pct": 9.2
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 1470,
             "variacion_mensual_pct": 1.1,
             "variacion_trimestral_pct": 1.3,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2026-03",
@@ -56490,7 +56952,7 @@
             "mes": "2026-01",
             "precio_m2": 1451,
             "variacion_mensual_pct": -0.5,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 8.6
           },
           {
@@ -56504,7 +56966,7 @@
             "mes": "2025-11",
             "precio_m2": 1449,
             "variacion_mensual_pct": 1.9,
-            "variacion_trimestral_pct": 4,
+            "variacion_trimestral_pct": 4.0,
             "variacion_anual_pct": 8.2
           },
           {
@@ -56524,14 +56986,14 @@
           {
             "mes": "2025-08",
             "precio_m2": 1394,
-            "variacion_mensual_pct": 1,
+            "variacion_mensual_pct": 1.0,
             "variacion_trimestral_pct": 2.3,
             "variacion_anual_pct": 3.8
           },
           {
             "mes": "2025-07",
             "precio_m2": 1379,
-            "variacion_mensual_pct": 0,
+            "variacion_mensual_pct": 0.0,
             "variacion_trimestral_pct": 2.3,
             "variacion_anual_pct": 2.9
           },
@@ -58178,11 +58640,11 @@
       "alquiler": {
         "url": "https://www.idealista.com/sala-de-prensa/informes-precio-vivienda/alquiler/la-rioja/",
         "summary": {
-          "current_eur_m2": 9.3,
-          "variation_mom_pct": 1.3,
-          "variation_qoq_pct": 1.3,
-          "variation_yoy_pct": 1.3,
-          "last_updated_month": "2026-04"
+          "current_eur_m2": 9.6,
+          "variation_mom_pct": 2.6,
+          "variation_qoq_pct": 4.4,
+          "variation_yoy_pct": 6.7,
+          "last_updated_month": "2026-06"
         },
         "provinces_table": [
           {
@@ -58204,10 +58666,24 @@
         ],
         "monthly_history": [
           {
+            "mes": "2026-06",
+            "precio_m2": 9.6,
+            "variacion_mensual_pct": 2.6,
+            "variacion_trimestral_pct": 4.4,
+            "variacion_anual_pct": 6.7
+          },
+          {
+            "mes": "2026-05",
+            "precio_m2": 9.4,
+            "variacion_mensual_pct": 0.5,
+            "variacion_trimestral_pct": 5.3,
+            "variacion_anual_pct": 6.1
+          },
+          {
             "mes": "2026-04",
             "precio_m2": 9.3,
             "variacion_mensual_pct": 1.3,
-            "variacion_trimestral_pct": 2,
+            "variacion_trimestral_pct": 2.0,
             "variacion_anual_pct": 4.5
           },
           {
@@ -58229,7 +58705,7 @@
             "precio_m2": 9.1,
             "variacion_mensual_pct": 0.9,
             "variacion_trimestral_pct": 1.9,
-            "variacion_anual_pct": 9
+            "variacion_anual_pct": 9.0
           },
           {
             "mes": "2025-12",
@@ -58257,7 +58733,7 @@
             "precio_m2": 9,
             "variacion_mensual_pct": -1.3,
             "variacion_trimestral_pct": -0.2,
-            "variacion_anual_pct": 10
+            "variacion_anual_pct": 10.0
           },
           {
             "mes": "2025-08",
