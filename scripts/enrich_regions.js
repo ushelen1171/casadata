@@ -144,6 +144,11 @@ for (const r of REGIONS) {
   const aMax = findMax(ah);
 
   enriched[r.id] = {
+    // Текущий срез €/м² — тот же, что питает growth1/cagr. Раньше price/rent
+    // сохранялись из старого data.js (апрель), из-за чего derived yield/pr
+    // расходились с yieldMean из data-history.js. Теперь единый срез.
+    price: vCur,
+    rent:  aCur,
     // ── Цены продажи ─────────────────────────────────────────────────────────
     growth1:  vs.variation_yoy_pct != null ? r1(vs.variation_yoy_pct) : cumPct(v1?.precio_m2, vCur),
     growth5:  cumPct(v5?.precio_m2,  vCur),
@@ -244,7 +249,7 @@ function buildRegionBlock(r) {
   const noteKey = r.airbnbNoteKey ? `, airbnbNoteKey:'${r.airbnbNoteKey}'` : '';
 
   return [
-    `  { id:'${r.id}', name:'${r.name}', price:${r.price}, rent:${r.rent.toFixed(2)},`,
+    `  { id:'${r.id}', name:'${r.name}', price:${fv(e.price)}, rent:${e.rent.toFixed(2)},`,
     `    ...ITP_RATES.${r.id}, color:'${r.color}', airbnbRestricted:${airbnb}${noteKey},`,
     `    growth1:${fv(e.growth1)}, growth5:${fv(e.growth5)}, growth10:${fv(e.growth10)}, growth20:${fv(e.growth20)},`,
     `    cagr3:${fv(e.cagr3)}, cagr5:${fv(e.cagr5)}, cagr10:${fv(e.cagr10)}, cagr20:${fv(e.cagr20)}, cagrMax:${fv(e.cagrMax)}, cagrMaxYears:${fv(e.cagrMaxYears)},`,
