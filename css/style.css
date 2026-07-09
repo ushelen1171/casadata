@@ -1025,7 +1025,7 @@ input[type=range] {
 .calc-advanced-arrow { transition: transform 0.2s; font-size: 11px; }
 .calc-advanced-arrow.open { transform: rotate(180deg); }
 .calc-advanced-content { display: none; }
-.calc-advanced-content.open { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.calc-advanced-content.open { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; align-items: start; }
 .calc-stress-row {
   display: flex; gap: 6px; flex-wrap: wrap;
   padding: 14px 0;
