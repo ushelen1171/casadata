@@ -1986,6 +1986,8 @@ function calc1Update() {
   const inflEl  = document.getElementById('c1v-inflation'); if (inflEl) inflEl.textContent = (inflation*100).toFixed(1) + '%';
   const yrSfx = t('c1_yr_suffix') || '/год';
   document.getElementById('c1v-maint').textContent = (maint*100).toFixed(1) + '%' + yrSfx + ' = ' + fmt(price * maint) + ' €' + yrSfx;
+  const maintHint = document.getElementById('c1-maint-hint');
+  if (maintHint) maintHint.textContent = (t('c1_maint_composition') || '≈ {X} €/мес').replace('{X}', fmt(price * maint / 12));
   document.getElementById('c1v-rent').textContent  = fmt(rent0) + ' €';
   document.getElementById('c1v-inv').textContent   = (invRate*100).toFixed(1) + '%';
   document.getElementById('c1v-down-amt').textContent = '= ' + fmt(downAmt) + ' €';
