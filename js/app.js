@@ -129,7 +129,7 @@ let c1MeanReversionEnabled = false;
 
 // Returns effective combined tax rate (ITP/itpInv + notary) in percent
 function getC1AutoTaxRate(r) {
-  if (c1PropertyType === 'new') return DEFAULTS.newPropertyTaxPct;
+  if (c1PropertyType === 'new') return getNewBuildTaxPct(r, c1NotaryPct);
   const itpBase = c1PrimeraVivienda ? (r.itpHab ?? r.itp) : (r.itpInv ?? r.itp);
   return (itpBase * 100) + c1NotaryPct;
 }
@@ -1560,7 +1560,7 @@ function onCalc1RegionChange() {
   // Reset manual tax override on region change
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
-  document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+  document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(2);
   calc1Update();
 }
 
@@ -1637,7 +1637,7 @@ function setPropertyType1(type, btn) {
   if (id) {
     const r = REGIONS.find(x => x.id === id);
     if (r) {
-      document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+      document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(2);
     }
   } else {
     document.getElementById('c1-tax').value = type === 'new'
@@ -1656,7 +1656,7 @@ function onC1PrimeraChange() {
   const id = document.getElementById('c1-region').value;
   if (id) {
     const r = REGIONS.find(x => x.id === id);
-    if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+    if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(2);
   }
   calc1Update();
 }
@@ -1672,7 +1672,7 @@ function onC1TaxManualChange() {
     const id = document.getElementById('c1-region').value;
     if (id) {
       const r = REGIONS.find(x => x.id === id);
-      if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(1);
+      if (r) document.getElementById('c1-tax').value = getC1AutoTaxRate(r).toFixed(2);
     }
   }
   calc1Update();
@@ -1980,7 +1980,7 @@ function calc1Update() {
   document.getElementById('c1v-term').textContent  = termYears + ' лет';
   document.getElementById('c1v-tax').textContent   = (taxPct*100).toFixed(1) + '%';
   const itpDisplay = document.getElementById('c1-itp-display');
-  if (itpDisplay) itpDisplay.textContent = (taxPct*100).toFixed(1) + '% = ' + fmt(price * taxPct) + ' €';
+  if (itpDisplay) itpDisplay.textContent = (taxPct*100).toFixed(2) + '% = ' + fmt(price * taxPct) + ' €';
   const apprEl  = document.getElementById('c1v-appr');   if (apprEl)  apprEl.textContent  = (appr*100).toFixed(1) + '%';
   const rentgEl = document.getElementById('c1v-rentg');  if (rentgEl) rentgEl.textContent = (rentGrowth*100).toFixed(1) + '%';
   const inflEl  = document.getElementById('c1v-inflation'); if (inflEl) inflEl.textContent = (inflation*100).toFixed(1) + '%';

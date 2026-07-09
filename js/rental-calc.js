@@ -35,8 +35,8 @@ function onCalc2TaxStatusChange() {
     if (r) {
       const taxStatus = document.getElementById('c2-tax-status').value;
       const itpRate = getItpRateByStatus(r, taxStatus);
-      const tax = c2PropertyType === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
-      document.getElementById('c2-tax').value = tax.toFixed(1);
+      const tax = c2PropertyType === 'new' ? getNewBuildTaxPct(r, DEFAULTS.notaryPct) : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
+      document.getElementById('c2-tax').value = tax.toFixed(2);
     }
   }
   calcRental();
@@ -135,8 +135,8 @@ function onCalc2RegionChange() {
   // задал пользователь (или дефолт 3% из initRentalCalc).
   const taxStatus = document.getElementById('c2-tax-status')?.value || 'eu';
   const itpRate   = getItpRateByStatus(r, taxStatus);
-  const tax = c2PropertyType === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
-  document.getElementById('c2-tax').value = tax.toFixed(1);
+  const tax = c2PropertyType === 'new' ? getNewBuildTaxPct(r, DEFAULTS.notaryPct) : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
+  document.getElementById('c2-tax').value = tax.toFixed(2);
   calcRental();
 }
 
@@ -150,8 +150,8 @@ function setPropertyType2(type, btn) {
     if (r) {
       const taxStatus = document.getElementById('c2-tax-status')?.value || 'eu';
       const itpRate = getItpRateByStatus(r, taxStatus);
-      const tax = type === 'new' ? DEFAULTS.newPropertyTaxPct : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
-      document.getElementById('c2-tax').value = tax.toFixed(1);
+      const tax = type === 'new' ? getNewBuildTaxPct(r, DEFAULTS.notaryPct) : (itpRate + (DEFAULTS.notaryPct / 100)) * 100;
+      document.getElementById('c2-tax').value = tax.toFixed(2);
     }
   } else {
     document.getElementById('c2-tax').value = type === 'new'
@@ -274,7 +274,7 @@ function calcRental() {
   document.getElementById('c2v-down').textContent      = (downPct*100).toFixed(0) + '%';
   document.getElementById('c2v-rate').textContent      = (annRate*100).toFixed(1) + '%';
   document.getElementById('c2v-term').textContent      = termYrs + ' лет';
-  document.getElementById('c2v-tax').textContent       = (taxPct*100).toFixed(1) + '%';
+  document.getElementById('c2v-tax').textContent       = (taxPct*100).toFixed(2) + '%';
   document.getElementById('c2v-maint').textContent     = (maint*100).toFixed(1) + '%';
   const maintEl = document.getElementById('c2-maint-breakdown');
   if (maintEl) {
