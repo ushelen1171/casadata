@@ -1609,10 +1609,27 @@ function resetCalc1() {
   onCalc1RegionChange();
 }
 
+// UI-эффект типа объекта (вторичка/новостройка): текст подписи налога и
+// видимость чекбокса «основное жильё». Расчёт и ставки не трогает — только
+// data-i18n лейбла (setLang потом сам подставит нужный язык) и display чекбокса.
+function applyC1PropertyTypeUI(type) {
+  const taxLabelEl = document.getElementById('c1-tax-label');
+  if (taxLabelEl) {
+    const key = type === 'new' ? 'c1_tax_label_new' : 'c1_tax_label_secondary';
+    taxLabelEl.setAttribute('data-i18n', key);
+    taxLabelEl.textContent = t(key);
+  }
+  // Чекбокс основного жилья влияет только на ITP (вторичка). У новостройки (IVA)
+  // льготы основного жилья нет — скрываем блок, состояние галочки не сбрасываем.
+  const primeraRow = document.getElementById('c1-primera-row');
+  if (primeraRow) primeraRow.style.display = type === 'new' ? 'none' : '';
+}
+
 function setPropertyType1(type, btn) {
   c1PropertyType = type;
   document.querySelectorAll('#c1-proptype-btns .calc-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  applyC1PropertyTypeUI(type);
   // Re-apply auto tax rate (clears manual override)
   const manualEl = document.getElementById('c1-tax-manual');
   if (manualEl) manualEl.value = '';
