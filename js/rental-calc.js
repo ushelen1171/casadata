@@ -21,6 +21,27 @@ const fmt = v => Math.round(v).toLocaleString('ru');
 
 const IRPF_MARGINAL_RATE_DEFAULT = DEFAULTS.irpfMarginalRate;
 
+// Предельная ставка IRPF резидента, выбранная по диапазону годового дохода.
+// Дефолт = типичный инвестор со второй квартирой (диапазон 20 200–35 200 → 30%).
+// Применяется ко всем стратегиям резидента (Держу/Сдаю/Посуточно).
+let c2IrpfRate = IRPF_MARGINAL_RATE_DEFAULT;
+
+// ---- Выбор диапазона дохода резидента → предельная ставка IRPF ----
+function setC2IrpfRate(rate, btn) {
+  c2IrpfRate = rate;
+  document.querySelectorAll('#c2-irpf-btns .calc-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  calcRental();
+}
+
+// ---- Показ диапазонов дохода только для резидента (у EU/не-EU плоские ставки) ----
+function updateC2IrpfIncomeVisibility() {
+  const row = document.getElementById('c2-irpf-income-row');
+  if (!row) return;
+  const taxStatus = document.getElementById('c2-tax-status')?.value || 'resident';
+  row.style.display = taxStatus === 'resident' ? '' : 'none';
+}
+
 // ---- Tax helper: ITP rate by residency ----
 function getItpRateByStatus(r, taxStatus) {
   const isNonResident = taxStatus === 'eu' || taxStatus === 'noneu';
@@ -39,6 +60,7 @@ function onCalc2TaxStatusChange() {
       document.getElementById('c2-tax').value = tax.toFixed(2);
     }
   }
+  updateC2IrpfIncomeVisibility();
   calcRental();
 }
 
@@ -113,6 +135,7 @@ function initRentalCalc() {
     document.getElementById('c2-platform').value = DEFAULTS.platformFeePct;
     document.getElementById('c2-tax').value      = DEFAULTS.defaultTaxFallbackSecondary;
   }
+  updateC2IrpfIncomeVisibility();
   if (!sel.value) {
     sel.value = 'madrid';
     onCalc2RegionChange();
@@ -335,7 +358,7 @@ function calcRental() {
   const valorCatastral = price * cadastralRatio;
 
   // Налог на вменённый доход: без вычетов, только ставка по статусу
-  const imputedTaxRate = taxStatus === 'resident' ? IRPF_MARGINAL_RATE_DEFAULT : taxStatus === 'noneu' ? DEFAULTS.irnrRateNonEU : DEFAULTS.irnrRateEU;
+  const imputedTaxRate = taxStatus === 'resident' ? c2IrpfRate : taxStatus === 'noneu' ? DEFAULTS.irnrRateNonEU : DEFAULTS.irnrRateEU;
   const imputedTaxMo   = valorCatastral * DEFAULTS.imputedIncomeRate * imputedTaxRate / 12;
 
   // Состояние стратегий
@@ -408,7 +431,7 @@ function calcRental() {
         const deductions = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_rent) + rentMgmtCost;
         const taxBase    = Math.max(0, rentGross - deductions);
         if (taxBase === 0) residentDeductionsExceededCount++;
-        rentTax = taxBase * DEFAULTS.longTermRentalIrpfReduction * IRPF_MARGINAL_RATE_DEFAULT;
+        rentTax = taxBase * DEFAULTS.longTermRentalIrpfReduction * c2IrpfRate;
       } else if (taxStatus === 'eu') {
         // IRNR: резидент ЕС — вычеты применяются, льготы нет
         const deductions = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_rent) + rentMgmtCost;
@@ -433,8 +456,14 @@ function calcRental() {
       // ── «Посуточно» ──
       const airbnbNet = airbnb * (1 - platform);
       let airbnbTax = 0;
-      if (taxStatus === 'resident' || taxStatus === 'eu') {
-        // IRPF/IRNR EU: вычеты применяются; для краткосрочной аренды льготы 50% нет
+      if (taxStatus === 'resident') {
+        // IRPF: вычеты применяются; туристическая ≠ жильё — льготы 50% НЕТ.
+        // Ставка — предельная по доходу резидента (не плоские 19% EU).
+        const deductionsA = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_airbnb);
+        const taxBaseA    = Math.max(0, airbnbNet - deductionsA);
+        airbnbTax = taxBaseA * c2IrpfRate;
+      } else if (taxStatus === 'eu') {
+        // IRNR EU: вычеты применяются; для краткосрочной аренды льготы 50% нет
         const deductionsA = calcMonthlyResidentDeductions(valorCatastral, interestThisMo, maintMo_airbnb);
         const taxBaseA    = Math.max(0, airbnbNet - deductionsA);
         airbnbTax = taxBaseA * DEFAULTS.irnrRateEU;

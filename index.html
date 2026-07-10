@@ -863,6 +863,20 @@
         <option value="noneu" data-i18n="tax_noneu">Нерезидент (не ЕС)</option>
       </select>
     </div>
+    <!-- Диапазон годового дохода резидента → предельная ставка IRPF. Только для resident. -->
+    <div class="slider-row" id="c2-irpf-income-row" style="grid-column:1/-1;">
+      <div class="slider-label-row">
+        <span class="slider-label" data-i18n="c2_irpf_income_label">Ваш годовой доход (кроме этой аренды)</span>
+      </div>
+      <div class="calc-btn-group" id="c2-irpf-btns">
+        <button class="calc-btn"        onclick="setC2IrpfRate(0.19,this)">&lt; 12 450 €</button>
+        <button class="calc-btn"        onclick="setC2IrpfRate(0.24,this)">12 450–20 200 €</button>
+        <button class="calc-btn active" onclick="setC2IrpfRate(0.30,this)">20 200–35 200 €</button>
+        <button class="calc-btn"        onclick="setC2IrpfRate(0.37,this)">35 200–60 000 €</button>
+        <button class="calc-btn"        onclick="setC2IrpfRate(0.45,this)">60 000–300 000 €</button>
+        <button class="calc-btn"        onclick="setC2IrpfRate(0.47,this)">&gt; 300 000 €</button>
+      </div>
+    </div>
   </div>
 
   <!-- Advanced (collapsible) -->
@@ -1242,8 +1256,8 @@
 <script src="js/itp-rates.js?v=a6fcafec"></script>
 <script src="js/data.js?v=4e2587bb"></script>
 <script src="js/data-history.js?v=d75e69bf"></script>
-<script src="js/i18n.js?v=growthnote1"></script>
-<script src="js/rental-calc.js?v=6de035b3"></script>
+<script src="js/i18n.js?v=irpfrange1"></script>
+<script src="js/rental-calc.js?v=irpfrange1"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
 <script src="js/app.js?v=fb165825"></script>
