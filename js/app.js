@@ -1934,6 +1934,7 @@ function c1RunSimulation(p) {
     propValFinal:         propVal,
     loanBalFinal:         loanBal,
     renterPortfolioFinal: renterPortfolio,
+    buyerPortfolioFinal:  buyerPortfolio,
     totalInterestPaid, totalMaintPaid,
     yBuyerBurn, yBuyerPrincipal, yRenterRent,
   };
@@ -1966,7 +1967,7 @@ function calc1Update() {
   const {
     buyData, rentData, finalDiff, parityYear, roi,
     monthlyMortgage, initialCash, downAmt, taxAmt,
-    propValFinal, loanBalFinal, renterPortfolioFinal,
+    propValFinal, loanBalFinal, renterPortfolioFinal, buyerPortfolioFinal,
     totalInterestPaid, totalMaintPaid,
     yBuyerBurn, yBuyerPrincipal, yRenterRent,
   } = sim;
@@ -2018,7 +2019,7 @@ function calc1Update() {
   c1CycleImpact = c1ComputeCycleImpact();
   updateMeanReversionAdvancedRow();
   updateC1CycleCard(getCurrentC1Region());
-  fillC1Breakdown(propValFinal, loanBalFinal, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
+  fillC1Breakdown(propValFinal, loanBalFinal, buyerPortfolioFinal, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // 6. График: лейблы зависят от i18n, поэтому строим здесь.
   const labels = [];
@@ -2601,11 +2602,13 @@ function updateC1ChartSub() {
   }
 }
 
-function fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
+function fillC1Breakdown(finalPropVal, loanBal, buyerPortfolio, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
   const fmt = v => Math.round(v).toLocaleString('ru');
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  const equity = finalPropVal - loanBal;
+  // Капитал покупателя = equity жилья + инвест-портфель (симметричная модель).
+  // Совпадает с кривой покупателя на графике (buyData[horizon]).
+  const equity = finalPropVal - loanBal + buyerPortfolio;
   const initialCash = downAmt + taxAmt;
 
   // Total rent paid (geometric series, monthly compounding)
@@ -2617,6 +2620,7 @@ function fillC1Breakdown(finalPropVal, loanBal, portfolio, downAmt, taxAmt, tota
 
   set('c1b-prop-val',   '+' + fmt(finalPropVal) + ' €');
   set('c1b-debt',       loanBal > 1 ? '−' + fmt(loanBal) + ' €' : '0 €');
+  set('c1b-buyer-portfolio', buyerPortfolio > 1 ? '+' + fmt(buyerPortfolio) + ' €' : '0 €');
   set('c1b-equity',     fmt(equity) + ' €');
   set('c1b-down-itp',   '−' + fmt(initialCash) + ' €');
   set('c1b-interest',   '−' + fmt(totalInterestPaid) + ' €');

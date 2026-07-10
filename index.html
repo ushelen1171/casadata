@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=da24d75a">
+<link rel="stylesheet" href="css/style.css?v=irpfcollapse1">
 <style>
   /* Принудительное снятие рамок — встроено в HTML, не зависит от кеша */
   .card, .card-sm, .result-card, .flip-card, .section-card {
@@ -547,6 +547,10 @@
             <span data-i18n="c1_bkd_debt">Остаток долга</span>
             <span id="c1b-debt" class="c1-bkd-negative">—</span>
           </div>
+          <div class="c1-breakdown-row">
+            <span><span data-i18n="c1_bkd_buyer_portfolio">Инвест-портфель покупателя</span> <span class="info-icon" data-i18n-title="c1_bkd_buyer_portfolio_tip" title="">ⓘ</span></span>
+            <span id="c1b-buyer-portfolio" class="c1-bkd-positive">—</span>
+          </div>
           <div class="c1-breakdown-row c1-breakdown-highlight">
             <span data-i18n="c1_bkd_equity">Чистый капитал</span>
             <span id="c1b-equity">—</span>
@@ -863,18 +867,20 @@
         <option value="noneu" data-i18n="tax_noneu">Нерезидент (не ЕС)</option>
       </select>
     </div>
-    <!-- Диапазон годового дохода резидента → предельная ставка IRPF. Только для resident. -->
+    <!-- Диапазон годового дохода резидента → предельная ставка IRPF. Только для resident. Сворачивается. -->
     <div class="slider-row" id="c2-irpf-income-row" style="grid-column:1/-1;">
-      <div class="slider-label-row">
-        <span class="slider-label" data-i18n="c2_irpf_income_label">Ваш годовой доход (кроме этой аренды)</span>
+      <div class="calc-advanced-toggle" onclick="toggleCalcSection('c2-irpf-content','c2-irpf-arrow')">
+        <span class="calc-advanced-arrow" id="c2-irpf-arrow">▶</span>
+        <span data-i18n="c2_irpf_income_label">Ваш годовой доход (кроме этой аренды)</span>
       </div>
-      <div class="calc-btn-group" id="c2-irpf-btns">
-        <button class="calc-btn"        onclick="setC2IrpfRate(0.19,this)">&lt; 12 450 €</button>
-        <button class="calc-btn"        onclick="setC2IrpfRate(0.24,this)">12 450–20 200 €</button>
-        <button class="calc-btn active" onclick="setC2IrpfRate(0.30,this)">20 200–35 200 €</button>
-        <button class="calc-btn"        onclick="setC2IrpfRate(0.37,this)">35 200–60 000 €</button>
-        <button class="calc-btn"        onclick="setC2IrpfRate(0.45,this)">60 000–300 000 €</button>
-        <button class="calc-btn"        onclick="setC2IrpfRate(0.47,this)">&gt; 300 000 €</button>
+      <div class="calc-collapse" id="c2-irpf-content">
+        <div class="calc-btn-group" id="c2-irpf-btns" style="margin-top:8px;">
+          <button class="calc-btn"        onclick="setC2IrpfRate(0.24,this)">12 450–20 200 €</button>
+          <button class="calc-btn active" onclick="setC2IrpfRate(0.30,this)">20 200–35 200 €</button>
+          <button class="calc-btn"        onclick="setC2IrpfRate(0.37,this)">35 200–60 000 €</button>
+          <button class="calc-btn"        onclick="setC2IrpfRate(0.45,this)">60 000–300 000 €</button>
+          <button class="calc-btn"        onclick="setC2IrpfRate(0.47,this)">&gt; 300 000 €</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1256,11 +1262,11 @@
 <script src="js/itp-rates.js?v=a6fcafec"></script>
 <script src="js/data.js?v=4e2587bb"></script>
 <script src="js/data-history.js?v=d75e69bf"></script>
-<script src="js/i18n.js?v=irpfrange1"></script>
-<script src="js/rental-calc.js?v=irpfrange1"></script>
+<script src="js/i18n.js?v=aa27f751"></script>
+<script src="js/rental-calc.js?v=aae84c96"></script>
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
-<script src="js/app.js?v=fb165825"></script>
+<script src="js/app.js?v=166fcc5f"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>
