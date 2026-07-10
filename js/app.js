@@ -1992,7 +1992,7 @@ function calc1Update() {
   document.getElementById('c1v-inv').textContent   = (invRate*100).toFixed(1) + '%';
   document.getElementById('c1v-down-amt').textContent = '= ' + fmt(downAmt) + ' €';
   document.getElementById('c1v-tax-amt').textContent  = '= ' + fmt(taxAmt) + ' €';
-  document.getElementById('c1v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' €/мес';
+  document.getElementById('c1v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' ' + (t('unit_eur_mo') || '€/мес');
 
   // 3. Подпись «sell-at-end» — видна, когда флажок включён.
   const sellNoteEl = document.getElementById('c1-sell-note');

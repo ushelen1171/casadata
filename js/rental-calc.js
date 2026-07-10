@@ -295,7 +295,8 @@ function calcRental() {
     const sAirbnb = t('c2_s_airbnb') || 'Посуточно';
     const airbnbItems = (t('c2_airbnb_cost_items') || 'содержание {M} + износ мебели {W} + уборка {C}')
       .replace('{M}', fmtM(price * maint / 12)).replace('{W}', fmtM(airbnbFurnitureMo)).replace('{C}', fmtM(airbnbCleaningMo));
-    maintEl.textContent = `${lbl} ${sLive} ${mLive} €/мес · ${sRent} ${mRent} €/мес · ${sAirbnb} ${mAirbnb} €/мес (${airbnbItems})`;
+    const eurMo = t('unit_eur_mo') || '€/мес';
+    maintEl.textContent = `${lbl} ${sLive} ${mLive} ${eurMo} · ${sRent} ${mRent} ${eurMo} · ${sAirbnb} ${mAirbnb} ${eurMo} (${airbnbItems})`;
   }
   document.getElementById('c2v-appr').textContent      = (appr*100).toFixed(1) + '%';
   document.getElementById('c2v-long-rent').textContent = fmt(longRent) + ' €';
@@ -319,7 +320,7 @@ function calcRental() {
   } else if (loan > 0) {
     monthlyMortgage = loan / nPay;
   }
-  document.getElementById('c2v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' €/мес';
+  document.getElementById('c2v-rate-pmt').textContent = '≈ ' + fmt(monthlyMortgage) + ' ' + (t('unit_eur_mo') || '€/мес');
 
   // Год 0: покупатель стартует с equity, индекс стартует ВЫШЕ (с полной суммой входа)
   const initialCash = downAmt + taxAmt;
@@ -979,7 +980,7 @@ function buildCalc2Summary(names, bestKey, finalEquity, beatsIndexYear, avgRentC
   el.innerHTML = `<strong>${t('c1_sum_intro')||'Вывод:'}</strong>
     ${t('c2_sum_best')||'Лучшая стратегия за'} <strong>${horizon} ${t('c1_years')||'лет'}</strong> —
     <strong>${names[bestKey]}</strong> (${fmt(finalEquity[bestKey])} €, ${t('c2_card_roi')||'Доходность'} ${roiAnn.toFixed(1)}% ${t('c1_per_year')||'годовых'}).
-    ${t('c2_sum_rent_cf')||'Денежный поток от долгосрочной аренды (год 1):'} <strong>${(avgRentCF>=0?'+':'') + fmt(avgRentCF)} €/мес</strong>.
-    ${t('c2_sum_airbnb_cf')||'Денежный поток Airbnb (год 1):'} <strong>${(avgAirbnbCF>=0?'+':'') + fmt(avgAirbnbCF)} €/мес</strong>.
+    ${t('c2_sum_rent_cf')||'Денежный поток от долгосрочной аренды (год 1):'} <strong>${(avgRentCF>=0?'+':'') + fmt(avgRentCF)} ${t('unit_eur_mo')||'€/мес'}</strong>.
+    ${t('c2_sum_airbnb_cf')||'Денежный поток Airbnb (год 1):'} <strong>${(avgAirbnbCF>=0?'+':'') + fmt(avgAirbnbCF)} ${t('unit_eur_mo')||'€/мес'}</strong>.
     ${beatsStr}${deductionNote}`;
 }
