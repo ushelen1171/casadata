@@ -270,6 +270,13 @@ function calcRental() {
   const taxStatus = document.getElementById('c2-tax-status').value;
   const horizon   = c2Horizon;
 
+  // Посуточно — расходы разведены на честные статьи (шаг 2):
+  //   база = price × maint / 12 (0.5%, как Держу);
+  //   износ мебели = фикс, occupancy НЕ применяется (амортизация не зависит от загрузки);
+  //   уборка = стоимость_заезда × заездов_в_месяц × occupancy (переменная).
+  const airbnbFurnitureMo = price * DEFAULTS.furnitureDepreciationPct / 100 / 12;
+  const airbnbCleaningMo  = DEFAULTS.cleaningPerStay * (30 / DEFAULTS.avgStayNights) * occRate;
+
   document.getElementById('c2v-price').textContent     = fmt(price) + ' €';
   document.getElementById('c2v-down').textContent      = (downPct*100).toFixed(0) + '%';
   document.getElementById('c2v-rate').textContent      = (annRate*100).toFixed(1) + '%';
@@ -281,12 +288,14 @@ function calcRental() {
     const fmtM = v => Math.round(v);
     const mLive   = fmtM(price * maint / 12);
     const mRent   = fmtM(price * maint * DEFAULTS.longTermMaintMultiplier / 12);
-    const mAirbnb = fmtM(price * maint * DEFAULTS.airbnbMaintMultiplier / 12);
+    const mAirbnb = fmtM(price * maint / 12 + airbnbFurnitureMo + airbnbCleaningMo);
     const lbl = t('c2_maint_breakdown') || 'Содержание:';
     const sLive   = t('c2_s_live')   || 'Держу';
     const sRent   = t('c2_s_rent')   || 'Сдаю';
     const sAirbnb = t('c2_s_airbnb') || 'Посуточно';
-    maintEl.textContent = `${lbl} ${sLive} ${mLive} €/мес · ${sRent} ${mRent} €/мес · ${sAirbnb} ${mAirbnb} €/мес`;
+    const airbnbItems = (t('c2_airbnb_cost_items') || 'содержание {M} + износ мебели {W} + уборка {C}')
+      .replace('{M}', fmtM(price * maint / 12)).replace('{W}', fmtM(airbnbFurnitureMo)).replace('{C}', fmtM(airbnbCleaningMo));
+    maintEl.textContent = `${lbl} ${sLive} ${mLive} €/мес · ${sRent} ${mRent} €/мес · ${sAirbnb} ${mAirbnb} €/мес (${airbnbItems})`;
   }
   document.getElementById('c2v-appr').textContent      = (appr*100).toFixed(1) + '%';
   document.getElementById('c2v-long-rent').textContent = fmt(longRent) + ' €';
@@ -295,7 +304,7 @@ function calcRental() {
   document.getElementById('c2v-mgmt').textContent      = (mgmt*100).toFixed(0) + '%';
   document.getElementById('c2v-night').textContent     = fmt(nightRate) + ' €';
   document.getElementById('c2v-occ').textContent       = (occRate*100).toFixed(0) + '%';
-  document.getElementById('c2v-platform').textContent  = (platform*100).toFixed(0) + '%';
+  document.getElementById('c2v-platform').textContent  = (platform*100).toFixed(1) + '%';
 
   const downAmt = price * downPct;
   const taxAmt  = price * taxPct;
@@ -385,7 +394,7 @@ function calcRental() {
       // Используем price (цена покупки), а не propVal — реальные расходы растут с инфляцией, а не с рынком
       const maintMo_live   = price * maint / 12;
       const maintMo_rent   = price * maint * DEFAULTS.longTermMaintMultiplier / 12;
-      const maintMo_airbnb = price * maint * DEFAULTS.airbnbMaintMultiplier / 12;
+      const maintMo_airbnb = price * maint / 12 + airbnbFurnitureMo + airbnbCleaningMo;
 
       // ── «Держу»: платит ипотеку + содержание, дохода нет ──
 
