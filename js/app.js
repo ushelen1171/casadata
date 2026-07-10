@@ -1903,11 +1903,12 @@ function c1RunSimulation(p) {
 
   // sell-at-end: корректирует только финальную точку (промежуточные годы —
   // «бумажный» капитал, при удержании квартиры налог не платится).
+  let cgTax = 0, sellingCosts = 0;
   if (sellAtEnd) {
     const salePrice    = propVal;
     const capitalGain  = Math.max(0, salePrice - price);
-    const cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
-    const sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
+    cgTax        = capitalGain * DEFAULTS.capitalGainsTaxResident;
+    sellingCosts = salePrice * DEFAULTS.sellingCostsPct;
     const inflFactorH  = priceMode === 'real' ? Math.pow(1 + inflation, horizon) : 1;
     const buyRaw      = (salePrice - loanBal - cgTax - sellingCosts + buyerPortfolio) / inflFactorH;
     buyData[horizon]  = Math.round(buyRaw);
@@ -1935,6 +1936,8 @@ function c1RunSimulation(p) {
     loanBalFinal:         loanBal,
     renterPortfolioFinal: renterPortfolio,
     buyerPortfolioFinal:  buyerPortfolio,
+    cgTaxFinal:           cgTax,
+    sellingCostsFinal:    sellingCosts,
     totalInterestPaid, totalMaintPaid,
     yBuyerBurn, yBuyerPrincipal, yRenterRent,
   };
@@ -1968,6 +1971,7 @@ function calc1Update() {
     buyData, rentData, finalDiff, parityYear, roi,
     monthlyMortgage, initialCash, downAmt, taxAmt,
     propValFinal, loanBalFinal, renterPortfolioFinal, buyerPortfolioFinal,
+    cgTaxFinal, sellingCostsFinal,
     totalInterestPaid, totalMaintPaid,
     yBuyerBurn, yBuyerPrincipal, yRenterRent,
   } = sim;
@@ -2019,7 +2023,7 @@ function calc1Update() {
   c1CycleImpact = c1ComputeCycleImpact();
   updateMeanReversionAdvancedRow();
   updateC1CycleCard(getCurrentC1Region());
-  fillC1Breakdown(propValFinal, loanBalFinal, buyerPortfolioFinal, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
+  fillC1Breakdown(propValFinal, loanBalFinal, buyerPortfolioFinal, cgTaxFinal, sellingCostsFinal, sellAtEnd, renterPortfolioFinal, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon);
 
   // 6. График: лейблы зависят от i18n, поэтому строим здесь.
   const labels = [];
@@ -2602,13 +2606,15 @@ function updateC1ChartSub() {
   }
 }
 
-function fillC1Breakdown(finalPropVal, loanBal, buyerPortfolio, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
+function fillC1Breakdown(finalPropVal, loanBal, buyerPortfolio, cgTax, sellingCosts, sellAtEnd, portfolio, downAmt, taxAmt, totalInterestPaid, totalMaintPaid, rent0, rentGrowth, horizon) {
   const fmt = v => Math.round(v).toLocaleString('ru');
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const showRow = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
 
-  // Капитал покупателя = equity жилья + инвест-портфель (симметричная модель).
-  // Совпадает с кривой покупателя на графике (buyData[horizon]).
-  const equity = finalPropVal - loanBal + buyerPortfolio;
+  // Капитал покупателя = equity жилья + инвест-портфель − налог на прирост − издержки
+  // продажи (последние два ≠0 только при «обналичить в конце»). Совпадает с кривой
+  // покупателя на графике (buyData[horizon]) и карточкой «разница».
+  const equity = finalPropVal - loanBal + buyerPortfolio - cgTax - sellingCosts;
   const initialCash = downAmt + taxAmt;
 
   // Total rent paid (geometric series, monthly compounding)
@@ -2621,6 +2627,10 @@ function fillC1Breakdown(finalPropVal, loanBal, buyerPortfolio, portfolio, downA
   set('c1b-prop-val',   '+' + fmt(finalPropVal) + ' €');
   set('c1b-debt',       loanBal > 1 ? '−' + fmt(loanBal) + ' €' : '0 €');
   set('c1b-buyer-portfolio', buyerPortfolio > 1 ? '+' + fmt(buyerPortfolio) + ' €' : '0 €');
+  set('c1b-cgtax',      '−' + fmt(cgTax) + ' €');
+  set('c1b-selling',    '−' + fmt(sellingCosts) + ' €');
+  showRow('c1b-cgtax-row',   sellAtEnd);
+  showRow('c1b-selling-row', sellAtEnd);
   set('c1b-equity',     fmt(equity) + ' €');
   set('c1b-down-itp',   '−' + fmt(initialCash) + ' €');
   set('c1b-interest',   '−' + fmt(totalInterestPaid) + ' €');
