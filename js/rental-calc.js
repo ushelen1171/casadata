@@ -144,6 +144,52 @@ function initRentalCalc() {
   }
 }
 
+// ---- Reset all Calc 2 inputs to defaults (зеркало resetCalc1) ----
+function resetCalc2() {
+  // Слайдеры → дефолты (price/rent/night/tax переустановит onCalc2RegionChange по региону).
+  document.getElementById('c2-down').value     = DEFAULTS.downPaymentPct;
+  document.getElementById('c2-rate').value     = DEFAULTS.mortgageRate;
+  document.getElementById('c2-term').value     = DEFAULTS.mortgageTerm;
+  document.getElementById('c2-maint').value    = DEFAULTS.maintenancePct;
+  document.getElementById('c2-appr').value     = DEFAULTS.apprDefault;
+  document.getElementById('c2-rentg').value    = DEFAULTS.rentGrowthDefault;
+  document.getElementById('c2-vacancy').value  = DEFAULTS.vacancyPct;
+  document.getElementById('c2-occ').value      = DEFAULTS.occupancyPct;
+  document.getElementById('c2-mgmt').value     = DEFAULTS.managementFeePct;
+  document.getElementById('c2-platform').value = DEFAULTS.platformFeePct;
+
+  // Состояние переключателей → дефолты (как при загрузке).
+  c2Horizon        = DEFAULTS.horizonYears;
+  c2PriceMode      = 'nominal';
+  c2Reinvest       = false;
+  c2PropertyType   = 'secondary';
+  c2IsCash         = false;
+  c2ActiveStrategy = 'rent';
+  c2IrpfRate       = IRPF_MARGINAL_RATE_DEFAULT;
+  const taxStatusEl = document.getElementById('c2-tax-status');
+  if (taxStatusEl) taxStatusEl.value = 'resident';
+
+  // Восстановить строки ипотеки (могли быть скрыты режимом «За наличные»).
+  ['c2-down-row', 'c2-rate-row', 'c2-term-row'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = '';
+  });
+
+  // Активные кнопки групп → дефолты.
+  // Горизонт: у Калк 2 нет кнопки 25 — активной остаётся дефолтная «20 лет» (как в HTML), расчёт по c2Horizon.
+  document.querySelectorAll('#c2-horizon-btns .calc-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === 20));
+  document.querySelectorAll('#c2-mode-btns     .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#c2-reinvest-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#c2-proptype-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#c2-preset-btns   .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#c2-strategy-btns .calc-btn').forEach((b, i) => b.classList.toggle('active', i === 1)); // «Сдаю»
+  document.querySelectorAll('#c2-irpf-btns     .calc-btn').forEach(b => b.classList.toggle('active', /0\.30/.test(b.getAttribute('onclick') || '')));
+
+  updateC2IrpfIncomeVisibility();
+  updateAirbnbWarning();
+  // Переустановить региональные значения (цена/аренда/ночь/налог) и пересчитать.
+  onCalc2RegionChange();
+}
+
 function onCalc2RegionChange() {
   const id = document.getElementById('c2-region').value;
   if (!id) return;
