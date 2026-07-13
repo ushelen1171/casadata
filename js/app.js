@@ -2338,6 +2338,22 @@ function updateC1ChartLegend() {
 // Цвет фазы цикла — те же оттенки, что CSS-переменные проекта.
 const C1_CYCLE_COLORS = { above: '#5cb88a', below: '#e05c5c', neutral: '#c9a84c' };
 
+// Ростовые числа карточки Cycle Position — YoY из Идеалиста (growth1 / rentGrowth1),
+// как в рыночной таблице/карте. Trailing-поля (priceGrowth12m/rentGrowth12m/
+// divergence12m) остаются в data-history.js для Динамики — здесь не используются.
+// Класс разрыва считаем по тем же порогам ±2 п.п., что и trailing в data-history.
+function c1CycleYoY(region) {
+  const price = region.growth1;
+  const rent  = region.rentGrowth1;
+  const has   = typeof price === 'number' && typeof rent === 'number';
+  const div   = has ? price - rent : null;
+  const cls   = div === null ? null
+    : div >  2 ? 'prices_outpace'
+    : div < -2 ? 'rents_outpace'
+    : 'synchronous';
+  return { price, rent, div, cls, has };
+}
+
 // Обновляет 4-ю карточку (Cycle Position) на основе region.yieldZScore / cyclePhase.
 // Если данные истории ещё не загружены (yieldMean undefined) — карточка скрыта.
 function updateC1CycleCard(region) {
@@ -2384,7 +2400,8 @@ function updateC1CycleCard(region) {
   const divEl = document.getElementById('c1-cycle-divergence');
   const divider = document.querySelector('#c1-cycle-card .c1-cycle-divider');
   if (divEl) {
-    if (region.divergence12m === null || typeof region.divergence12m !== 'number') {
+    const yoy = c1CycleYoY(region);
+    if (!yoy.has) {
       divEl.style.display = 'none';
       if (divider) divider.style.display = 'none';
     } else {
@@ -2394,8 +2411,8 @@ function updateC1CycleCard(region) {
         prices_outpace: 'c1_cycle_div_prices',
         rents_outpace:  'c1_cycle_div_rents',
         synchronous:    'c1_cycle_div_sync',
-      }[region.divergenceClass];
-      const abs = Math.abs(region.divergence12m).toFixed(1);
+      }[yoy.cls];
+      const abs = Math.abs(yoy.div).toFixed(1);
       const valHtml = `<span class="c1-cycle-div-num">${abs} ${t('c1_pp_short')}</span>`;
       divEl.innerHTML = (t(phraseKey) || '').replace('{x}', valHtml);
     }
@@ -2405,16 +2422,17 @@ function updateC1CycleCard(region) {
 }
 
 // Единый блок «Где рынок сейчас»: заголовок + 3 абзаца
-// (уровень от cyclePhase / z, движение от divergenceClass, общая оговорка).
+// (уровень от cyclePhase / z, движение — YoY через c1CycleYoY, общая оговорка).
 // Сетка popup Cycle Position: Уровень + Изменение за год + Вывод.
 // Уровень показывается всегда (нужен только yieldMean). Изменение и часть
-// вывода про движение скрываются, если divergence12m === null.
+// вывода про движение скрываются, если YoY (growth1/rentGrowth1) отсутствует.
 function fillCyclePhaseBlock(region) {
   const block = document.getElementById('cy-phase-block');
   if (!block) return;
   block.style.display = '';
 
-  const hasMovement = region.divergence12m !== null && typeof region.divergence12m === 'number';
+  const yoy = c1CycleYoY(region);
+  const hasMovement = yoy.has;
 
   // ── Группа 1: Уровень ────────────────────────────────────────────
   const z = region.yieldZScore;
@@ -2444,16 +2462,16 @@ function fillCyclePhaseBlock(region) {
   // ── Группа 2: Изменение за год ───────────────────────────────────
   let changeHTML = '';
   if (hasMovement) {
-    const pSign = region.priceGrowth12m >= 0 ? '+' : '';
-    const rSign = region.rentGrowth12m  >= 0 ? '+' : '';
-    const abs   = Math.abs(region.divergence12m).toFixed(1);
+    const pSign = yoy.price >= 0 ? '+' : '';
+    const rSign = yoy.rent  >= 0 ? '+' : '';
+    const abs   = Math.abs(yoy.div).toFixed(1);
     let gapValue, gapExplain;
-    if (region.divergenceClass === 'synchronous') {
+    if (yoy.cls === 'synchronous') {
       gapValue   = '';
       gapExplain = t('c1_grid_gap_sync') || 'вровень';
     } else {
       gapValue   = `<strong>${abs}</strong> ${t('c1_pp_short')}`;
-      gapExplain = t(region.divergenceClass === 'prices_outpace'
+      gapExplain = t(yoy.cls === 'prices_outpace'
         ? 'c1_grid_gap_prices' : 'c1_grid_gap_rents');
     }
 
@@ -2462,12 +2480,12 @@ function fillCyclePhaseBlock(region) {
       <div class="cycle-grid-title">${t('c1_grid_change_title')}</div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_price_change')}</span>
-        <span class="cycle-grid-value">${pSign}${region.priceGrowth12m.toFixed(1)}%</span>
+        <span class="cycle-grid-value">${pSign}${yoy.price.toFixed(1)}%</span>
         <span class="cycle-grid-explain"></span>
       </div>
       <div class="cycle-grid-row">
         <span class="cycle-grid-label">${t('c1_grid_rent_change')}</span>
-        <span class="cycle-grid-value">${rSign}${region.rentGrowth12m.toFixed(1)}%</span>
+        <span class="cycle-grid-value">${rSign}${yoy.rent.toFixed(1)}%</span>
         <span class="cycle-grid-explain"></span>
       </div>
       <div class="cycle-grid-row">
