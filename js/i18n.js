@@ -8,7 +8,7 @@ const TRANSLATIONS = {
   ru: {
     // NAV
     nav_market:    'Рынок',
-    nav_heatmap:   'Динамика цен',
+    nav_heatmap:   'Динамика',
     nav_pr:        'P/R Карта',
     nav_calc:      'Купить или арендовать?',
     nav_rental:    'Доход от недвижимости',
@@ -56,15 +56,6 @@ const TRANSLATIONS = {
     yoy_growth:    'Рост год к году',
     growth_leader: 'Лидер роста',
     most_expensive:'Самый дорогой',
-
-    // HEATMAP
-    hm_title:      'Скорость роста цен 2016–2025',
-    hm_sub:        'Годовое изменение цен, %. Источник: INE IPV',
-    tab_growth:    'Рост цен %',
-    tab_abs:       'Абсолютные цены €/м²',
-    region_trend:  'Динамика конкретного региона',
-    add_region:    '+ Добавить регион',
-    reset:         'Сбросить',
 
     // P/R
     pr_title:      'P/R<sub>adj</sub> — окупаемость покупки',
@@ -573,7 +564,7 @@ const TRANSLATIONS = {
 
   en: {
     nav_market:    'Market',
-    nav_heatmap:   'Price Trends',
+    nav_heatmap:   'Dynamics',
     nav_pr:        'P/R Map',
     nav_calc:      'Buy or Rent?',
     nav_rental:    'Real Estate Returns',
@@ -606,9 +597,6 @@ const TRANSLATIONS = {
     tbl_legend_exp:     '🔴 High (&gt; 2,500)',
     median_country:'National median', yoy_growth:'Year-on-year growth',
     growth_leader:'Growth leader', most_expensive:'Most expensive',
-    hm_title:'Price Growth Rate 2016–2025', hm_sub:'Annual price change, %. Source: INE IPV',
-    tab_growth:'Price growth %', tab_abs:'Absolute prices €/m²',
-    region_trend:'Region trend', add_region:'+ Add region', reset:'Reset',
     pr_title:'P/R<sub>adj</sub> — Purchase Payback',
     pr_sub:'Years of rent needed to recoup purchase cost including ITP and notary. European norm: 15–20 years.',
     pr_best:'Best P/R<sub>adj</sub>', pr_worst:'Worst P/R<sub>adj</sub>',
@@ -976,7 +964,7 @@ const TRANSLATIONS = {
 
   es: {
     nav_market:    'Mercado',
-    nav_heatmap:   'Tendencias',
+    nav_heatmap:   'Dinámica',
     nav_pr:        'Mapa P/R',
     nav_calc:      '¿Comprar o alquilar?',
     nav_rental:    'Rentabilidad inmobiliaria',
@@ -1009,9 +997,6 @@ const TRANSLATIONS = {
     tbl_legend_exp:     '🔴 Alto (&gt; 2.500)',
     median_country:'Mediana nacional', yoy_growth:'Variación anual',
     growth_leader:'Líder de subida', most_expensive:'El más caro',
-    hm_title:'Velocidad de subida 2016–2025', hm_sub:'Variación anual de precios, %. Fuente: INE IPV',
-    tab_growth:'Subida %', tab_abs:'Precios absolutos €/m²',
-    region_trend:'Tendencia por región', add_region:'+ Añadir región', reset:'Reiniciar',
     pr_title:'P/R<sub>adj</sub> — Amortización de compra',
     pr_sub:'Años de alquiler necesarios para amortizar la compra incluyendo ITP y notaría. Norma europea: 15–20 años.',
     pr_best:'Mejor P/R<sub>adj</sub>', pr_worst:'Peor P/R<sub>adj</sub>',

@@ -170,18 +170,10 @@ nav {
   .verdict { padding: 12px 14px; }
   .verdict-title { font-size: 14px; }
   .verdict-detail { font-size: 12px; }
-  .tabs { gap: 2px; }
-  .tab { padding: 6px 12px; font-size: 12px; }
   .checklist li { padding: 8px 0; font-size: 12px; gap: 8px; }
   .check-num { width: 20px; height: 20px; font-size: 10px; }
   .check-title { font-size: 12px; margin-bottom: 1px; }
   .check-desc { font-size: 11px; }
-  .hm-cell { width: 40px; height: 26px; font-size: 9px; }
-  .hm-label { width: 100px; }
-  .hm-row { margin-bottom: 1px; }
-  .legend { gap: 10px; margin-bottom: 8px; }
-  .legend-item { font-size: 11px; }
-  .legend-dot { width: 8px; height: 8px; }
   .divider { margin: 16px 0; }
   footer { padding: 20px; font-size: 11px; }
 }
@@ -295,34 +287,12 @@ select {
 .pill-red   { background: rgba(224,92,92,0.15);   color: #e88080; }
 .pill-blue  { background: rgba(74,144,217,0.15);  color: #7ab4e8; }
 
-/* ---- HEATMAP ---- */
-.heatmap-wrap  { overflow-x: auto; margin-top: 8px; }
-.hm-cell       { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 30px; border-radius: 4px; font-size: 10px; font-weight: 500; margin: 1px; transition: opacity 0.15s; }
-.hm-cell:hover { opacity: 0.75; }
-.hm-label      { font-size: 12px; color: var(--muted); text-align: right; padding-right: 10px; width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-row        { display: flex; align-items: center; margin-bottom: 2px; }
-.hm-year-row   { display: flex; margin-left: 140px; margin-bottom: 4px; }
-.hm-year       { width: 46px; text-align: center; font-size: 11px; color: var(--muted); }
-
 /* ---- CHARTS ---- */
 .chart-wrap { position: relative; width: 100%; }
 
-/* ---- TABS ---- */
-.tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-.tab {
-  padding: 8px 18px; border: none; background: transparent; color: var(--muted);
-  font-family: var(--font-body); font-size: 14px; cursor: pointer;
-  border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s;
-}
-.tab:hover { color: var(--text); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ---- TABS (.tab-content используется Флиппингом) ---- */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
-
-/* ---- LEGEND ---- */
-.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
-.legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
 /* ---- DIVIDER ---- */
 .divider { height: 1px; background: var(--border); margin: 20px 0; }

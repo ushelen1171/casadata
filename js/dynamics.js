@@ -556,6 +556,15 @@
   const langObs = new MutationObserver(() => { applyStaticLabels(); if (MODEL) renderAll(); });
   langObs.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
 
+  // Секция открывается штатно через showPage('dynamics') — тот лишь ставит
+  // .active. Канвас графика без размеров в скрытой секции, поэтому рисуем его,
+  // когда секция становится видимой.
+  const pageEl = document.getElementById("page-dynamics");
+  if (pageEl) {
+    const pageObs = new MutationObserver(() => { if (dynVisible()) renderCmpChart(); });
+    pageObs.observe(pageEl, { attributes: true, attributeFilter: ["class"] });
+  }
+
   // Первичный рендер (покажет «загрузка…», пока данные не готовы)
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderAll);
   else renderAll();

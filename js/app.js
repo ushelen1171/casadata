@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // выглядит размыто. После готовности шрифтов перерисовываем все активные графики.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
-      [c1Chart, c1CycleChart, growthBarChartInst, trendChartInst].forEach(ch => {
+      [c1Chart, c1CycleChart].forEach(ch => {
         if (ch && typeof ch.update === 'function') ch.update('none');
       });
     });
@@ -53,21 +53,12 @@ function showPage(id, btn) {
   btn.classList.add('active');
   document.getElementById('hero-block').style.display = id === 'market' ? 'block' : 'none';
   if (id === 'market')  { setTimeout(() => initMapWidget(), 50); }
-  if (id === 'heatmap') renderHeatmaps();
   if (id === 'pr')      renderPRPage();
   if (id === 'calc')    { initCalc1(); loadCalc1FromURL(); calc1Update(); }
   if (id === 'rental')  initRentalCalc();
   if (id === 'compare') initCompare();
   if (id === 'flip')    initFlipAnalyzer().catch(err => console.error('Error initializing flip analyzer:', err));
   if (id === 'guide')   renderGuide();
-}
-
-function switchTab(group, id, btn) {
-  const scope = btn.closest('.page') || btn.closest('.card') || document;
-  scope.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  scope.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(group + '-' + id).classList.add('active');
 }
 
 // ---- PLURAL YEARS (i18n) ----
@@ -826,198 +817,6 @@ function initMarketTable() {
   initMarketSort();
   updateMarketSortHeaders();
   renderMarket();
-}
-
-// ---- HEATMAPS ----
-function growthColor(v) {
-  if (v <  0) return ['#4a1515', '#e05c5c'];
-  if (v <  3) return ['#1a2a3a', '#6a9ab8'];
-  if (v <  6) return ['#1a3050', '#4a80b0'];
-  if (v <  9) return ['#1a4070', '#4a90d4'];
-  if (v < 12) return ['#1a5080', '#5ab0f0'];
-  return ['#3a2a00', '#c9a84c'];
-}
-function absColor(v) {
-  const mn = 850, mx = 4905;
-  const t = (v - mn) / (mx - mn);
-  return [`rgb(${Math.round(30 + t*180)},${Math.round(60 - t*20)},${Math.round(180 - t*140)})`, t > 0.6 ? '#fff' : '#ccc'];
-}
-
-let hmRendered = false;
-function renderHeatmaps() {
-  if (hmRendered) return;
-  hmRendered = true;
-
-  // Render growth bar chart (BLOCK 2.1)
-  renderGrowthBarChart();
-
-  const makeYearRow = () => {
-    const d = document.createElement('div'); d.className = 'hm-year-row';
-    YEARS.forEach(y => { const s = document.createElement('span'); s.className = 'hm-year'; s.textContent = y; d.appendChild(s); });
-    return d;
-  };
-
-  ['hm-growth-content', 'hm-abs-content'].forEach((cid, mode) => {
-    const cont = document.getElementById(cid);
-    cont.appendChild(makeYearRow());
-    REGIONS.forEach(r => {
-      const row = document.createElement('div'); row.className = 'hm-row';
-      const lbl = document.createElement('div'); lbl.className = 'hm-label'; lbl.textContent = r.name;
-      row.appendChild(lbl);
-
-      const gdata = GROWTH_DATA[r.name];
-      let p = r.price;
-      const abs = [];
-      for (let i = YEARS.length - 1; i >= 0; i--) { p = p / (1 + (gdata[i] || 0) / 100); abs.unshift(Math.round(p * (1 + (gdata[i] || 0) / 100))); }
-      abs[YEARS.length - 1] = r.price;
-
-      YEARS.forEach((y, i) => {
-        const v = mode === 0 ? gdata[i] : abs[i];
-        const [bg, tc] = mode === 0 ? growthColor(gdata[i]) : absColor(abs[i]);
-        const cell = document.createElement('div'); cell.className = 'hm-cell';
-        cell.style.background = bg; cell.style.color = tc;
-        cell.textContent = mode === 0
-          ? (gdata[i] > 0 ? '+' : '') + gdata[i].toFixed(1)
-          : (abs[i] >= 1000 ? (abs[i] / 1000).toFixed(1) + 'k' : abs[i]);
-        cell.title = `${r.name} ${y}: ${mode === 0 ? (gdata[i] > 0 ? '+' : '') + gdata[i] + '%' : abs[i] + ' €/м²'}`;
-        row.appendChild(cell);
-      });
-      cont.appendChild(row);
-    });
-  });
-
-  const sel = document.getElementById('trend-select');
-  REGIONS.forEach(r => { const o = document.createElement('option'); o.value = r.name; o.textContent = r.name; sel.appendChild(o); });
-  activeTrendLines = ['Madrid'];
-  renderTrendChart();
-}
-
-// Growth bar chart (BLOCK 2.1)
-function renderGrowthBarChart() {
-  const sorted = [...REGIONS].sort((a, b) => {
-    if (a.growth1 == null && b.growth1 == null) return 0;
-    if (a.growth1 == null) return 1;
-    if (b.growth1 == null) return -1;
-    return b.growth1 - a.growth1;
-  });
-  const height = (sorted.length * 38) + 80;
-  
-  const canvas = document.getElementById('growthBarChart');
-  if (!canvas) return;
-  if (growthBarChartInst) { growthBarChartInst.destroy(); growthBarChartInst = null; }
-
-  const validGrowths = sorted.map(r => r.growth1).filter(v => v != null);
-  const minGrowth = validGrowths.length ? Math.min(...validGrowths) : 0;
-  const maxGrowth = validGrowths.length ? Math.max(...validGrowths) : 10;
-
-  growthBarChartInst = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: sorted.map(r => r.name),
-      datasets: [{
-        label: 'Рост %',
-        data: sorted.map(r => r.growth1),
-        backgroundColor: sorted.map(r => {
-          if (r.growth1 == null) return '#ccc';
-          const t = (r.growth1 - minGrowth) / (maxGrowth - minGrowth);
-          const hue = 100 - (t * 100);
-          const lightness = 60 - (t * 20);
-          return `hsl(${hue}, 70%, ${lightness}%)`;
-        }),
-        borderRadius: 4,
-        borderWidth: 0,
-      }]
-    },
-    options: {
-      devicePixelRatio: window.devicePixelRatio || 2,
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` +${ctx.raw.toFixed(1)}%`
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#8a8f9e', font: { size: 10 }, callback: v => v + '%' },
-          grid: { color: 'rgba(255,255,255,0.04)' }
-        },
-        y: {
-          ticks: { color: '#8a8f9e', font: { size: 11 } },
-          grid: { display: false }
-        }
-      }
-    }
-  });
-  canvas.parentElement.style.height = height + 'px';
-}
-
-let trendChartInst = null, activeTrendLines = ['Madrid'], growthBarChartInst = null;
-
-function renderTrendChart() {
-  const sel = document.getElementById('trend-select').value;
-  if (!activeTrendLines.includes(sel)) activeTrendLines = [sel];
-  drawTrendChart();
-}
-
-function addTrendLine() {
-  const sel = document.getElementById('trend-select').value;
-  if (activeTrendLines.length >= 5) {
-    alert('Максимум 5 регионов одновременно');
-    return;
-  }
-  if (!activeTrendLines.includes(sel)) activeTrendLines.push(sel);
-  drawTrendChart();
-}
-
-function removeTrendLine(name) {
-  if (activeTrendLines.length === 1) {
-    alert('Остаётся минимум 1 регион');
-    return;
-  }
-  activeTrendLines = activeTrendLines.filter(x => x !== name);
-  drawTrendChart();
-}
-
-function clearTrendLines() { 
-  activeTrendLines = [document.getElementById('trend-select').value]; 
-  drawTrendChart(); 
-}
-
-function drawTrendChart() {
-  if (trendChartInst) { trendChartInst.destroy(); trendChartInst = null; }
-  const legend = document.getElementById('trend-legend');
-  legend.innerHTML = activeTrendLines.map(n => {
-    const r = REGIONS.find(x => x.name === n);
-    return `<div class="legend-item" style="display:flex;align-items:center;gap:6px;">
-      <div class="legend-dot" style="background:${r.color};border-radius:50%;"></div>
-      <span>${n}</span>
-      ${activeTrendLines.length > 1 ? `<button onclick="removeTrendLine('${n.replace(/'/g, "\\'")}')" style="margin-left:4px;padding:2px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:3px;cursor:pointer;font-size:11px;">×</button>` : ''}
-    </div>`;
-  }).join('');
-  trendChartInst = new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-      labels: YEARS,
-      datasets: activeTrendLines.map(n => {
-        const r = REGIONS.find(x => x.name === n);
-        return { label: n, data: GROWTH_DATA[n], borderColor: r.color, backgroundColor: 'transparent', tension: 0.35, pointRadius: 3, borderWidth: 2 };
-      })
-    },
-    options: {
-      devicePixelRatio: window.devicePixelRatio || 2,
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw > 0 ? '+' : ''}${ctx.raw.toFixed(1)}%` } } },
-      scales: {
-        x: { ticks: { color: '#8a8f9e', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: '#8a8f9e', font: { size: 11 }, callback: v => v + '%' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-      }
-    }
-  });
 }
 
 // ---- P/R PAGE ----
