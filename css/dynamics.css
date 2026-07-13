@@ -1,0 +1,188 @@
+/* ============================================================
+   Динамика (новая) — Д1 каркас. ИЗОЛИРОВАННЫЕ стили.
+   Все правила scoped под #page-dynamics, классы с префиксом dyn-.
+   Переменные палитры берём из :root сайта; недостающие
+   (--accent-soft/--accent-softer/--gray-mid) объявлены локально
+   на #page-dynamics и НЕ протекают в глобал.
+   Живёт параллельно со старой #page-heatmap до шага Д3.
+   ============================================================ */
+
+#page-dynamics {
+  --accent-soft:   rgba(201,168,76,0.12);
+  --accent-softer: rgba(201,168,76,0.06);
+  --gray-mid:      #5a5f6e;
+}
+
+/* ── Sub-navigation (якоря блоков) ─────────────────────────── */
+#page-dynamics .dyn-subnav {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+  padding: 10px 12px; background: var(--bg2);
+  border: 0.5px solid var(--border); border-radius: 10px;
+}
+#page-dynamics .dyn-subnav-link {
+  font-size: 12px; color: var(--muted); text-decoration: none;
+  padding: 4px 10px; border-radius: 6px; transition: all 0.15s;
+}
+#page-dynamics .dyn-subnav-link:hover { color: var(--text); background: var(--bg3); }
+
+/* ── Блок ──────────────────────────────────────────────────── */
+#page-dynamics .dyn-block { margin-bottom: 40px; scroll-margin-top: 80px; }
+#page-dynamics .dyn-block-header { margin-bottom: 16px; }
+#page-dynamics .dyn-block-title {
+  font-size: 20px; font-weight: 500; margin-bottom: 4px;
+  font-family: var(--font-display), Georgia, serif;
+}
+#page-dynamics .dyn-block-sub { font-size: 12.5px; color: var(--muted); }
+
+/* ── Metric-табы внутри блока ──────────────────────────────── */
+#page-dynamics .dyn-metric-tabs {
+  display: inline-flex; background: var(--bg2); padding: 3px;
+  border-radius: 8px; border: 0.5px solid var(--border);
+  gap: 2px; margin-bottom: 14px;
+}
+#page-dynamics .dyn-metric-tab {
+  padding: 7px 14px; font-size: 12.5px; color: var(--muted);
+  cursor: pointer; border-radius: 6px; transition: all 0.15s;
+  font-weight: 500; border: none; background: transparent; font-family: inherit;
+}
+#page-dynamics .dyn-metric-tab.dyn-active { background: var(--accent-soft); color: var(--accent); }
+#page-dynamics .dyn-metric-tab:hover:not(.dyn-active) { color: var(--text); }
+
+/* ── Блок 1: Хитмап ────────────────────────────────────────── */
+#page-dynamics .dyn-heatmap-wrap {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 16px; overflow-x: auto;
+}
+#page-dynamics .dyn-heatmap { display: grid; gap: 2px; min-width: 740px; }
+#page-dynamics .dyn-hm-cell {
+  font-size: 10px; padding: 5px 4px; text-align: center; border-radius: 3px;
+  font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+#page-dynamics .dyn-hm-cell-main { font-size: 11px; font-weight: 500; color: #fff; display: block; }
+#page-dynamics .dyn-hm-cell-sub  { font-size: 9px; opacity: 0.65; display: block; margin-top: 1px; color: #fff; }
+#page-dynamics .dyn-hm-head {
+  background: transparent; color: var(--muted); font-weight: 500;
+  font-size: 10px; padding: 6px 4px;
+}
+#page-dynamics .dyn-hm-region {
+  background: transparent; color: var(--text); text-align: left; padding-left: 4px;
+  font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; display: flex; align-items: center;
+}
+#page-dynamics .dyn-heatmap-legend {
+  display: flex; align-items: center; gap: 12px; margin-top: 12px;
+  font-size: 11px; color: var(--muted); flex-wrap: wrap;
+}
+#page-dynamics .dyn-legend-gradient { display: flex; align-items: center; gap: 6px; }
+#page-dynamics .dyn-legend-bar { width: 100px; height: 8px; border-radius: 2px; }
+#page-dynamics .dyn-legend-bar.dyn-diverging {
+  background: linear-gradient(to right, var(--green), var(--gray-mid), var(--red));
+}
+#page-dynamics .dyn-legend-bar.dyn-sequential {
+  background: linear-gradient(to right, var(--accent-soft), var(--accent));
+}
+
+/* ── Блок 2: Momentum-бары ─────────────────────────────────── */
+#page-dynamics .dyn-momentum-wrap {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+#page-dynamics .dyn-mb-row {
+  display: grid; grid-template-columns: 130px 1fr 70px 60px; gap: 10px;
+  align-items: center; padding: 6px 0; font-size: 12px;
+}
+#page-dynamics .dyn-mb-row + .dyn-mb-row { border-top: 0.5px solid var(--border); }
+#page-dynamics .dyn-mb-name { font-weight: 500; }
+#page-dynamics .dyn-mb-bar-wrap {
+  position: relative; height: 18px; background: var(--bg3);
+  border-radius: 3px; overflow: hidden;
+}
+#page-dynamics .dyn-mb-bar-zero {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+  background: rgba(255,255,255,0.15);
+}
+#page-dynamics .dyn-mb-bar { position: absolute; height: 100%; border-radius: 3px; top: 0; }
+#page-dynamics .dyn-mb-velocity {
+  font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500;
+}
+#page-dynamics .dyn-mb-momentum {
+  font-size: 11px; text-align: right; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; justify-content: flex-end; gap: 3px;
+}
+#page-dynamics .dyn-mb-arrow { font-size: 10px; }
+#page-dynamics .dyn-up   { color: var(--green); }
+#page-dynamics .dyn-down { color: var(--red); }
+#page-dynamics .dyn-flat { color: var(--gray-mid); }
+
+/* ── Блок 3: Сравнение регионов ────────────────────────────── */
+#page-dynamics .dyn-cmp-wrap {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+#page-dynamics .dyn-cmp-pills-label {
+  font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+#page-dynamics .dyn-cmp-pills-hint { text-transform: none; letter-spacing: 0; }
+#page-dynamics .dyn-cmp-group-label {
+  font-size: 10px; color: var(--muted); margin: 10px 0 5px;
+  text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.7;
+}
+#page-dynamics .dyn-cmp-group-label:first-child { margin-top: 0; }
+#page-dynamics .dyn-cmp-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+#page-dynamics .dyn-pill {
+  padding: 4px 10px; font-size: 11px; border-radius: 20px;
+  border: 0.5px solid var(--border); background: transparent; color: var(--muted);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+#page-dynamics .dyn-pill.dyn-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+#page-dynamics .dyn-cmp-chart-wrap {
+  position: relative; height: 280px; margin-top: 14px; padding-top: 8px;
+  border-top: 0.5px solid var(--border);
+}
+#page-dynamics .dyn-cmp-summary-table {
+  margin-top: 14px; font-size: 12px; width: 100%; border-collapse: collapse;
+}
+#page-dynamics .dyn-cmp-summary-table th {
+  text-align: left; font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500;
+  padding: 8px 6px; border-bottom: 0.5px solid var(--border);
+}
+#page-dynamics .dyn-cmp-summary-table th:not(:first-child) { text-align: right; }
+#page-dynamics .dyn-cmp-summary-table td {
+  padding: 8px 6px; border-bottom: 0.5px solid var(--border); font-variant-numeric: tabular-nums;
+}
+#page-dynamics .dyn-cmp-summary-table td:not(:first-child) { text-align: right; }
+#page-dynamics .dyn-cmp-summary-table tr:last-child td { border-bottom: none; }
+#page-dynamics .dyn-cmp-name-cell { display: flex; align-items: center; gap: 8px; }
+#page-dynamics .dyn-cmp-color-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Insight-плашка ────────────────────────────────────────── */
+#page-dynamics .dyn-insight {
+  background: var(--accent-softer); border: 0.5px solid var(--accent-soft);
+  border-radius: 8px; padding: 11px 14px; font-size: 12.5px; color: var(--text);
+  margin-top: 14px; line-height: 1.5;
+}
+#page-dynamics .dyn-insight b { color: var(--accent); font-weight: 500; }
+
+/* ── CTA ───────────────────────────────────────────────────── */
+#page-dynamics .dyn-cta-block {
+  background: linear-gradient(135deg, var(--accent-softer), transparent);
+  border: 0.5px solid var(--accent-soft); border-radius: 12px;
+  padding: 22px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; margin-top: 30px;
+}
+#page-dynamics .dyn-cta-text { font-size: 14px; line-height: 1.5; }
+#page-dynamics .dyn-cta-text b { color: var(--accent); }
+#page-dynamics .dyn-cta-btn {
+  background: var(--accent); color: var(--bg); border: none; padding: 10px 18px;
+  border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; white-space: nowrap; flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  #page-dynamics .dyn-mb-row { grid-template-columns: 90px 1fr 60px; gap: 6px; }
+  #page-dynamics .dyn-mb-momentum { display: none; }
+  #page-dynamics .dyn-cta-block { flex-direction: column; align-items: stretch; }
+}
