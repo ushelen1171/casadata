@@ -48,6 +48,81 @@
                     : (DYN_I18N[document.documentElement.lang] ? document.documentElement.lang : 'ru');
   const T = (k) => DYN_I18N[lang()][k];
 
+  // Статические подписи секции (заголовки, табы, шапка таблицы, CTA).
+  // Проставляются по [data-dyn-i18n] — innerHTML (в CTA есть <b>).
+  const DYN_STATIC = {
+    ru: {
+      dyn_title: "Динамика и тренды",
+      dyn_subtitle: "Хитмап рынка, momentum по регионам и сравнение — на реальных данных (history.json + Idealista).",
+      dyn_nav_heatmap: "Хитмап рынка", dyn_nav_momentum: "Куда движется рынок", dyn_nav_comparison: "Сравнение регионов",
+      dyn_hm_title: "Хитмап рынка",
+      dyn_hm_sub: "Все регионы × все годы. Цвет показывает степень «перегретости» рынка для инвестора.",
+      dyn_hm_tab_div: "Разрыв цен/аренды", dyn_hm_tab_price: "Рост цен", dyn_hm_tab_rent: "Рост аренды",
+      dyn_hm_note: "% — годовое изменение · € — цена за м²",
+      dyn_mo_title: "Куда движется рынок",
+      dyn_mo_sub: "Регионы отсортированы по тренду. Долгосрочное изменение + ускорение за последний год.",
+      dyn_mo_tab_yield: "Доходность", dyn_mo_tab_price: "Цены", dyn_mo_tab_rent: "Аренда",
+      dyn_vel_5: "5 лет", dyn_vel_10: "10 лет",
+      dyn_cmp_title: "Сравнение регионов",
+      dyn_cmp_sub: "Выберите 2–5 регионов для глубокого сравнения по всем метрикам.",
+      dyn_cmp_regions: "Регионы",
+      dyn_cmp_tab_yield: "Доходность", dyn_cmp_tab_price: "Цена", dyn_cmp_tab_rent: "Аренда",
+      dyn_th_region: "Регион", dyn_th_price: "Цена €/м²", dyn_th_rent: "Аренда €/м²",
+      dyn_th_yield: "Доходность", dyn_th_growth5: "Рост 5л", dyn_th_momentum: "Momentum",
+      dyn_cta_text: 'Нашли подходящие регионы? <b>Посчитайте конкретную стратегию</b> с учётом вашего бюджета, ипотеки и налогов.',
+      dyn_cta_btn: "Посчитать стратегию →",
+    },
+    en: {
+      dyn_title: "Dynamics & trends",
+      dyn_subtitle: "Market heatmap, regional momentum and comparison — on real data (history.json + Idealista).",
+      dyn_nav_heatmap: "Market heatmap", dyn_nav_momentum: "Where the market is heading", dyn_nav_comparison: "Region comparison",
+      dyn_hm_title: "Market heatmap",
+      dyn_hm_sub: "All regions × all years. Colour shows how “overheated” the market is for an investor.",
+      dyn_hm_tab_div: "Price/rent gap", dyn_hm_tab_price: "Price growth", dyn_hm_tab_rent: "Rent growth",
+      dyn_hm_note: "% — annual change · € — price per m²",
+      dyn_mo_title: "Where the market is heading",
+      dyn_mo_sub: "Regions sorted by trend. Long-term change + last-year acceleration.",
+      dyn_mo_tab_yield: "Yield", dyn_mo_tab_price: "Prices", dyn_mo_tab_rent: "Rent",
+      dyn_vel_5: "5 yrs", dyn_vel_10: "10 yrs",
+      dyn_cmp_title: "Region comparison",
+      dyn_cmp_sub: "Pick 2–5 regions for a deep comparison across all metrics.",
+      dyn_cmp_regions: "Regions",
+      dyn_cmp_tab_yield: "Yield", dyn_cmp_tab_price: "Price", dyn_cmp_tab_rent: "Rent",
+      dyn_th_region: "Region", dyn_th_price: "Price €/m²", dyn_th_rent: "Rent €/m²",
+      dyn_th_yield: "Yield", dyn_th_growth5: "5y growth", dyn_th_momentum: "Momentum",
+      dyn_cta_text: 'Found the right regions? <b>Calculate a concrete strategy</b> factoring in your budget, mortgage and taxes.',
+      dyn_cta_btn: "Calculate strategy →",
+    },
+    es: {
+      dyn_title: "Dinámica y tendencias",
+      dyn_subtitle: "Mapa de calor del mercado, momentum regional y comparación — con datos reales (history.json + Idealista).",
+      dyn_nav_heatmap: "Mapa de calor", dyn_nav_momentum: "Hacia dónde va el mercado", dyn_nav_comparison: "Comparación de regiones",
+      dyn_hm_title: "Mapa de calor del mercado",
+      dyn_hm_sub: "Todas las regiones × todos los años. El color muestra cuán «sobrecalentado» está el mercado para un inversor.",
+      dyn_hm_tab_div: "Brecha precio/alquiler", dyn_hm_tab_price: "Crec. de precios", dyn_hm_tab_rent: "Crec. de alquiler",
+      dyn_hm_note: "% — variación anual · € — precio por m²",
+      dyn_mo_title: "Hacia dónde va el mercado",
+      dyn_mo_sub: "Regiones ordenadas por tendencia. Cambio a largo plazo + aceleración del último año.",
+      dyn_mo_tab_yield: "Rentabilidad", dyn_mo_tab_price: "Precios", dyn_mo_tab_rent: "Alquiler",
+      dyn_vel_5: "5 años", dyn_vel_10: "10 años",
+      dyn_cmp_title: "Comparación de regiones",
+      dyn_cmp_sub: "Elige 2–5 regiones para una comparación detallada por todas las métricas.",
+      dyn_cmp_regions: "Regiones",
+      dyn_cmp_tab_yield: "Rentabilidad", dyn_cmp_tab_price: "Precio", dyn_cmp_tab_rent: "Alquiler",
+      dyn_th_region: "Región", dyn_th_price: "Precio €/m²", dyn_th_rent: "Alquiler €/m²",
+      dyn_th_yield: "Rentabilidad", dyn_th_growth5: "Crec. 5a", dyn_th_momentum: "Momentum",
+      dyn_cta_text: '¿Encontraste las regiones adecuadas? <b>Calcula una estrategia concreta</b> considerando tu presupuesto, hipoteca e impuestos.',
+      dyn_cta_btn: "Calcular estrategia →",
+    },
+  };
+  function applyStaticLabels() {
+    const dict = DYN_STATIC[lang()];
+    document.querySelectorAll('#page-dynamics [data-dyn-i18n]').forEach(el => {
+      const k = el.getAttribute('data-dyn-i18n');
+      if (dict[k] != null) el.innerHTML = dict[k];
+    });
+  }
+
   // Инсайт momentum — генерится по данным, трилингвально.
   function momentumInsight(key, top, bottom, n) {
     const L = lang();
@@ -454,6 +529,7 @@
   }
 
   function renderAll() {
+    applyStaticLabels();
     renderHeatmap();
     renderMomentum();
     renderCmpPills();
@@ -477,7 +553,7 @@
   else document.addEventListener("historyLoaded", tryReady);
 
   // Перерисовка при смене языка (setLang меняет <html lang>)
-  const langObs = new MutationObserver(() => { if (MODEL) renderAll(); });
+  const langObs = new MutationObserver(() => { applyStaticLabels(); if (MODEL) renderAll(); });
   langObs.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
 
   // Первичный рендер (покажет «загрузка…», пока данные не готовы)

@@ -205,36 +205,36 @@
 <!-- ========== PAGE: ДИНАМИКА (новая, Д1 каркас) ==========
      Изолированная секция. Живёт параллельно со старой #page-heatmap
      до шага Д3. Кнопки в меню НЕТ — открывать из консоли: DYN.show()
-     Данные ДЕМО (js/dynamics.js), реальные — Д2. -->
+     Реальные данные (Д2). Статические подписи — data-dyn-i18n (RU/EN/ES). -->
 <div class="page" id="page-dynamics">
   <div class="section-head">
-    <h2>Динамика и тренды</h2>
-    <p>Хитмап рынка, momentum по регионам и сравнение — на реальных данных (history.json + Idealista).</p>
+    <h2 data-dyn-i18n="dyn_title">Динамика и тренды</h2>
+    <p data-dyn-i18n="dyn_subtitle">Хитмап рынка, momentum по регионам и сравнение — на реальных данных (history.json + Idealista).</p>
   </div>
 
   <!-- Sub-навигация -->
   <div class="dyn-subnav">
-    <a href="#dyn-heatmap"    class="dyn-subnav-link">Хитмап рынка</a>
-    <a href="#dyn-momentum"   class="dyn-subnav-link">Куда движется рынок</a>
-    <a href="#dyn-comparison" class="dyn-subnav-link">Сравнение регионов</a>
+    <a href="#dyn-heatmap"    class="dyn-subnav-link" data-dyn-i18n="dyn_nav_heatmap">Хитмап рынка</a>
+    <a href="#dyn-momentum"   class="dyn-subnav-link" data-dyn-i18n="dyn_nav_momentum">Куда движется рынок</a>
+    <a href="#dyn-comparison" class="dyn-subnav-link" data-dyn-i18n="dyn_nav_comparison">Сравнение регионов</a>
   </div>
 
   <!-- БЛОК 1: ХИТМАП -->
   <section class="dyn-block" id="dyn-heatmap">
     <div class="dyn-block-header">
-      <h3 class="dyn-block-title">Хитмап рынка</h3>
-      <p class="dyn-block-sub">Все регионы × все годы. Цвет показывает степень «перегретости» рынка для инвестора.</p>
+      <h3 class="dyn-block-title" data-dyn-i18n="dyn_hm_title">Хитмап рынка</h3>
+      <p class="dyn-block-sub" data-dyn-i18n="dyn_hm_sub">Все регионы × все годы. Цвет показывает степень «перегретости» рынка для инвестора.</p>
     </div>
     <div class="dyn-metric-tabs" id="dyn-hm-tabs">
-      <button class="dyn-metric-tab dyn-active" onclick="DYN.setHeatmapMetric('divergence')">Разрыв цен/аренды</button>
-      <button class="dyn-metric-tab" onclick="DYN.setHeatmapMetric('price')">Рост цен</button>
-      <button class="dyn-metric-tab" onclick="DYN.setHeatmapMetric('rent')">Рост аренды</button>
+      <button class="dyn-metric-tab dyn-active" onclick="DYN.setHeatmapMetric('divergence')" data-dyn-i18n="dyn_hm_tab_div">Разрыв цен/аренды</button>
+      <button class="dyn-metric-tab" onclick="DYN.setHeatmapMetric('price')" data-dyn-i18n="dyn_hm_tab_price">Рост цен</button>
+      <button class="dyn-metric-tab" onclick="DYN.setHeatmapMetric('rent')" data-dyn-i18n="dyn_hm_tab_rent">Рост аренды</button>
     </div>
     <div class="dyn-heatmap-wrap">
       <div class="dyn-heatmap" id="dyn-heatmap-grid"></div>
       <div class="dyn-heatmap-legend">
         <div class="dyn-legend-gradient" id="dyn-heatmap-legend"></div>
-        <span style="margin-left:auto; font-size:11px;">% — годовое изменение · € — цена за м²</span>
+        <span style="margin-left:auto; font-size:11px;" data-dyn-i18n="dyn_hm_note">% — годовое изменение · € — цена за м²</span>
       </div>
     </div>
     <div class="dyn-insight" id="dyn-heatmap-insight"></div>
@@ -243,18 +243,18 @@
   <!-- БЛОК 2: MOMENTUM -->
   <section class="dyn-block" id="dyn-momentum">
     <div class="dyn-block-header">
-      <h3 class="dyn-block-title">Куда движется рынок</h3>
-      <p class="dyn-block-sub">Регионы отсортированы по тренду. Долгосрочное изменение + ускорение за последний год.</p>
+      <h3 class="dyn-block-title" data-dyn-i18n="dyn_mo_title">Куда движется рынок</h3>
+      <p class="dyn-block-sub" data-dyn-i18n="dyn_mo_sub">Регионы отсортированы по тренду. Долгосрочное изменение + ускорение за последний год.</p>
     </div>
     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
       <div class="dyn-metric-tabs" id="dyn-mo-tabs">
-        <button class="dyn-metric-tab dyn-active" onclick="DYN.setMomentumMetric('yield')">Доходность</button>
-        <button class="dyn-metric-tab" onclick="DYN.setMomentumMetric('price')">Цены</button>
-        <button class="dyn-metric-tab" onclick="DYN.setMomentumMetric('rent')">Аренда</button>
+        <button class="dyn-metric-tab dyn-active" onclick="DYN.setMomentumMetric('yield')" data-dyn-i18n="dyn_mo_tab_yield">Доходность</button>
+        <button class="dyn-metric-tab" onclick="DYN.setMomentumMetric('price')" data-dyn-i18n="dyn_mo_tab_price">Цены</button>
+        <button class="dyn-metric-tab" onclick="DYN.setMomentumMetric('rent')" data-dyn-i18n="dyn_mo_tab_rent">Аренда</button>
       </div>
       <div class="dyn-metric-tabs dyn-vel-toggle">
-        <button class="dyn-metric-tab dyn-active" onclick="DYN.setVelYears(5, this)">5 лет</button>
-        <button class="dyn-metric-tab" onclick="DYN.setVelYears(10, this)">10 лет</button>
+        <button class="dyn-metric-tab dyn-active" onclick="DYN.setVelYears(5, this)" data-dyn-i18n="dyn_vel_5">5 лет</button>
+        <button class="dyn-metric-tab" onclick="DYN.setVelYears(10, this)" data-dyn-i18n="dyn_vel_10">10 лет</button>
       </div>
     </div>
     <div class="dyn-momentum-wrap" id="dyn-momentum-bars"></div>
@@ -264,26 +264,33 @@
   <!-- БЛОК 3: СРАВНЕНИЕ -->
   <section class="dyn-block" id="dyn-comparison">
     <div class="dyn-block-header">
-      <h3 class="dyn-block-title">Сравнение регионов</h3>
-      <p class="dyn-block-sub">Выберите 2–5 регионов для глубокого сравнения по всем метрикам.</p>
+      <h3 class="dyn-block-title" data-dyn-i18n="dyn_cmp_title">Сравнение регионов</h3>
+      <p class="dyn-block-sub" data-dyn-i18n="dyn_cmp_sub">Выберите 2–5 регионов для глубокого сравнения по всем метрикам.</p>
     </div>
     <div class="dyn-cmp-wrap">
       <div class="dyn-cmp-pills-label">
-        <span>Регионы</span>
+        <span data-dyn-i18n="dyn_cmp_regions">Регионы</span>
         <span class="dyn-cmp-pills-hint"><span id="dyn-cmp-count">3</span> / 5</span>
       </div>
       <div id="dyn-cmp-groups"></div>
       <div style="margin-top:14px;">
         <div class="dyn-metric-tabs" id="dyn-cmp-tabs">
-          <button class="dyn-metric-tab dyn-active" onclick="DYN.setCmpMetric('y')">Доходность</button>
-          <button class="dyn-metric-tab" onclick="DYN.setCmpMetric('pc')">Цена</button>
-          <button class="dyn-metric-tab" onclick="DYN.setCmpMetric('rc')">Аренда</button>
+          <button class="dyn-metric-tab dyn-active" onclick="DYN.setCmpMetric('y')" data-dyn-i18n="dyn_cmp_tab_yield">Доходность</button>
+          <button class="dyn-metric-tab" onclick="DYN.setCmpMetric('pc')" data-dyn-i18n="dyn_cmp_tab_price">Цена</button>
+          <button class="dyn-metric-tab" onclick="DYN.setCmpMetric('rc')" data-dyn-i18n="dyn_cmp_tab_rent">Аренда</button>
         </div>
       </div>
       <div class="dyn-cmp-chart-wrap"><canvas id="dynCmpCanvas"></canvas></div>
       <table class="dyn-cmp-summary-table" id="dyn-cmp-table">
         <thead>
-          <tr><th>Регион</th><th>Цена €/м²</th><th>Аренда €/м²</th><th>Доходность</th><th>Рост 5л</th><th>Momentum</th></tr>
+          <tr>
+            <th data-dyn-i18n="dyn_th_region">Регион</th>
+            <th data-dyn-i18n="dyn_th_price">Цена €/м²</th>
+            <th data-dyn-i18n="dyn_th_rent">Аренда €/м²</th>
+            <th data-dyn-i18n="dyn_th_yield">Доходность</th>
+            <th data-dyn-i18n="dyn_th_growth5">Рост 5л</th>
+            <th data-dyn-i18n="dyn_th_momentum">Momentum</th>
+          </tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -292,8 +299,8 @@
 
   <!-- CTA -->
   <div class="dyn-cta-block">
-    <div class="dyn-cta-text">Нашли подходящие регионы? <b>Посчитайте конкретную стратегию</b> с учётом вашего бюджета, ипотеки и налогов.</div>
-    <button class="dyn-cta-btn" onclick="document.querySelector('.nav-calc-btn').click()">Посчитать стратегию →</button>
+    <div class="dyn-cta-text" data-dyn-i18n="dyn_cta_text">Нашли подходящие регионы? <b>Посчитайте конкретную стратегию</b> с учётом вашего бюджета, ипотеки и налогов.</div>
+    <button class="dyn-cta-btn" onclick="document.querySelector('.nav-calc-btn').click()" data-dyn-i18n="dyn_cta_btn">Посчитать стратегию →</button>
   </div>
 </div>
 
@@ -1376,7 +1383,7 @@
 <script src="js/compare-all.js?v=ee4fd6a3"></script>
 <script src="js/flip-analyzer.js?v=b4c9088e"></script>
 <script src="js/app.js?v=a5eae915"></script>
-<script src="js/dynamics.js?v=b739feef"></script>
+<script src="js/dynamics.js?v=3a0d7d82"></script>
 
 <!-- Global tooltip -->
 <div id="global-tip"></div>
