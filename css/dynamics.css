@@ -58,7 +58,9 @@
   font-size: 10px; padding: 5px 4px; text-align: center; border-radius: 3px;
   font-variant-numeric: tabular-nums; line-height: 1.2;
 }
+#page-dynamics .dyn-hm-cell.dyn-na { background: var(--bg3); color: var(--muted); }
 #page-dynamics .dyn-hm-cell-main { font-size: 11px; font-weight: 500; color: #fff; display: block; }
+#page-dynamics .dyn-loading { color: var(--muted); font-size: 13px; padding: 28px; text-align: center; }
 #page-dynamics .dyn-hm-cell-sub  { font-size: 9px; opacity: 0.65; display: block; margin-top: 1px; color: #fff; }
 #page-dynamics .dyn-hm-head {
   background: transparent; color: var(--muted); font-weight: 500;
@@ -92,7 +94,9 @@
   align-items: center; padding: 6px 0; font-size: 12px;
 }
 #page-dynamics .dyn-mb-row + .dyn-mb-row { border-top: 0.5px solid var(--border); }
-#page-dynamics .dyn-mb-name { font-weight: 500; }
+#page-dynamics .dyn-mb-name { font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
+#page-dynamics .dyn-mb-delta { font-size: 10px; font-weight: 500; opacity: 0.9; }
+#page-dynamics .dyn-mb-na { color: var(--muted); font-size: 11px; text-align: right; }
 #page-dynamics .dyn-mb-bar-wrap {
   position: relative; height: 18px; background: var(--bg3);
   border-radius: 3px; overflow: hidden;
