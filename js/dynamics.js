@@ -26,6 +26,11 @@
       howToRead: '<b>Как читать:</b> красные ячейки — цены росли быстрее аренды (рынок перегревается, доходность падает). Зелёные — аренда обгоняла цены (рынок становится привлекательнее). Колонка «12 мес» — свежий год-к-году.',
       cooling: "остывает", accelerating: "ускоряется", inline: "вровень",
       byPrice: "по ценам", byRent: "по аренде",
+      colVel5: "За 5 лет", colVel10: "За 10 лет", colMom: "За 12 мес",
+      tipVelPrice: "Среднегодовой рост цены (CAGR) за {n} лет.",
+      tipVelRent: "Среднегодовой рост аренды (CAGR) за {n} лет.",
+      tipVelYield: "Изменение доходности за {n} лет, в процентных пунктах (п.п.).",
+      tipMom: "Изменение за последние 12 месяцев (год-к-году). Стрелка справа = направление: ↑ заметный рост · → около нуля · ↓ снижение. Знак минус означает падение за год.",
     },
     en: {
       loading: "Loading data…", na: "n/a", col12m: "12 mo",
@@ -34,6 +39,11 @@
       howToRead: '<b>How to read:</b> red cells — prices grew faster than rents (market overheating, yield falling). Green — rents outpaced prices (market more attractive). The “12 mo” column is the latest year-over-year.',
       cooling: "cooling", accelerating: "accelerating", inline: "in line",
       byPrice: "price", byRent: "rent",
+      colVel5: "5 yrs", colVel10: "10 yrs", colMom: "12 mo",
+      tipVelPrice: "Average annual price growth (CAGR) over {n} years.",
+      tipVelRent: "Average annual rent growth (CAGR) over {n} years.",
+      tipVelYield: "Change in rental yield over {n} years, in percentage points (pp).",
+      tipMom: "Change over the last 12 months (year-over-year). The arrow on the right = direction: ↑ notable rise · → near zero · ↓ decline. A minus sign means it fell over the year.",
     },
     es: {
       loading: "Cargando datos…", na: "n/d", col12m: "12 m",
@@ -42,6 +52,11 @@
       howToRead: '<b>Cómo leer:</b> celdas rojas — los precios crecieron más rápido que los alquileres (mercado sobrecalentado, rentabilidad a la baja). Verdes — los alquileres superaron a los precios (mercado más atractivo). La columna «12 m» es la variación interanual reciente.',
       cooling: "se enfría", accelerating: "se acelera", inline: "a la par",
       byPrice: "de precios", byRent: "de alquiler",
+      colVel5: "5 años", colVel10: "10 años", colMom: "12 m",
+      tipVelPrice: "Crecimiento medio anual del precio (CAGR) en {n} años.",
+      tipVelRent: "Crecimiento medio anual del alquiler (CAGR) en {n} años.",
+      tipVelYield: "Variación de la rentabilidad en {n} años, en puntos porcentuales (pp).",
+      tipMom: "Variación de los últimos 12 meses (interanual). La flecha de la derecha = dirección: ↑ subida notable · → cerca de cero · ↓ bajada. Un signo menos significa que cayó en el año.",
     },
   };
   const lang = () => (window.currentLang && DYN_I18N[window.currentLang]) ? window.currentLang
@@ -316,7 +331,19 @@
     const withVel = data.filter(d => d.velocity != null);
     const maxAbs = Math.max(1, ...withVel.map(d => Math.abs(d.velocity)));
 
-    wrap.innerHTML = data.map(d => {
+    // Шапка колонок: velocity (за 5/10 лет, по toggle) + momentum (за 12 мес).
+    // data-tip → глобальный тултип сайта (ховер + тап). Текст метрико-зависимый.
+    const velColLabel = velYears === 10 ? T("colVel10") : T("colVel5");
+    const velTipKey = key === "y" ? "tipVelYield" : key === "pc" ? "tipVelPrice" : "tipVelRent";
+    const velTip = T(velTipKey).replace("{n}", velYears);
+    const momTip = T("tipMom");
+    const headHtml = `<div class="dyn-mb-head">
+      <div></div><div></div>
+      <div class="dyn-mb-head-cell" data-tip="${velTip}">${velColLabel} <span class="info-icon">ⓘ</span></div>
+      <div class="dyn-mb-head-cell" data-tip="${momTip}">${T("colMom")} <span class="info-icon">ⓘ</span></div>
+    </div>`;
+
+    wrap.innerHTML = headHtml + data.map(d => {
       // Δ-бейдж (остывает/ускоряется) — только для цены/аренды
       let deltaHtml = "";
       if (d.delta != null) {
@@ -360,7 +387,7 @@
         <div class="dyn-mb-name">${d.n}${deltaHtml}</div>
         <div class="dyn-mb-bar-wrap"><div class="dyn-mb-bar-zero"></div><div class="dyn-mb-bar" style="${barStyle}"></div></div>
         <div class="dyn-mb-velocity ${velCls}">${velSign}${d.velocity.toFixed(1)}%</div>
-        <div class="dyn-mb-momentum ${momCls}"><span class="dyn-mb-arrow">${momArrow}</span> ${momTxt}</div>
+        <div class="dyn-mb-momentum ${momCls}">${momTxt}<span class="dyn-mb-arrow">${momArrow}</span></div>
       </div>`;
     }).join("");
 

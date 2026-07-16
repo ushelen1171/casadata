@@ -93,6 +93,16 @@
   display: grid; grid-template-columns: 130px 1fr 70px 60px; gap: 10px;
   align-items: center; padding: 6px 0; font-size: 12px;
 }
+/* Шапка колонок momentum-блока (velocity / momentum) */
+#page-dynamics .dyn-mb-head {
+  display: grid; grid-template-columns: 130px 1fr 70px 60px; gap: 10px;
+  align-items: end; padding-bottom: 6px; margin-bottom: 2px;
+  border-bottom: 0.5px solid var(--border);
+}
+#page-dynamics .dyn-mb-head-cell {
+  font-size: 10px; color: var(--muted); font-weight: 500;
+  text-align: right; white-space: nowrap; line-height: 1.2;
+}
 #page-dynamics .dyn-mb-row + .dyn-mb-row { border-top: 0.5px solid var(--border); }
 #page-dynamics .dyn-mb-name { font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
 #page-dynamics .dyn-mb-delta { font-size: 10px; font-weight: 500; opacity: 0.9; }
@@ -187,6 +197,8 @@
 
 @media (max-width: 600px) {
   #page-dynamics .dyn-mb-row { grid-template-columns: 90px 1fr 60px; gap: 6px; }
+  #page-dynamics .dyn-mb-head { grid-template-columns: 90px 1fr 60px; gap: 6px; }
   #page-dynamics .dyn-mb-momentum { display: none; }
+  #page-dynamics .dyn-mb-head .dyn-mb-head-cell:last-child { display: none; }
   #page-dynamics .dyn-cta-block { flex-direction: column; align-items: stretch; }
 }
